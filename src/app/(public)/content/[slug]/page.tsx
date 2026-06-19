@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import type { UserRow } from '@/types/database'
+import { PurchaseButton } from '@/components/content/PurchaseButton'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -188,16 +189,7 @@ export default async function ContentDetailPage({ params }: Props) {
               <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0 0 1rem' }}>
                 One-time purchase
               </p>
-              <button
-                style={{
-                  display: 'block', width: '100%', textAlign: 'center',
-                  background: '#111827', color: '#fff', borderRadius: '8px',
-                  padding: '0.625rem 1rem', fontWeight: 600, fontSize: '0.9375rem',
-                  border: 'none', cursor: 'pointer',
-                }}
-              >
-                Purchase — {priceFormatted}
-              </button>
+              <PurchaseButton contentId={rawItem.id as string} priceFormatted={priceFormatted ?? ''} />
               <p style={{ fontSize: '0.75rem', color: '#9ca3af', textAlign: 'center', margin: '0.75rem 0 0' }}>
                 Secure payment via Paystack
               </p>

@@ -17,7 +17,7 @@ export type UserRole = 'user' | 'admin' | 'super_admin'
 export type TeamRole = 'product' | 'support' | 'growth'
 export type ContentType = 'article' | 'ebook' | 'template' | 'course'
 export type ContentStatus = 'draft' | 'published' | 'archived'
-export type InteractionType = 'view' | 'click' | 'share' | 'download' | 'unlock' | 'purchase'
+export type InteractionType = 'view' | 'click' | 'share' | 'download' | 'unlock' | 'purchase' | 'ai_summary_requested'
 export type PurchaseStatus = 'pending' | 'success' | 'failed' | 'refunded'
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
@@ -102,6 +102,8 @@ export interface AiSummaryRow {
   id: string
   content_id: string
   summary_text: string
+  bullet_points: string[] | null
+  key_concepts: string[] | null
   model_used: string
   requested_by: string
   created_at: string
@@ -112,6 +114,7 @@ export interface RatingRow {
   content_id: string
   user_id: string
   rating: 1 | 2 | 3 | 4 | 5
+  review_text: string | null
   created_at: string
   updated_at: string
 }
@@ -136,6 +139,7 @@ export interface ContentRequestRow {
   user_id: string
   title: string
   description: string | null
+  content_type_requested: string | null
   status: RequestStatus
   upvote_count: number
   created_at: string
@@ -144,8 +148,12 @@ export interface ContentRequestRow {
 
 export interface SupportTicketRow {
   id: string
-  user_id: string
+  user_id: string | null
   subject: string
+  description: string | null
+  content_id: string | null
+  email: string | null
+  ticket_number: number
   status: TicketStatus
   priority: TicketPriority
   assigned_to: string | null
@@ -159,6 +167,7 @@ export interface TicketReplyRow {
   user_id: string
   body: string
   is_internal: boolean
+  image_url: string | null
   created_at: string
 }
 
@@ -167,8 +176,11 @@ export interface NotificationRow {
   title: string
   body: string
   type: NotificationType
+  channel: 'in_app' | 'email' | 'both'
+  audience_filters: Record<string, unknown> | null
   action_url: string | null
   created_by: string | null
+  sent_at: string | null
   created_at: string
 }
 
@@ -246,7 +258,7 @@ export type ContentUpdate = Partial<Pick<ContentRow,
 
 export type ContentCommentUpdate = Partial<Pick<ContentCommentRow, 'body' | 'is_deleted'>>
 
-export type RatingUpdate = Pick<RatingRow, 'rating'>
+export type RatingUpdate = Pick<RatingRow, 'rating'> & Partial<Pick<RatingRow, 'review_text'>>
 
 export type PurchaseUpdate = Partial<Pick<PurchaseRow,
   'status' | 'paystack_reference' | 'paystack_access_code' | 'metadata'

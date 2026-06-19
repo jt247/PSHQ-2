@@ -3,11 +3,14 @@ import { signOutAction } from '@/app/(auth)/actions/auth'
 import './admin.css'
 
 const NAV_ITEMS = [
-  { href: '/admin',              label: 'Overview' },
-  { href: '/admin/content',      label: 'Content' },
-  { href: '/admin/users',        label: 'Users' },
-  { href: '/admin/support',      label: 'Support' },
+  { href: '/admin',               label: 'Overview' },
+  { href: '/admin/content',       label: 'Content' },
+  { href: '/admin/users',         label: 'Users' },
+  { href: '/admin/support',       label: 'Support' },
+  { href: '/admin/requests',      label: 'Content Requests' },
   { href: '/admin/notifications', label: 'Notifications' },
+  { href: '/admin/quality',       label: 'Quality Control' },
+  { href: '/admin/payments',      label: 'Payments' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
