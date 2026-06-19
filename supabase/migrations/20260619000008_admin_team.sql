@@ -1,9 +1,11 @@
+create extension if not exists pgcrypto with schema extensions;
+
 -- Admin invites table: tracks pending admin invitations
 create table if not exists public.admin_invites (
   id         uuid primary key default gen_random_uuid(),
   email      text not null,
   team_role  public.team_role not null,
-  token      text not null unique default encode(gen_random_bytes(32), 'hex'),
+  token      text not null unique default encode(extensions.gen_random_bytes(32), 'hex'),
   invited_by uuid references public.users(id) on delete set null,
   created_at timestamptz not null default now(),
   used_at    timestamptz,
