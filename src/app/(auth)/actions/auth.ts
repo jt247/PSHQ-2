@@ -99,11 +99,12 @@ export async function signInAction(
   }
 
   const { id: userId, user_metadata: meta = {}, app_metadata = {} } = data.user
+  console.log('[signIn] userId:', userId)
 
   // Ensure public.users row exists — repairs accounts created before migrations ran.
   // ignoreDuplicates: true means if the row already exists, do nothing (preserves onboarding_done etc.)
   const service = await createServiceClient()
-  await service.from('users').upsert(
+  const { error: upsertError } = await service.from('users').upsert(
     {
       id: userId,
       email: data.user.email!,
@@ -115,13 +116,16 @@ export async function signInAction(
     },
     { onConflict: 'id', ignoreDuplicates: true }
   )
+  if (upsertError) console.error('[signIn] upsert error:', upsertError)
 
-  const { data: profileRaw } = await supabase
+  const { data: profileRaw, error: profileError } = await service
     .from('users')
     .select('*')
     .eq('id', userId)
     .single()
+  if (profileError) console.error('[signIn] profile fetch error:', profileError)
   const profile = profileRaw as UserRow | null
+  console.log('[signIn] profile:', JSON.stringify(profile))
 
   if (!profile?.onboarding_done) {
     redirect('/onboarding')
