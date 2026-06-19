@@ -100,7 +100,8 @@ export async function signInAction(
 
   const { id: userId, user_metadata: meta = {}, app_metadata = {} } = data.user
 
-  // Ensure public.users row exists — repairs accounts created before migrations ran
+  // Ensure public.users row exists — repairs accounts created before migrations ran.
+  // ignoreDuplicates: true means if the row already exists, do nothing (preserves onboarding_done etc.)
   const service = await createServiceClient()
   await service.from('users').upsert(
     {
@@ -112,7 +113,7 @@ export async function signInAction(
       avatar_url: meta.avatar_url ?? meta.picture ?? null,
       auth_provider: app_metadata.provider ?? 'email',
     },
-    { onConflict: 'id', ignoreDuplicates: false }
+    { onConflict: 'id', ignoreDuplicates: true }
   )
 
   const { data: profileRaw } = await supabase
@@ -233,12 +234,14 @@ export async function onboardingAction(
     return { error: 'Not authenticated.' }
   }
 
-  const { error } = await supabase
+  const service = await createServiceClient()
+  const { error } = await service
     .from('users')
     .update({ job_role: jobRole, country, areas_of_interest: areasRaw, onboarding_done: true })
     .eq('id', user.id)
 
   if (error) {
+    console.error('[onboarding update error]', error)
     return { error: error.message }
   }
 
