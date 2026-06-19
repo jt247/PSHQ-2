@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useActionState } from 'react'
-import { updateProfileAction, sendPasswordResetAction, AREAS, type ProfileState } from '@/app/dashboard/actions'
+import { updateProfileAction, sendPasswordResetAction, type ProfileState } from '@/app/dashboard/actions'
+import { AREAS } from '@/app/dashboard/constants'
 import type { UserRow } from '@/types/database'
 
 const initState: ProfileState = {}

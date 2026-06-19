@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { NotificationBell } from '@/components/dashboard/NotificationBell'
+import { signOutAction } from '@/app/(auth)/actions/auth'
 import type { UserRow } from '@/types/database'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -35,6 +36,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
               Admin panel →
             </Link>
           )}
+          <form action={signOutAction}>
+            <button type="submit" style={{ fontSize: '0.8125rem', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              Sign out
+            </button>
+          </form>
         </div>
       </header>
 
