@@ -47,7 +47,7 @@ export default async function ContentDetailPage({ params }: Props) {
     await service.from('content_interactions').insert({
       content_id: rawItem.id,
       user_id: user?.id ?? null,
-      interaction_type: 'view',
+      type: 'view',
       metadata: {},
     })
   } catch {

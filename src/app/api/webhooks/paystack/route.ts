@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     await service.from('content_interactions').insert({
       content_id: purchase.item_id,
       user_id: purchase.user_id,
-      interaction_type: 'purchase',
+      type: 'purchase',
       metadata: { purchase_id: purchase.id, reference },
     } as never).then(() => null, () => null)
   }

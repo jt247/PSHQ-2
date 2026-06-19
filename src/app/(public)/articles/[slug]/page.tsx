@@ -70,14 +70,13 @@ export default async function ArticlePage({ params }: Props) {
 
   // Record view (fire-and-forget)
   if (user) {
-    createServiceClient().then(svc =>
-      svc.from('content_interactions').insert({
-        content_id: rawItem.id,
-        user_id: user.id,
-        interaction_type: 'view',
-        metadata: {},
-      } as never)
-    ).catch(() => null)
+    const svc = createServiceClient()
+    svc.from('content_interactions').insert({
+      content_id: rawItem.id,
+      user_id: user.id,
+      type: 'view',
+      metadata: {},
+    } as never).then(() => null).catch(() => null)
   }
 
   const hasUpvoted = !!upvoteResult.data
