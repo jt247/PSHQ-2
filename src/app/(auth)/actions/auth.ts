@@ -98,14 +98,31 @@ export async function signInAction(
     return { error: error.message }
   }
 
+  const { id: userId, user_metadata: meta = {}, app_metadata = {} } = data.user
+
+  // Ensure public.users row exists — repairs accounts created before migrations ran
+  const service = await createServiceClient()
+  await service.from('users').upsert(
+    {
+      id: userId,
+      email: data.user.email!,
+      full_name: meta.full_name ?? meta.name ?? null,
+      first_name: meta.given_name ?? meta.first_name ?? null,
+      last_name: meta.family_name ?? meta.last_name ?? null,
+      avatar_url: meta.avatar_url ?? meta.picture ?? null,
+      auth_provider: app_metadata.provider ?? 'email',
+    },
+    { onConflict: 'id', ignoreDuplicates: false }
+  )
+
   const { data: profileRaw } = await supabase
     .from('users')
     .select('*')
-    .eq('id', data.user.id)
+    .eq('id', userId)
     .single()
   const profile = profileRaw as UserRow | null
 
-  if (profile && !profile.onboarding_done) {
+  if (!profile?.onboarding_done) {
     redirect('/onboarding')
   }
 
