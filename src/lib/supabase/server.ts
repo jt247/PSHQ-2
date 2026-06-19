@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+// Database generic omitted — use `supabase gen types typescript --linked` to replace
+// src/types/database.ts with generated types and re-add the generic here.
+
 export async function createClient() {
   const cookieStore = await cookies()
 
