@@ -91,7 +91,8 @@ Respond with ONLY valid JSON in this exact shape — no markdown fences, no extr
     const text = result.response.text().trim()
     const jsonText = text.startsWith('{') ? text : text.slice(text.indexOf('{'))
     parsed = JSON.parse(jsonText)
-  } catch {
+  } catch (err) {
+    console.error('[ai-summary] Gemini error:', err)
     return NextResponse.json({ error: 'Failed to generate summary' }, { status: 502 })
   }
 

@@ -28,7 +28,10 @@ export async function postCommentAction(
     user_id: user.id,
     body,
   })
-  if (error) return { error: 'Failed to post comment. Try again.' }
+  if (error) {
+    console.error('[comment insert error]', error)
+    return { error: 'Failed to post comment. Try again.' }
+  }
 
   revalidatePath(`/articles`)
   return { success: true }
