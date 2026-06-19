@@ -84,7 +84,10 @@ export async function submitRatingAction(
       { onConflict: 'content_id,user_id' }
     )
 
-  if (error) return { error: 'Failed to save rating. Try again.' }
+  if (error) {
+    console.error('[rating upsert error]', error)
+    return { error: 'Failed to save rating. Try again.' }
+  }
 
   revalidatePath(`/articles`)
   revalidatePath(`/content`)

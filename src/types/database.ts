@@ -237,7 +237,7 @@ export type ContentUpvoteInsert = Pick<ContentUpvoteRow, 'content_id' | 'user_id
 export type AiSummaryInsert = Pick<AiSummaryRow, 'content_id' | 'summary_text' | 'requested_by'> &
   Partial<Pick<AiSummaryRow, 'model_used'>>
 
-export type RatingInsert = Pick<RatingRow, 'content_id' | 'user_id' | 'rating'>
+export type RatingInsert = Pick<RatingRow, 'content_id' | 'user_id' | 'rating'> & Partial<Pick<RatingRow, 'review_text'>>
 
 export type PurchaseInsert = Pick<PurchaseRow, 'user_id' | 'amount' | 'item_type'> &
   Partial<Pick<PurchaseRow, 'currency' | 'status' | 'paystack_reference' | 'paystack_access_code' | 'item_id' | 'metadata'>>

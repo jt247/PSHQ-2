@@ -110,7 +110,7 @@ Respond with ONLY valid JSON in this exact shape — no markdown fences, no extr
   await service.from('content_interactions').insert({
     content_id: contentId,
     user_id: user.id,
-    interaction_type: 'ai_summary_requested',
+    type: 'ai_summary_requested',
     metadata: {},
   } as never)
 
