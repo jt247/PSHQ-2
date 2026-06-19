@@ -12,7 +12,7 @@ import type { AdminActionLogInsert } from '@/types/database'
  */
 export async function logAdminAction(entry: AdminActionLogInsert): Promise<void> {
   try {
-    const service = await createServiceClient()
+    const service = createServiceClient()
     await service.from('admin_actions_log').insert(entry)
   } catch {
     // Audit log failure is non-fatal — don't break the main action

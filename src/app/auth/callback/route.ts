@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       const inviteTeamRole: string | undefined = meta.invite_team_role
 
       if (inviteToken) {
-        const service = await createServiceClient()
+        const service = createServiceClient()
         const { data: invite } = await service
           .from('admin_invites')
           .select('id, email, team_role, used_at, expires_at')

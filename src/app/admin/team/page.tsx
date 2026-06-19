@@ -27,7 +27,7 @@ export default async function TeamPage() {
     )
   }
 
-  const service = await createServiceClient()
+  const service = createServiceClient()
 
   // Fetch all admins and super_admins
   const { data: admins } = await service

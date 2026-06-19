@@ -69,7 +69,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
   }
 
   // Call Gemini
-  const model = gemini.getModel('gemini-1.5-flash')
+  const model = gemini.getModel('gemini-2.0-flash')
 
   const prompt = `You are an expert product management educator. Summarise the following article for a product manager audience.
 
@@ -97,13 +97,13 @@ Respond with ONLY valid JSON in this exact shape — no markdown fences, no extr
   }
 
   // Save to cache
-  const service = await createServiceClient()
+  const service = createServiceClient()
   await service.from('ai_summaries').insert({
     content_id: contentId,
     summary_text: parsed.summary,
     bullet_points: parsed.bullets as unknown as never,
     key_concepts: parsed.concepts as unknown as never,
-    model_used: 'gemini-1.5-flash',
+    model_used: 'gemini-2.0-flash',
     requested_by: user.id,
   })
 

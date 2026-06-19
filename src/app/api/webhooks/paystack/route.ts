@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   const reference = event.data.reference as string
   const status    = (event.data.status as string) === 'success' ? 'success' : 'failed'
 
-  const service = await createServiceClient()
+  const service = createServiceClient()
 
   // Find the purchase record
   const { data: purchase } = await service

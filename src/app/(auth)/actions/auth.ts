@@ -32,7 +32,7 @@ export async function signUpAction(
   // Validate invite token if present
   let inviteTeamRole: string | null = null
   if (inviteToken) {
-    const service = await createServiceClient()
+    const service = createServiceClient()
     const { data: invite } = await service
       .from('admin_invites')
       .select('id, email, team_role, expires_at, used_at')
@@ -99,12 +99,11 @@ export async function signInAction(
   }
 
   const { id: userId, user_metadata: meta = {}, app_metadata = {} } = data.user
-  console.log('[signIn] userId:', userId)
 
   // Ensure public.users row exists — repairs accounts created before migrations ran.
-  // ignoreDuplicates: true means if the row already exists, do nothing (preserves onboarding_done etc.)
-  const service = await createServiceClient()
-  const { error: upsertError } = await service.from('users').upsert(
+  // ignoreDuplicates: true preserves onboarding_done and other profile fields on subsequent logins.
+  const service = createServiceClient()
+  await service.from('users').upsert(
     {
       id: userId,
       email: data.user.email!,
@@ -116,16 +115,13 @@ export async function signInAction(
     },
     { onConflict: 'id', ignoreDuplicates: true }
   )
-  if (upsertError) console.error('[signIn] upsert error:', upsertError)
 
-  const { data: profileRaw, error: profileError } = await service
+  const { data: profileRaw } = await service
     .from('users')
     .select('*')
     .eq('id', userId)
     .single()
-  if (profileError) console.error('[signIn] profile fetch error:', profileError)
   const profile = profileRaw as UserRow | null
-  console.log('[signIn] profile:', JSON.stringify(profile))
 
   if (!profile?.onboarding_done) {
     redirect('/onboarding')
@@ -238,14 +234,13 @@ export async function onboardingAction(
     return { error: 'Not authenticated.' }
   }
 
-  const service = await createServiceClient()
+  const service = createServiceClient()
   const { error } = await service
     .from('users')
     .update({ job_role: jobRole, country, areas_of_interest: areasRaw, onboarding_done: true })
     .eq('id', user.id)
 
   if (error) {
-    console.error('[onboarding update error]', error)
     return { error: error.message }
   }
 

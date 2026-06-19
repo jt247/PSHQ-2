@@ -26,7 +26,7 @@ interface AudienceFilters {
 }
 
 async function getMatchingUsers(filters: AudienceFilters): Promise<Array<{ id: string; email: string }>> {
-  const service = await createServiceClient()
+  const service = createServiceClient()
   let query = service.from('users').select('id, email')
 
   if (filters.job_role) query = query.eq('job_role', filters.job_role)
@@ -89,7 +89,7 @@ export async function broadcastNotificationAction(
     if (nErr || !notif) return { error: 'Failed to create notification.' }
 
     if (channel === 'in_app' || channel === 'both') {
-      const service = await createServiceClient()
+      const service = createServiceClient()
       const rows = users.map(u => ({ notification_id: notif.id, user_id: u.id }))
       for (let i = 0; i < rows.length; i += 100) {
         await service.from('notification_recipients').insert(rows.slice(i, i + 100))

@@ -26,7 +26,7 @@ export async function createServiceContactAction(
   if (description.length < 10) return { error: 'Message is too short.' }
 
   // Use service role so anonymous users can insert (no auth session)
-  const service = await createServiceClient()
+  const service = createServiceClient()
 
   const { data, error } = await service
     .from('support_tickets')

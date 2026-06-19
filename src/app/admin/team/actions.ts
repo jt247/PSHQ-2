@@ -26,7 +26,7 @@ export async function inviteAdminAction(
 ): Promise<InviteState> {
   try {
     const { adminId } = await requireSuperAdmin()
-    const service = await createServiceClient()
+    const service = createServiceClient()
 
     const email    = (formData.get('email')     as string ?? '').trim().toLowerCase()
     const teamRole = (formData.get('team_role') as string ?? '').trim() as TeamRole
@@ -89,7 +89,7 @@ export async function inviteAdminAction(
 export async function updateTeamRoleAction(userId: string, teamRole: TeamRole): Promise<{ error?: string }> {
   try {
     const { supabase, adminId } = await requireSuperAdmin()
-    const service = await createServiceClient()
+    const service = createServiceClient()
 
     await service.from('users').update({ team_role: teamRole }).eq('id', userId)
     await logAdminAction({ admin_id: adminId, action_type: 'admin_team_role_change', target_table: 'users', target_id: userId, metadata: { team_role: teamRole } })
@@ -110,7 +110,7 @@ export async function removeAdminAccessAction(userId: string): Promise<{ error?:
     // Prevent self-demotion
     if (userId === adminId) return { error: 'You cannot remove your own admin access.' }
 
-    const service = await createServiceClient()
+    const service = createServiceClient()
     await service.from('users').update({ role: 'user', team_role: null }).eq('id', userId)
     await logAdminAction({ admin_id: adminId, action_type: 'admin_access_removed', target_table: 'users', target_id: userId })
 

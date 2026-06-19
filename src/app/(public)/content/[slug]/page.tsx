@@ -43,7 +43,7 @@ export default async function ContentDetailPage({ params }: Props) {
 
   // record view
   try {
-    const service = await createServiceClient()
+    const service = createServiceClient()
     await service.from('content_interactions').insert({
       content_id: rawItem.id,
       user_id: user?.id ?? null,

@@ -29,7 +29,7 @@ export async function postCommentAction(
     body,
   })
   if (error) {
-    console.error('[comment insert error]', error)
+
     return { error: 'Failed to post comment. Try again.' }
   }
 
@@ -88,7 +88,7 @@ export async function submitRatingAction(
     )
 
   if (error) {
-    console.error('[rating upsert error]', error)
+
     return { error: 'Failed to save rating. Try again.' }
   }
 
