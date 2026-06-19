@@ -1,5 +1,5 @@
 -- Admin invites table: tracks pending admin invitations
-create table public.admin_invites (
+create table if not exists public.admin_invites (
   id         uuid primary key default gen_random_uuid(),
   email      text not null,
   team_role  public.team_role not null,
@@ -16,6 +16,7 @@ create index on public.admin_invites (email);
 -- Only super_admins (via service role) can read/write invites
 alter table public.admin_invites enable row level security;
 
+drop policy if exists "service role full access on admin_invites" on public.admin_invites;
 create policy "service role full access on admin_invites"
   on public.admin_invites for all
   using (true)

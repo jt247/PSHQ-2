@@ -40,6 +40,7 @@ alter table public.ratings
 -- Admin can hide reviews; public read policy already exists
 -- We restrict hidden reviews from public visibility via policy update
 drop policy if exists "ratings: public read" on public.ratings;
+drop policy if exists "ratings: public read non-hidden" on public.ratings;
 create policy "ratings: public read non-hidden"
   on public.ratings for select
   using (is_hidden = false or public.is_admin());
@@ -52,34 +53,40 @@ alter table public.content_requests
 -- ── Additional RLS ────────────────────────────────────────────
 
 -- Allow admins to update ratings (set is_hidden)
+drop policy if exists "ratings: admin update" on public.ratings;
 create policy "ratings: admin update"
   on public.ratings for update
   using (public.is_admin())
   with check (public.is_admin());
 
 -- Allow admins to view all tickets
+drop policy if exists "tickets: admin full access" on public.support_tickets;
 create policy "tickets: admin full access"
   on public.support_tickets for all
   using (public.is_admin())
   with check (public.is_admin());
 
 -- Allow users to see their own tickets
+drop policy if exists "tickets: self read" on public.support_tickets;
 create policy "tickets: self read"
   on public.support_tickets for select
   using (auth.uid() is not null and auth.uid() = user_id);
 
 -- Allow authenticated users to create tickets
+drop policy if exists "tickets: auth insert" on public.support_tickets;
 create policy "tickets: auth insert"
   on public.support_tickets for insert
   with check (auth.uid() is not null and auth.uid() = user_id);
 
 -- Allow admins to manage replies
+drop policy if exists "replies: admin full access" on public.ticket_replies;
 create policy "replies: admin full access"
   on public.ticket_replies for all
   using (public.is_admin())
   with check (public.is_admin());
 
 -- Allow users to read non-internal replies on their own tickets
+drop policy if exists "replies: user read own ticket" on public.ticket_replies;
 create policy "replies: user read own ticket"
   on public.ticket_replies for select
   using (
@@ -91,6 +98,7 @@ create policy "replies: user read own ticket"
   );
 
 -- Allow users to post replies on their own tickets
+drop policy if exists "replies: user insert own ticket" on public.ticket_replies;
 create policy "replies: user insert own ticket"
   on public.ticket_replies for insert
   with check (
@@ -103,45 +111,55 @@ create policy "replies: user insert own ticket"
   );
 
 -- Content requests RLS
+drop policy if exists "requests: auth insert" on public.content_requests;
 create policy "requests: auth insert"
   on public.content_requests for insert
   with check (auth.uid() is not null and auth.uid() = user_id);
 
+drop policy if exists "requests: self read" on public.content_requests;
 create policy "requests: self read"
   on public.content_requests for select
   using (auth.uid() is not null and auth.uid() = user_id);
 
+drop policy if exists "requests: public read" on public.content_requests;
 create policy "requests: public read"
   on public.content_requests for select
   using (status in ('planned', 'completed'));
 
+drop policy if exists "requests: admin full access" on public.content_requests;
 create policy "requests: admin full access"
   on public.content_requests for all
   using (public.is_admin())
   with check (public.is_admin());
 
 -- Notifications
+drop policy if exists "notifications: admin write" on public.notifications;
 create policy "notifications: admin write"
   on public.notifications for insert
   with check (public.is_admin());
 
+drop policy if exists "notifications: admin read" on public.notifications;
 create policy "notifications: admin read"
   on public.notifications for select
   using (public.is_admin());
 
+drop policy if exists "notification_recipients: user read own" on public.notification_recipients;
 create policy "notification_recipients: user read own"
   on public.notification_recipients for select
   using (auth.uid() = user_id);
 
+drop policy if exists "notification_recipients: user update own" on public.notification_recipients;
 create policy "notification_recipients: user update own"
   on public.notification_recipients for update
   using (auth.uid() = user_id);
 
+drop policy if exists "notification_recipients: admin insert" on public.notification_recipients;
 create policy "notification_recipients: admin insert"
   on public.notification_recipients for insert
   with check (public.is_admin());
 
 -- Purchases: update for admin read so payments dashboard works
+drop policy if exists "purchases: admin read" on public.purchases;
 create policy "purchases: admin read"
   on public.purchases for select
   using (public.is_admin());
