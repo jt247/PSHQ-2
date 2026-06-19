@@ -2,12 +2,17 @@
 
 import Link from 'next/link'
 import { useActionState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { signUpAction, type SignUpState } from '../actions/auth'
 import { GoogleOAuthButton } from '@/components/auth/GoogleOAuthButton'
+import { Suspense } from 'react'
 
 const initial: SignUpState = { error: null, success: false }
 
-export default function SignUpPage() {
+function SignUpForm() {
+  const searchParams = useSearchParams()
+  const inviteToken = searchParams.get('invite') ?? ''
+
   const [state, action, pending] = useActionState(signUpAction, initial)
 
   if (state.success) {
@@ -24,11 +29,19 @@ export default function SignUpPage() {
     <div className="auth-container">
       <h1>Create your account</h1>
 
-      <GoogleOAuthButton label="Sign up with Google" />
+      {inviteToken && (
+        <div style={{ padding: '0.75rem 1rem', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', marginBottom: '1.25rem', fontSize: '0.875rem', color: '#15803d' }}>
+          You&apos;ve been invited to join the PSHQ admin team. Complete your account below.
+        </div>
+      )}
 
-      <div className="auth-divider"><span>or</span></div>
+      {!inviteToken && <GoogleOAuthButton label="Sign up with Google" />}
+      {!inviteToken && <div className="auth-divider"><span>or</span></div>}
 
       <form action={action} className="auth-form">
+        {/* Hidden invite token — consumed in the server action */}
+        <input type="hidden" name="invite_token" value={inviteToken} />
+
         <div className="auth-row">
           <div className="auth-field">
             <label htmlFor="first_name">First name</label>
@@ -53,13 +66,23 @@ export default function SignUpPage() {
         {state.error && <p className="auth-error" role="alert">{state.error}</p>}
 
         <button type="submit" disabled={pending} className="auth-submit">
-          {pending ? 'Creating account…' : 'Create account'}
+          {pending ? 'Creating account…' : inviteToken ? 'Create admin account' : 'Create account'}
         </button>
       </form>
 
-      <p className="auth-footer">
-        Already have an account? <Link href="/sign-in">Sign in</Link>
-      </p>
+      {!inviteToken && (
+        <p className="auth-footer">
+          Already have an account? <Link href="/sign-in">Sign in</Link>
+        </p>
+      )}
     </div>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="auth-container"><p>Loading…</p></div>}>
+      <SignUpForm />
+    </Suspense>
   )
 }

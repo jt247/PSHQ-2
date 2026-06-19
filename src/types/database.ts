@@ -202,6 +202,20 @@ export interface AdminActionLogRow {
   created_at: string
 }
 
+export interface AdminInviteRow {
+  id: string
+  email: string
+  team_role: TeamRole
+  token: string
+  invited_by: string | null
+  created_at: string
+  used_at: string | null
+  expires_at: string
+}
+
+export type AdminInviteInsert = Pick<AdminInviteRow, 'email' | 'team_role'> &
+  Partial<Pick<AdminInviteRow, 'invited_by'>>
+
 // ============================================================
 // INSERT TYPES  (fields required / optional on insert)
 // ============================================================
@@ -360,6 +374,12 @@ export interface Database {
         Row: AdminActionLogRow
         Insert: AdminActionLogInsert
         Update: Record<string, never>
+        Relationships: []
+      }
+      admin_invites: {
+        Row: AdminInviteRow
+        Insert: AdminInviteInsert
+        Update: Partial<Pick<AdminInviteRow, 'used_at'>>
         Relationships: []
       }
     }

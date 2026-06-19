@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import type { UserRow } from '@/types/database'
 
 export async function GET(request: NextRequest) {
@@ -7,7 +7,6 @@ export async function GET(request: NextRequest) {
 
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
-  // Ensure `next` is a relative path to prevent open-redirect attacks.
   const safeNext = next.startsWith('/') ? next : '/dashboard'
 
   if (code) {
@@ -16,11 +15,9 @@ export async function GET(request: NextRequest) {
 
     if (!error && data.user) {
       const userId = data.user.id
+      const meta   = data.user.user_metadata ?? {}
 
-      // Upsert the users row — handles both email confirm and OAuth.
-      // For OAuth sign-ups the trigger already fired, but we patch in
-      // auth_provider and any metadata Supabase collected from Google.
-      const meta = data.user.user_metadata ?? {}
+      // Upsert public.users row — handles email confirm and OAuth
       await supabase.from('users').upsert(
         {
           id: userId,
@@ -34,12 +31,40 @@ export async function GET(request: NextRequest) {
         { onConflict: 'id', ignoreDuplicates: false }
       )
 
-      // If this is a password reset flow, go where the link points.
+      // Handle admin invite: if the user signed up via an invite link,
+      // promote them to admin + set team_role and mark invite used.
+      const inviteToken: string | undefined = meta.invite_token
+      const inviteTeamRole: string | undefined = meta.invite_team_role
+
+      if (inviteToken) {
+        const service = await createServiceClient()
+        const { data: invite } = await service
+          .from('admin_invites')
+          .select('id, email, team_role, used_at, expires_at')
+          .eq('token', inviteToken)
+          .single()
+
+        if (invite && !invite.used_at && new Date(invite.expires_at) >= new Date()) {
+          // Promote user to admin
+          await service
+            .from('users')
+            .update({ role: 'admin', team_role: inviteTeamRole ?? invite.team_role })
+            .eq('id', userId)
+
+          // Mark invite consumed
+          await service
+            .from('admin_invites')
+            .update({ used_at: new Date().toISOString() })
+            .eq('id', invite.id)
+        }
+      }
+
+      // Password reset flow
       if (safeNext !== '/dashboard') {
         return NextResponse.redirect(`${origin}${safeNext}`)
       }
 
-      // Check onboarding status.
+      // Check onboarding and role
       const { data: profileRaw } = await supabase
         .from('users')
         .select('*')
@@ -59,6 +84,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Auth failed — send to sign-in with an error param.
   return NextResponse.redirect(`${origin}/sign-in?error=auth_failed`)
 }

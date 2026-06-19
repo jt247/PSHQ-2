@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { uploadFileToR2 } from '@/lib/r2/upload'
+import { logAdminAction } from '@/lib/admin/log'
 import type { UserRow, TicketStatus, TicketPriority } from '@/types/database'
 
 async function requireAdmin() {
@@ -27,8 +28,8 @@ export async function adminReplyAction(
   try {
     const { supabase, adminId } = await requireAdmin()
 
-    const body      = (formData.get('body')     as string ?? '').trim()
-    const internal  = formData.get('is_internal') === 'true'
+    const body     = (formData.get('body') as string ?? '').trim()
+    const internal = formData.get('is_internal') === 'true'
     if (!body) return { error: 'Message is required.' }
 
     let image_url: string | null = null
@@ -46,6 +47,8 @@ export async function adminReplyAction(
 
     if (error) return { error: 'Failed to post reply.' }
 
+    await logAdminAction({ admin_id: adminId, action_type: internal ? 'ticket_internal_note' : 'ticket_reply', target_table: 'support_tickets', target_id: ticketId })
+
     revalidatePath(`/admin/support/${ticketId}`)
     return { success: true }
   } catch (e: unknown) {
@@ -59,8 +62,12 @@ export async function updateTicketAction(
   ticketId: string,
   updates: { status?: TicketStatus; priority?: TicketPriority; assigned_to?: string | null }
 ) {
-  const { supabase } = await requireAdmin()
+  const { supabase, adminId } = await requireAdmin()
   await supabase.from('support_tickets').update(updates).eq('id', ticketId)
+
+  const actionType = updates.status ? `ticket_status_${updates.status}` : updates.assigned_to !== undefined ? 'ticket_assigned' : 'ticket_update'
+  await logAdminAction({ admin_id: adminId, action_type: actionType, target_table: 'support_tickets', target_id: ticketId, metadata: updates as never })
+
   revalidatePath(`/admin/support/${ticketId}`)
   revalidatePath('/admin/support')
 }

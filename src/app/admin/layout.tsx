@@ -15,6 +15,8 @@ const NAV_ITEMS: (null | { href: string; label: string })[] = [
   { href: '/admin/analytics/platform', label: '📊 Platform' },
   { href: '/admin/analytics/product',  label: '📈 Product' },
   { href: '/admin/analytics/growth',   label: '🌱 Growth' },
+  null,
+  { href: '/admin/team', label: '👥 Team' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
