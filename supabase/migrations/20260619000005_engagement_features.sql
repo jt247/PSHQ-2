@@ -27,6 +27,7 @@ begin
 end;
 $$;
 
+drop trigger if exists touch_ratings_updated_at on public.ratings;
 create trigger touch_ratings_updated_at
   before update on public.ratings
   for each row execute procedure public.touch_ratings_updated_at();
@@ -44,6 +45,7 @@ begin
 end;
 $$;
 
+drop trigger if exists invalidate_ai_summary_on_content_update on public.content;
 create trigger invalidate_ai_summary_on_content_update
   after update on public.content
   for each row execute procedure public.invalidate_ai_summary();
