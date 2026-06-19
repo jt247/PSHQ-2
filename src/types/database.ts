@@ -15,9 +15,9 @@ export type Json =
 
 export type UserRole = 'user' | 'admin' | 'super_admin'
 export type TeamRole = 'product' | 'support' | 'growth'
-export type ContentType = 'article' | 'library_item' | 'initiative'
+export type ContentType = 'article' | 'ebook' | 'template' | 'course'
 export type ContentStatus = 'draft' | 'published' | 'archived'
-export type InteractionType = 'view' | 'click' | 'share' | 'download'
+export type InteractionType = 'view' | 'click' | 'share' | 'download' | 'unlock' | 'purchase'
 export type PurchaseStatus = 'pending' | 'success' | 'failed' | 'refunded'
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
@@ -56,8 +56,12 @@ export interface ContentRow {
   summary: string | null
   body: string | null
   cover_image_url: string | null
+  file_url: string | null
   author_id: string | null
   tags: string[]
+  pricing_type: 'free' | 'paid'
+  price_amount: number | null
+  currency: string
   view_count: number
   upvote_count: number
   comment_count: number
