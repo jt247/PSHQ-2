@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { NotificationBell } from '@/components/dashboard/NotificationBell'
+import { PshqLogoIcon } from '@/components/layout/PshqLogo'
 import { signOutAction } from '@/app/(auth)/actions/auth'
 import type { UserRow } from '@/types/database'
 
@@ -25,10 +26,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Sidebar */}
       <aside className="dash-sidebar">
         <div className="dash-sidebar-brand">
-          <Link href="/dashboard" style={{ textDecoration: 'none' }}>
-            <span className="text-headline-md" style={{ color: 'var(--color-ink-deep)', fontWeight: 700 }}>
-              Product Slice HQ
-            </span>
+          <Link href="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Dashboard overview">
+            <PshqLogoIcon size={36} color="#ffffff" />
           </Link>
         </div>
 
@@ -107,8 +106,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {/* Top bar */}
         <header className="dash-topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <Link href="/" style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', textDecoration: 'none', fontFamily: 'var(--font-sans)' }}>
-              ← Public site
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8125rem', color: 'var(--color-text-muted)', textDecoration: 'none', fontFamily: 'var(--font-sans)', transition: 'color 150ms' }}>
+              <span style={{ fontSize: '0.75rem' }}>←</span> Back to site
             </Link>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

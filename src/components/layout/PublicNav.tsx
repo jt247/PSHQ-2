@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { PshqLogoIcon } from '@/components/layout/PshqLogo'
 
 interface PublicNavProps {
   activeHref?: string
@@ -19,7 +20,10 @@ export async function PublicNav({ activeHref }: PublicNavProps) {
   return (
     <header className="pub-nav">
       <div className="pub-nav-inner">
-        <Link href="/" className="pub-nav-brand">Product Slice HQ</Link>
+        <Link href="/" className="pub-nav-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', textDecoration: 'none' }}>
+          <PshqLogoIcon size={28} color="var(--color-ink-deep)" />
+          <span>Product Slice HQ</span>
+        </Link>
 
         <nav className="pub-nav-links" aria-label="Main navigation">
           {NAV_LINKS.map(({ href, label }) => (
