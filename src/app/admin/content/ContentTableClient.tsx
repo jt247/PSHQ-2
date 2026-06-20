@@ -13,8 +13,8 @@ interface ContentRow {
   type: string
   status: ContentStatus
   pricing_type: string
-  price_amount: number | null
-  currency: string
+  selar_url: string | null
+  selar_clicks: number
   view_count: number
   upvote_count: number
   comment_count: number
@@ -39,10 +39,6 @@ const STATUS_BADGES: Record<string, string> = {
   archived:  'badge-red',
 }
 
-function formatNaira(kobo: number | null) {
-  if (!kobo) return '—'
-  return `₦${(kobo / 100).toLocaleString('en-NG', { minimumFractionDigits: 0 })}`
-}
 
 export function ContentTableClient({ content }: { content: ContentRow[] }) {
   const [statusFilter, setStatusFilter] = useState<'all' | ContentStatus>('all')
@@ -100,6 +96,7 @@ export function ContentTableClient({ content }: { content: ContentRow[] }) {
               <th>Type</th>
               <th>Status</th>
               <th>Pricing</th>
+              <th title="Selar Clicks">Selar ↗</th>
               <th title="Views">Views</th>
               <th title="Upvotes">↑</th>
               <th title="Comments">💬</th>
@@ -124,10 +121,11 @@ export function ContentTableClient({ content }: { content: ContentRow[] }) {
                 <td><span className={`badge ${STATUS_BADGES[row.status] ?? 'badge-gray'}`}>{row.status}</span></td>
                 <td>
                   {row.pricing_type === 'paid'
-                    ? <span className="badge badge-yellow">{formatNaira(row.price_amount)}</span>
+                    ? <span className="badge badge-yellow">{row.selar_url ? <a href={row.selar_url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>Selar ↗</a> : 'Paid'}</span>
                     : <span className="badge badge-gray">Free</span>
                   }
                 </td>
+                <td className="td-num">{row.selar_clicks}</td>
                 <td className="td-num">{row.view_count.toLocaleString()}</td>
                 <td className="td-num">{row.upvote_count}</td>
                 <td className="td-num">{row.comment_count}</td>

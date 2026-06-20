@@ -20,7 +20,6 @@ interface AudienceFilters {
   job_role?: string
   country?: string
   interest?: string
-  has_purchase?: boolean
   signup_from?: string
   signup_to?: string
 }
@@ -34,17 +33,6 @@ async function getMatchingUsers(filters: AudienceFilters): Promise<Array<{ id: s
   if (filters.interest) query = query.contains('areas_of_interest', [filters.interest])
   if (filters.signup_from) query = query.gte('created_at', filters.signup_from)
   if (filters.signup_to)   query = query.lte('created_at', filters.signup_to)
-
-  if (filters.has_purchase === true) {
-    const { data: buyers } = await service.from('purchases').select('user_id').eq('status', 'success')
-    const ids = [...new Set((buyers ?? []).map(b => b.user_id))]
-    if (ids.length === 0) return []
-    query = query.in('id', ids)
-  } else if (filters.has_purchase === false) {
-    const { data: buyers } = await service.from('purchases').select('user_id').eq('status', 'success')
-    const ids = [...new Set((buyers ?? []).map(b => b.user_id))]
-    if (ids.length > 0) query = query.not('id', 'in', `(${ids.join(',')})`)
-  }
 
   const { data } = await query
   return (data ?? []) as Array<{ id: string; email: string }>
@@ -73,10 +61,6 @@ export async function broadcastNotificationAction(
       signup_from: (formData.get('filter_from')     as string) || undefined,
       signup_to:   (formData.get('filter_to')       as string) || undefined,
     }
-    const hasPurchaseRaw = formData.get('filter_purchase') as string
-    if (hasPurchaseRaw === 'yes') filters.has_purchase = true
-    if (hasPurchaseRaw === 'no')  filters.has_purchase = false
-
     const users = await getMatchingUsers(filters)
     if (users.length === 0) return { error: 'No users match those filters.' }
 

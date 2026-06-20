@@ -13,25 +13,47 @@ export default async function AdminContentPage() {
   const profile = profileRaw as UserRow | null
   if (!profile || !['admin', 'super_admin'].includes(profile.role)) redirect('/dashboard')
 
-  // Fetch all content — admins see everything including drafts + archived
+  // Fetch all content with selar_click counts from the content_stats view
   const { data: content, error } = await supabase
-    .from('content')
+    .from('content_stats')
     .select('*')
     .order('created_at', { ascending: false })
 
-  if (error) throw new Error(error.message)
+  if (error) {
+    // Fallback to plain content table if view not yet migrated
+    const { data: fallback, error: fallbackError } = await supabase
+      .from('content')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (fallbackError) throw new Error(fallbackError.message)
+    const withDefaults = (fallback ?? []).map(c => ({ ...c, selar_clicks: 0 }))
+    return (
+      <div className="admin-page">
+        <div className="admin-page-header">
+          <div>
+            <h1>Content Command Center</h1>
+            <p className="admin-page-subtitle">{withDefaults.length} items total</p>
+          </div>
+          <Link href="/admin/content/new" className="btn-primary">+ New content</Link>
+        </div>
+        <ContentTableClient content={withDefaults} />
+      </div>
+    )
+  }
+
+  const withDefaults = (content ?? []).map(c => ({ ...c, selar_clicks: (c as Record<string, unknown>).selar_clicks ?? 0 }))
 
   return (
     <div className="admin-page">
       <div className="admin-page-header">
         <div>
           <h1>Content Command Center</h1>
-          <p className="admin-page-subtitle">{content?.length ?? 0} items total</p>
+          <p className="admin-page-subtitle">{withDefaults.length} items total</p>
         </div>
         <Link href="/admin/content/new" className="btn-primary">+ New content</Link>
       </div>
 
-      <ContentTableClient content={content ?? []} />
+      <ContentTableClient content={withDefaults} />
     </div>
   )
 }

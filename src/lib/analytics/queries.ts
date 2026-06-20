@@ -118,17 +118,84 @@ export async function getUserStats(days: Days) {
   }
 }
 
-/** Revenue stats from purchases */
-export async function getRevenueStats(days: Days) {
+/** Selar click counts — interest signal for paid resources */
+export async function getSelarClicks(days: Days) {
   const supabase = await createClient()
   const [allRes, windowRes] = await Promise.all([
-    supabase.from('purchases').select('amount').eq('status', 'completed'),
-    supabase.from('purchases').select('amount').eq('status', 'completed').gte('created_at', daysAgo(days)),
+    supabase.from('content_interactions').select('id', { count: 'exact', head: true }).eq('type', 'selar_click'),
+    supabase.from('content_interactions').select('id', { count: 'exact', head: true }).eq('type', 'selar_click').gte('created_at', daysAgo(days)),
   ])
+  return { total: allRes.count ?? 0, window: windowRes.count ?? 0 }
+}
 
-  const totalRevenue = ((allRes.data ?? []) as Array<{ amount: number }>).reduce((s, r) => s + r.amount, 0)
-  const windowRevenue = ((windowRes.data ?? []) as Array<{ amount: number }>).reduce((s, r) => s + r.amount, 0)
-  return { totalRevenue, windowRevenue, transactionCount: allRes.data?.length ?? 0 }
+/** Community engagement depth — avg content consumed per active member */
+export async function getEngagementDepth(days: Days) {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('content_interactions')
+    .select('user_id, type')
+    .not('user_id', 'is', null)
+    .in('type', ['view', 'unlock', 'download', 'ai_summary_requested'])
+    .gte('created_at', daysAgo(days))
+
+  const byUser = new Map<string, number>()
+  for (const r of (data ?? []) as Array<{ user_id: string }>) {
+    byUser.set(r.user_id, (byUser.get(r.user_id) ?? 0) + 1)
+  }
+  const values = Array.from(byUser.values())
+  const avgDepth = values.length > 0 ? Math.round(values.reduce((s, v) => s + v, 0) / values.length * 10) / 10 : 0
+  const engagedCount = values.filter(v => v >= 3).length
+  return { avgDepth, engagedCount, activeUsers: values.length }
+}
+
+/** Returning member rate — users active in 2+ distinct weeks within the period */
+export async function getReturningMemberRate(days: Days) {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('content_interactions')
+    .select('user_id, created_at')
+    .not('user_id', 'is', null)
+    .gte('created_at', daysAgo(days))
+
+  const userWeeks = new Map<string, Set<string>>()
+  for (const r of (data ?? []) as Array<{ user_id: string; created_at: string }>) {
+    const d = new Date(r.created_at)
+    const week = `${d.getFullYear()}-W${Math.ceil((d.getDate()) / 7)}`
+    const s = userWeeks.get(r.user_id) ?? new Set<string>()
+    s.add(week)
+    userWeeks.set(r.user_id, s)
+  }
+  const total = userWeeks.size
+  const returning = Array.from(userWeeks.values()).filter(s => s.size >= 2).length
+  return { total, returning, rate: total > 0 ? Math.round(returning / total * 100) : 0 }
+}
+
+/** Most discussed content — by comments + upvotes combined */
+export async function getMostDiscussed(limit = 5) {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('content')
+    .select('id, title, type, comment_count, upvote_count')
+    .eq('status', 'published')
+    .order('comment_count', { ascending: false })
+    .limit(limit * 2)
+
+  return ((data ?? []) as Array<{ id: string; title: string; type: string; comment_count: number; upvote_count: number }>)
+    .map(c => ({ ...c, discussion_score: c.comment_count * 2 + c.upvote_count }))
+    .sort((a, b) => b.discussion_score - a.discussion_score)
+    .slice(0, limit)
+}
+
+/** AI summary usage rate — % of views that trigger a summary request */
+export async function getAiSummaryRate(days: Days) {
+  const supabase = await createClient()
+  const [viewsRes, summaryRes] = await Promise.all([
+    supabase.from('content_interactions').select('id', { count: 'exact', head: true }).eq('type', 'view').gte('created_at', daysAgo(days)),
+    supabase.from('content_interactions').select('id', { count: 'exact', head: true }).eq('type', 'ai_summary_requested').gte('created_at', daysAgo(days)),
+  ])
+  const views = viewsRes.count ?? 0
+  const summaries = summaryRes.count ?? 0
+  return { views, summaries, rate: views > 0 ? Math.round(summaries / views * 100) : 0 }
 }
 
 /** Content performance breakdown by type */
@@ -226,26 +293,20 @@ export async function getSignupBreakdown() {
   }
 }
 
-/** Revenue by country / job_role (super_admin only) */
-export async function getRevenueBreakdown() {
+/** Selar clicks breakdown by content — top paid resources by interest signal */
+export async function getSelarClicksBreakdown(limit = 5) {
   const supabase = await createClient()
   const { data } = await supabase
-    .from('purchases')
-    .select('amount, user:user_id(country, job_role)')
-    .eq('status', 'completed')
+    .from('content_interactions')
+    .select('content_id, content:content_id(title, type)')
+    .eq('type', 'selar_click')
 
-  const byCountry: Record<string, number> = {}
-  const byRole: Record<string, number> = {}
-
-  for (const r of ((data as unknown[]) ?? []) as Array<{ amount: number; user: { country: string | null; job_role: string | null } | null }>) {
-    const c = r.user?.country ?? 'Unknown'
-    const j = r.user?.job_role ?? 'Unknown'
-    byCountry[c] = (byCountry[c] ?? 0) + r.amount
-    byRole[j] = (byRole[j] ?? 0) + r.amount
+  const counts = new Map<string, { title: string; type: string; count: number }>()
+  for (const r of ((data as unknown[]) ?? []) as Array<{ content_id: string; content: { title: string; type: string } | null }>) {
+    if (!r.content) continue
+    const e = counts.get(r.content_id) ?? { ...r.content, count: 0 }
+    e.count++
+    counts.set(r.content_id, e)
   }
-
-  return {
-    byCountry: Object.entries(byCountry).sort((a, b) => b[1] - a[1]).slice(0, 8),
-    byRole: Object.entries(byRole).sort((a, b) => b[1] - a[1]).slice(0, 8),
-  }
+  return Array.from(counts.values()).sort((a, b) => b.count - a.count).slice(0, limit)
 }

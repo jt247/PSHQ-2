@@ -10,7 +10,6 @@ const NAV_ITEMS: (null | { href: string; label: string })[] = [
   { href: '/admin/requests',      label: 'Content Requests' },
   { href: '/admin/notifications', label: 'Notifications' },
   { href: '/admin/quality',       label: 'Quality Control' },
-  { href: '/admin/payments',      label: 'Payments' },
   null,
   { href: '/admin/analytics/platform', label: '📊 Platform' },
   { href: '/admin/analytics/product',  label: '📈 Product' },

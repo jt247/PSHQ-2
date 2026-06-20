@@ -14,9 +14,8 @@ export default async function ArticlesPage() {
 
   const items = (rawItems ?? []).map(item => ({
     ...item,
-    pricing_type: 'free',
-    price_amount: null,
-    currency: 'NGN',
+    pricing_type: 'free' as const,
+    selar_url: null,
   }))
 
   return (

@@ -57,8 +57,7 @@ export default async function EditContentPage({ params }: Props) {
           file_url:        (item as Record<string, unknown>).file_url as string ?? '',
           tags:            item.tags ?? [],
           pricing_type:    ((item as Record<string, unknown>).pricing_type as 'free' | 'paid') ?? 'free',
-          price_amount:    (item as Record<string, unknown>).price_amount as number | null ?? null,
-          currency:        ((item as Record<string, unknown>).currency as string) ?? 'NGN',
+          selar_url:       ((item as Record<string, unknown>).selar_url as string | null) ?? null,
         }}
       />
     </div>

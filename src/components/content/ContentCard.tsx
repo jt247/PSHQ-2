@@ -8,8 +8,7 @@ interface ContentCardProps {
   summary: string | null
   cover_image_url: string | null
   pricing_type: string
-  price_amount: number | null
-  currency: string
+  selar_url?: string | null
   view_count: number
   upvote_count: number
   tags: string[]
@@ -30,17 +29,10 @@ const TYPE_PLACEHOLDER: Record<string, string> = {
   course: '🎓',
 }
 
-function formatPrice(amount: number | null, currency: string) {
-  if (!amount) return null
-  const symbol = currency === 'NGN' ? '₦' : currency + ' '
-  return `${symbol}${(amount / 100).toLocaleString()}`
-}
-
 export function ContentCard(props: ContentCardProps) {
-  const { title, slug, type, summary, cover_image_url, pricing_type, price_amount, currency, view_count, upvote_count, tags } = props
+  const { title, slug, type, summary, cover_image_url, pricing_type, view_count, upvote_count, tags } = props
   const href = type === 'article' ? `/articles/${slug}` : `/content/${slug}`
   const label = TYPE_LABELS[type] ?? type
-  const price = formatPrice(price_amount, currency)
 
   return (
     <article className="content-card">
@@ -74,9 +66,9 @@ export function ContentCard(props: ContentCardProps) {
           }}>
             {label}
           </span>
-          {pricing_type === 'paid' && price ? (
+          {pricing_type === 'paid' ? (
             <span className="badge" style={{ background: 'color-mix(in srgb, var(--color-accent-warm) 20%, transparent)', color: 'oklch(45% 0.12 85)' }}>
-              {price}
+              Available on Selar
             </span>
           ) : (
             <span className="badge" style={{ background: '#dcfce7', color: '#15803d' }}>Free</span>

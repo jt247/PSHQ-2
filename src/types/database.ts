@@ -1,5 +1,4 @@
-// Auto-derived from supabase/migrations/20260619000001_initial_schema.sql
-// Regenerate with: npx supabase gen types typescript --linked > src/types/database.ts
+// Auto-derived from supabase/migrations — regenerate with: npx supabase gen types typescript --linked > src/types/database.ts
 
 export type Json =
   | string
@@ -17,12 +16,11 @@ export type UserRole = 'user' | 'admin' | 'super_admin'
 export type TeamRole = 'product' | 'support' | 'growth'
 export type ContentType = 'article' | 'ebook' | 'template' | 'course'
 export type ContentStatus = 'draft' | 'published' | 'archived'
-export type InteractionType = 'view' | 'click' | 'share' | 'download' | 'unlock' | 'purchase' | 'ai_summary_requested'
-export type PurchaseStatus = 'pending' | 'success' | 'failed' | 'refunded'
+export type InteractionType = 'view' | 'click' | 'share' | 'download' | 'unlock' | 'ai_summary_requested' | 'selar_click'
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type RequestStatus = 'open' | 'in_review' | 'planned' | 'completed' | 'declined'
-export type NotificationType = 'system' | 'content' | 'support' | 'payment'
+export type NotificationType = 'system' | 'content' | 'support'
 
 // ============================================================
 // ROW TYPES  (what comes back from SELECT *)
@@ -60,8 +58,7 @@ export interface ContentRow {
   author_id: string | null
   tags: string[]
   pricing_type: 'free' | 'paid'
-  price_amount: number | null
-  currency: string
+  selar_url: string | null
   view_count: number
   upvote_count: number
   comment_count: number
@@ -115,21 +112,6 @@ export interface RatingRow {
   user_id: string
   rating: 1 | 2 | 3 | 4 | 5
   review_text: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface PurchaseRow {
-  id: string
-  user_id: string
-  amount: number
-  currency: string
-  status: PurchaseStatus
-  paystack_reference: string | null
-  paystack_access_code: string | null
-  item_type: string
-  item_id: string | null
-  metadata: Json | null
   created_at: string
   updated_at: string
 }
@@ -224,7 +206,7 @@ export type UserInsert = Pick<UserRow, 'id' | 'email'> &
   Partial<Pick<UserRow, 'full_name' | 'first_name' | 'last_name' | 'avatar_url' | 'bio' | 'role' | 'team_role' | 'job_role' | 'country' | 'areas_of_interest' | 'onboarding_done' | 'auth_provider'>>
 
 export type ContentInsert = Pick<ContentRow, 'title' | 'slug' | 'type'> &
-  Partial<Pick<ContentRow, 'status' | 'summary' | 'body' | 'cover_image_url' | 'author_id' | 'tags' | 'published_at'>>
+  Partial<Pick<ContentRow, 'status' | 'summary' | 'body' | 'cover_image_url' | 'file_url' | 'author_id' | 'tags' | 'pricing_type' | 'selar_url' | 'published_at'>>
 
 export type ContentInteractionInsert = Pick<ContentInteractionRow, 'content_id' | 'type'> &
   Partial<Pick<ContentInteractionRow, 'user_id' | 'session_id' | 'metadata'>>
@@ -238,9 +220,6 @@ export type AiSummaryInsert = Pick<AiSummaryRow, 'content_id' | 'summary_text' |
   Partial<Pick<AiSummaryRow, 'model_used'>>
 
 export type RatingInsert = Pick<RatingRow, 'content_id' | 'user_id' | 'rating'> & Partial<Pick<RatingRow, 'review_text'>>
-
-export type PurchaseInsert = Pick<PurchaseRow, 'user_id' | 'amount' | 'item_type'> &
-  Partial<Pick<PurchaseRow, 'currency' | 'status' | 'paystack_reference' | 'paystack_access_code' | 'item_id' | 'metadata'>>
 
 export type ContentRequestInsert = Pick<ContentRequestRow, 'user_id' | 'title'> &
   Partial<Pick<ContentRequestRow, 'description'>>
@@ -267,16 +246,13 @@ export type UserUpdate = Partial<Pick<UserRow, 'full_name' | 'first_name' | 'las
 
 export type ContentUpdate = Partial<Pick<ContentRow,
   'title' | 'slug' | 'type' | 'status' | 'summary' | 'body' |
-  'cover_image_url' | 'author_id' | 'tags' | 'published_at'
+  'cover_image_url' | 'file_url' | 'author_id' | 'tags' |
+  'pricing_type' | 'selar_url' | 'published_at'
 >>
 
 export type ContentCommentUpdate = Partial<Pick<ContentCommentRow, 'body' | 'is_deleted'>>
 
 export type RatingUpdate = Pick<RatingRow, 'rating'> & Partial<Pick<RatingRow, 'review_text'>>
-
-export type PurchaseUpdate = Partial<Pick<PurchaseRow,
-  'status' | 'paystack_reference' | 'paystack_access_code' | 'metadata'
->>
 
 export type ContentRequestUpdate = Partial<Pick<ContentRequestRow, 'title' | 'description' | 'status'>>
 
@@ -334,12 +310,6 @@ export interface Database {
         Update: RatingUpdate
         Relationships: []
       }
-      purchases: {
-        Row: PurchaseRow
-        Insert: PurchaseInsert
-        Update: PurchaseUpdate
-        Relationships: []
-      }
       content_requests: {
         Row: ContentRequestRow
         Insert: ContentRequestInsert
@@ -390,7 +360,6 @@ export interface Database {
       content_type: ContentType
       content_status: ContentStatus
       interaction_type: InteractionType
-      purchase_status: PurchaseStatus
       ticket_status: TicketStatus
       ticket_priority: TicketPriority
       request_status: RequestStatus

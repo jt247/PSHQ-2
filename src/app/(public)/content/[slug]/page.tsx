@@ -1,8 +1,7 @@
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-import type { UserRow } from '@/types/database'
-import { PurchaseButton } from '@/components/content/PurchaseButton'
+import { SelarButton } from '@/components/content/SelarButton'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -28,20 +27,12 @@ export default async function ContentDetailPage({ params }: Props) {
 
   const item = rawItem as Record<string, unknown>
   const pricingType = item.pricing_type as string ?? 'free'
-  const priceAmount = item.price_amount as number | null
-  const currency = item.currency as string ?? 'NGN'
+  const selarUrl = item.selar_url as string | null
   const fileUrl = item.file_url as string | null
 
-  // get current user
   const { data: { user } } = await supabase.auth.getUser()
 
-  let userProfile: UserRow | null = null
-  if (user) {
-    const { data: profileRaw } = await supabase.from('users').select('*').eq('id', user.id).single()
-    userProfile = profileRaw as UserRow | null
-  }
-
-  // record view
+  // Record view (non-fatal)
   try {
     const service = createServiceClient()
     await service.from('content_interactions').insert({
@@ -50,32 +41,14 @@ export default async function ContentDetailPage({ params }: Props) {
       type: 'view',
       metadata: {},
     })
-  } catch {
-    // non-fatal
-  }
+  } catch { /* non-fatal */ }
 
-  // check if user has unlocked this content
-  let hasUnlocked = false
-  if (user && pricingType === 'free') {
-    hasUnlocked = true
-  } else if (user && pricingType === 'paid') {
-    const { data: interaction } = await supabase
-      .from('content_interactions')
-      .select('id')
-      .eq('content_id', rawItem.id)
-      .eq('user_id', user.id)
-      .in('type', ['unlock', 'purchase'])
-      .limit(1)
-      .maybeSingle()
-    hasUnlocked = !!interaction
-  }
+  // Free content: any signed-in user has access
+  const hasAccess = user != null && pricingType === 'free'
 
   const label = TYPE_LABELS[rawItem.type as string] ?? rawItem.type as string
   const publishedDate = rawItem.published_at
     ? new Date(rawItem.published_at as string).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' })
-    : null
-  const priceFormatted = priceAmount
-    ? `${currency === 'NGN' ? '₦' : currency + ' '}${(priceAmount / 100).toLocaleString()}`
     : null
 
   return (
@@ -98,6 +71,8 @@ export default async function ContentDetailPage({ params }: Props) {
 
       <main style={{ maxWidth: '64rem', margin: '0 auto', padding: '3rem var(--spacing-margin-edge) 6rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: '3rem', alignItems: 'start' }}>
+
+          {/* Left — content info */}
           <div>
             {rawItem.cover_image_url && (
               <img
@@ -119,7 +94,7 @@ export default async function ContentDetailPage({ params }: Props) {
                 <span className="badge" style={{ background: '#dcfce7', color: '#15803d' }}>Free</span>
               ) : (
                 <span className="badge" style={{ background: 'color-mix(in srgb, var(--color-accent-warm) 25%, transparent)', color: 'oklch(45% 0.12 85)' }}>
-                  {priceFormatted}
+                  Available on Selar
                 </span>
               )}
             </div>
@@ -155,7 +130,7 @@ export default async function ContentDetailPage({ params }: Props) {
             )}
           </div>
 
-          {/* CTA card */}
+          {/* Right — CTA card */}
           <div style={{
             background: '#ffffff',
             border: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
@@ -164,10 +139,39 @@ export default async function ContentDetailPage({ params }: Props) {
             position: 'sticky',
             top: '5rem',
           }}>
-            {hasUnlocked && fileUrl ? (
+            {pricingType === 'paid' ? (
+              /* Paid — link out to Selar, no unlock state */
+              <>
+                <p className="text-label-sm" style={{
+                  color: 'var(--color-text-muted)',
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                  margin: '0 0 0.5rem',
+                }}>
+                  Available on Selar
+                </p>
+                <p className="text-body-sm" style={{ color: 'var(--color-text-muted)', margin: '0 0 1.25rem', lineHeight: 1.65 }}>
+                  This resource is hosted and sold on Selar. You&apos;ll complete your purchase there and receive access directly.
+                </p>
+                {selarUrl ? (
+                  <SelarButton
+                    contentId={rawItem.id as string}
+                    selarUrl={selarUrl}
+                    label={label}
+                  />
+                ) : (
+                  <p className="text-body-sm" style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                    Selar link coming soon.
+                  </p>
+                )}
+                <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', textAlign: 'center', margin: '0.875rem 0 0' }}>
+                  Secure checkout on Selar
+                </p>
+              </>
+            ) : hasAccess && fileUrl ? (
+              /* Free + signed in + file available */
               <>
                 <p className="text-label-sm" style={{ color: '#15803d', fontWeight: 700, margin: '0 0 1rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  ✓ You have access
+                  ✓ Free to access
                 </p>
                 <a
                   href={fileUrl}
@@ -179,38 +183,21 @@ export default async function ContentDetailPage({ params }: Props) {
                   Download {label}
                 </a>
               </>
-            ) : hasUnlocked && !fileUrl ? (
+            ) : hasAccess && !fileUrl ? (
+              /* Free + signed in, no file yet */
               <p className="text-body-sm" style={{ color: '#15803d', fontWeight: 600, margin: 0 }}>
                 Free resource — download link coming soon.
               </p>
-            ) : !user ? (
+            ) : (
+              /* Not signed in */
               <>
                 <p className="text-body-sm" style={{ color: 'var(--color-text-muted)', margin: '0 0 1.25rem', lineHeight: 1.65 }}>
-                  {pricingType === 'free'
-                    ? 'Sign in to access this free resource.'
-                    : `Sign in to purchase this ${label.toLowerCase()} for ${priceFormatted}.`}
+                  Sign in to access this free {label.toLowerCase()}.
                 </p>
                 <Link href={`/sign-in?redirect=/content/${slug}`} className="btn-primary" style={{ display: 'block', textAlign: 'center' }}>
                   Sign in to access
                 </Link>
               </>
-            ) : pricingType === 'paid' ? (
-              <>
-                <p className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', margin: '0 0 0.25rem', fontFamily: 'var(--font-serif)' }}>
-                  {priceFormatted}
-                </p>
-                <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', margin: '0 0 1.25rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  One-time purchase
-                </p>
-                <PurchaseButton contentId={rawItem.id as string} priceFormatted={priceFormatted ?? ''} />
-                <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', textAlign: 'center', margin: '0.875rem 0 0' }}>
-                  Secure payment via Paystack
-                </p>
-              </>
-            ) : (
-              <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>
-                Something went wrong. Please refresh.
-              </p>
             )}
           </div>
         </div>
@@ -218,3 +205,4 @@ export default async function ContentDetailPage({ params }: Props) {
     </div>
   )
 }
+

@@ -22,7 +22,6 @@ export async function createContentAction(formData: FormData) {
   requireAdmin(profile?.role ?? null)
 
   const pricingType = formData.get('pricing_type') as string
-  const priceRaw    = formData.get('price_amount') as string
 
   const payload = {
     title:           formData.get('title') as string,
@@ -35,8 +34,7 @@ export async function createContentAction(formData: FormData) {
     file_url:        (formData.get('file_url') as string) || null,
     tags:            ((formData.get('tags') as string) || '').split(',').map(t => t.trim()).filter(Boolean),
     pricing_type:    pricingType || 'free',
-    price_amount:    pricingType === 'paid' && priceRaw ? parseInt(priceRaw, 10) : null,
-    currency:        (formData.get('currency') as string) || 'NGN',
+    selar_url:       pricingType === 'paid' ? ((formData.get('selar_url') as string) || null) : null,
     author_id:       user.id,
   }
 
@@ -60,7 +58,6 @@ export async function updateContentAction(id: string, formData: FormData) {
   requireAdmin(profile?.role ?? null)
 
   const pricingType = formData.get('pricing_type') as string
-  const priceRaw    = formData.get('price_amount') as string
 
   const payload = {
     title:           formData.get('title') as string,
@@ -72,8 +69,7 @@ export async function updateContentAction(id: string, formData: FormData) {
     file_url:        (formData.get('file_url') as string) || null,
     tags:            ((formData.get('tags') as string) || '').split(',').map(t => t.trim()).filter(Boolean),
     pricing_type:    pricingType || 'free',
-    price_amount:    pricingType === 'paid' && priceRaw ? parseInt(priceRaw, 10) : null,
-    currency:        (formData.get('currency') as string) || 'NGN',
+    selar_url:       pricingType === 'paid' ? ((formData.get('selar_url') as string) || null) : null,
   }
 
   const { error } = await supabase.from('content').update(payload).eq('id', id)

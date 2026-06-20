@@ -1,51 +1,48 @@
 'use client'
 
 import Link from 'next/link'
-import { PieStyleBar, HorizontalBarChart } from '@/components/analytics/Charts'
-
-interface RevenueIntel {
-  avgOrderValue: number
-  repeatBuyerPct: number
-  byCountry: Array<[string, number]>
-  byRole: Array<[string, number]>
-  topContent: Array<{ title: string; type: string; revenue: number; count: number }>
-}
+import { PieStyleBar } from '@/components/analytics/Charts'
 
 interface Props {
   data: {
     days: number
-    isSuperAdmin: boolean
-    business: {
-      totalUsers: number; activeUsers7d: number; newUsers: number
-      totalRevenue: number; windowRevenue: number; conversionRate: number; arpu: number
+    community: {
+      totalMembers: number
+      activeMembers7d: number
+      newMembers: number
+      selarClicks30d: number
+      engagementRate: number
+      returningMemberRate: number
     }
-    growth: { activationRate: number; purchaseRate: number; repeatBuyerPct: number }
+    engagement: {
+      activationRate: number
+      avgDepth: number
+      engagedUserPct: number
+      aiSummaryRate: number
+    }
     content: {
       topViewed: Array<{ title: string; type: string; count: number }>
       topUnlocked: Array<{ title: string; type: string; count: number }>
-      topPurchased: Array<{ title: string; type: string; count: number }>
       typeBreakdown: Array<{ type: string; count: number }>
+      mostDiscussed: Array<{ title: string; type: string; comment_count: number; upvote_count: number; discussion_score: number }>
+      topSelarClicks: Array<{ title: string; type: string; count: number }>
     }
-    userBehavior: { avgInteractionsPerUser: number; engagedUserPct: number; avgOrderValue: number }
-    revenueIntel: RevenueIntel | null
   }
 }
 
 const DAY_OPTIONS = [7, 14, 30, 90] as const
-const fmt = (n: number) => `₦${n.toLocaleString('en-NG')}`
 const pct = (n: number) => `${n}%`
 
 export function ProductClient({ data }: Props) {
-  const { days, isSuperAdmin, business, growth, content, userBehavior, revenueIntel } = data
-
+  const { days, community, engagement, content } = data
   const typeRows = content.typeBreakdown.map(t => ({ label: t.type, value: t.count }))
 
   return (
     <div style={page}>
       <div style={titleRow}>
         <div>
-          <h1 style={h1}>Product Analytics</h1>
-          <p style={sub}>Revenue, content performance, and user behavior.</p>
+          <h1 style={h1}>Community Health Overview</h1>
+          <p style={sub}>Member engagement, content consumption, and community signals.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.375rem' }}>
           {DAY_OPTIONS.map(d => (
@@ -54,25 +51,25 @@ export function ProductClient({ data }: Props) {
         </div>
       </div>
 
-      {/* Business Overview */}
-      <Section title="Business overview">
-        <div style={grid4}>
-          <StatCard label="Total users" value={business.totalUsers.toLocaleString()} />
-          <StatCard label="Active users (7d)" value={business.activeUsers7d.toLocaleString()} />
-          <StatCard label={`New users (${days}d)`} value={business.newUsers.toLocaleString()} />
-          <StatCard label="Total revenue" value={fmt(Math.round(business.totalRevenue / 100))} />
-          <StatCard label={`Revenue (${days}d)`} value={fmt(Math.round(business.windowRevenue / 100))} />
-          <StatCard label="Purchase conversion" value={pct(business.conversionRate)} />
-          <StatCard label="ARPU" value={fmt(business.arpu)} note="all-time" />
+      {/* Community Health */}
+      <Section title="Community health">
+        <div style={grid3Col}>
+          <StatCard label="Total members" value={community.totalMembers.toLocaleString()} />
+          <StatCard label="Active members (7d)" value={community.activeMembers7d.toLocaleString()} />
+          <StatCard label={`New members (${days}d)`} value={community.newMembers.toLocaleString()} />
+          <StatCard label={`Selar clicks (${days}d)`} value={community.selarClicks30d.toLocaleString()} note="Interest signal for paid resources" />
+          <StatCard label="Engagement rate" value={pct(community.engagementRate)} note="Engaged members / active members" />
+          <StatCard label="Returning member rate" value={pct(community.returningMemberRate)} note="Active across 2+ weeks" />
         </div>
       </Section>
 
-      {/* Growth Metrics */}
-      <Section title="Growth metrics">
-        <div style={grid3}>
-          <MetricRow label="Activation rate (signup → first unlock)" value={pct(growth.activationRate)} />
-          <MetricRow label="Purchase rate (signup → purchase)" value={pct(growth.purchaseRate)} />
-          <MetricRow label="Repeat buyer rate" value={pct(growth.repeatBuyerPct)} />
+      {/* Engagement Depth */}
+      <Section title="Engagement depth">
+        <div style={grid2Col}>
+          <MetricRow label="Activation rate (signup → first unlock)" value={pct(engagement.activationRate)} />
+          <MetricRow label="Avg content interactions per active member" value={String(engagement.avgDepth)} />
+          <MetricRow label="Engaged members (3+ interactions)" value={pct(engagement.engagedUserPct)} />
+          <MetricRow label="AI summary usage rate (summaries / views)" value={pct(engagement.aiSummaryRate)} />
         </div>
       </Section>
 
@@ -90,8 +87,17 @@ export function ProductClient({ data }: Props) {
         </div>
         <div style={{ ...grid2, marginTop: '1rem' }}>
           <div>
-            <h4 style={sub2}>Most purchased</h4>
-            <ContentRankList items={content.topPurchased} metric="purchases" />
+            <h4 style={sub2}>Most discussed (comments + upvotes)</h4>
+            {content.mostDiscussed.length === 0
+              ? <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No discussions yet.</p>
+              : content.mostDiscussed.map((c, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0', borderBottom: '1px solid #f9fafb' }}>
+                  <span style={{ color: '#d1d5db', fontSize: '0.75rem', width: '0.875rem' }}>{i + 1}</span>
+                  <span style={{ flex: 1, fontSize: '0.8125rem', color: '#111827', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#6b7280', flexShrink: 0 }}>💬 {c.comment_count} · ↑ {c.upvote_count}</span>
+                </div>
+              ))
+            }
           </div>
           <div>
             <h4 style={sub2}>Content by type</h4>
@@ -100,67 +106,25 @@ export function ProductClient({ data }: Props) {
         </div>
       </Section>
 
-      {/* User Behavior */}
-      <Section title="User behavior">
-        <div style={grid3}>
-          <MetricRow label="Avg interactions / user" value={String(userBehavior.avgInteractionsPerUser)} />
-          <MetricRow label="Engaged users (3+ interactions)" value={pct(userBehavior.engagedUserPct)} />
-          <MetricRow label="Avg order value" value={fmt(userBehavior.avgOrderValue)} />
-        </div>
-        <p style={{ fontSize: '0.75rem', color: '#9ca3af', margin: '0.75rem 0 0' }}>
-          Engaged threshold: 3+ interactions in the selected period. Adjust in <code>queries.ts</code>.
+      {/* Selar Interest Signals */}
+      <Section title="Selar interest signals">
+        <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0 0 0.875rem' }}>
+          Click-throughs to Selar listings — not revenue, just interest. Helps prioritise which paid resources resonate with the community.
         </p>
+        {content.topSelarClicks.length === 0 ? (
+          <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No Selar clicks recorded yet.</p>
+        ) : (
+          <ContentRankList items={content.topSelarClicks} metric="clicks" />
+        )}
       </Section>
-
-      {/* Revenue Intelligence — super_admin only */}
-      {isSuperAdmin && revenueIntel ? (
-        <Section title="Revenue intelligence" badge="super_admin">
-          <div style={grid2}>
-            <div>
-              <h4 style={sub2}>Revenue by country</h4>
-              <PieStyleBar data={revenueIntel.byCountry.map(([label, value]) => ({ label, value: Math.round(value / 100) }))} valueFormat={v => fmt(v)} />
-            </div>
-            <div>
-              <h4 style={sub2}>Revenue by job role</h4>
-              <PieStyleBar data={revenueIntel.byRole.map(([label, value]) => ({ label, value: Math.round(value / 100) }))} valueFormat={v => fmt(v)} />
-            </div>
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <h4 style={sub2}>Top revenue content</h4>
-            {revenueIntel.topContent.length === 0 ? (
-              <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>No completed purchases yet.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                {revenueIntel.topContent.map((c, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', borderBottom: '1px solid #f9fafb' }}>
-                    <span style={{ color: '#d1d5db', fontSize: '0.8125rem', width: '1rem' }}>{i + 1}</span>
-                    <span style={{ flex: 1, fontSize: '0.875rem', color: '#111827', fontWeight: 500 }}>{c.title}</span>
-                    <span style={{ fontSize: '0.8125rem', color: '#9ca3af' }}>{c.count} sales</span>
-                    <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#111827' }}>{fmt(Math.round(c.revenue / 100))}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </Section>
-      ) : !isSuperAdmin ? (
-        <div style={{ padding: '1.25rem', background: '#fafafa', border: '1px solid #e5e7eb', borderRadius: '10px', textAlign: 'center' }}>
-          <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>
-            Revenue Intelligence is visible to super_admins only.
-          </p>
-        </div>
-      ) : null}
     </div>
   )
 }
 
-function Section({ title, badge, children }: { title: string; badge?: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1.25rem 1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-        <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: '#111827', margin: 0 }}>{title}</h2>
-        {badge && <span style={{ padding: '0.1rem 0.4rem', background: '#fef3c7', color: '#b45309', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600 }}>{badge}</span>}
-      </div>
+      <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: '#111827', margin: '0 0 1rem' }}>{title}</h2>
       {children}
     </div>
   )
@@ -171,7 +135,7 @@ function StatCard({ label, value, note }: { label: string; value: string; note?:
     <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '1rem' }}>
       <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>{value}</div>
       <div style={{ fontSize: '0.8125rem', color: '#6b7280', marginTop: '0.2rem' }}>{label}</div>
-      {note && <div style={{ fontSize: '0.75rem', color: '#d1d5db' }}>{note}</div>}
+      {note && <div style={{ fontSize: '0.75rem', color: '#d1d5db', marginTop: '0.125rem' }}>{note}</div>}
     </div>
   )
 }
@@ -209,6 +173,6 @@ const h1: React.CSSProperties = { fontSize: '1.5rem', fontWeight: 700, color: '#
 const sub: React.CSSProperties = { color: '#6b7280', fontSize: '0.875rem', margin: '0.25rem 0 0' }
 const sub2: React.CSSProperties = { fontSize: '0.8125rem', fontWeight: 600, color: '#374151', margin: '0 0 0.625rem', textTransform: 'uppercase', letterSpacing: '0.04em' }
 const titleRow: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }
-const grid4: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }
-const grid3: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '0' }
+const grid3Col: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }
+const grid2Col: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '0' }
 const grid2: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }

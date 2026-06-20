@@ -18,8 +18,7 @@ interface ContentFormProps {
     file_url?: string
     tags?: string[]
     pricing_type?: 'free' | 'paid'
-    price_amount?: number | null
-    currency?: string
+    selar_url?: string | null
   }
   createAction?: (formData: FormData) => Promise<void>
 }
@@ -143,21 +142,16 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
         </div>
       </div>
 
-      {/* Price fields — only when paid */}
+      {/* Selar URL — only when paid */}
       {pricingType === 'paid' && (
-        <div className="form-row">
-          <div className="form-field">
-            <label htmlFor="price_amount">Price (in smallest unit, e.g. kobo) *</label>
-            <input
-              id="price_amount" name="price_amount" type="number" min="1" required
-              defaultValue={defaultValues.price_amount ?? ''}
-              placeholder="e.g. 500000 = ₦5,000"
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="currency">Currency</label>
-            <input id="currency" name="currency" type="text" defaultValue={defaultValues.currency ?? 'NGN'} />
-          </div>
+        <div className="form-field">
+          <label htmlFor="selar_url">Selar listing URL *</label>
+          <input
+            id="selar_url" name="selar_url" type="url"
+            defaultValue={defaultValues.selar_url ?? ''}
+            placeholder="https://selar.co/..."
+          />
+          <span className="hint">This is the Selar page where members go to get this resource. No pricing is set here.</span>
         </div>
       )}
 

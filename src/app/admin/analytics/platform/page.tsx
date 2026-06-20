@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { UserRow } from '@/types/database'
 import {
   getDailyViews, getInteractionsByType, getTopContent, getDailySignups,
-  daysAgo, buildDailySeries, type Days,
+  daysAgo, type Days,
 } from '@/lib/analytics/queries'
 import { PlatformClient } from './client'
 
@@ -84,13 +84,7 @@ export default async function PlatformAnalyticsPage({ searchParams }: PageProps)
   const views = totalViewsRes.count ?? 0
   const signups = newUsersRes.count ?? 0
   const unlocks = interactionTypes['unlock'] ?? 0
-  const purchases = interactionTypes['purchase'] ?? 0
-
-  // Retention buckets using daily views as a proxy
-  const viewsByDay = new Map(dailyViews.map(d => [d.day, d.count]))
-  const day1Views = dailyViews.slice(-2, -1)[0]?.count ?? 0
-  const day7Views = dailyViews.slice(-7).reduce((s, d) => s + d.count, 0)
-  const day30Views = dailyViews.reduce((s, d) => s + d.count, 0)
+  const selarClicks = interactionTypes['selar_click'] ?? 0
 
   const payload = {
     days,
@@ -111,7 +105,7 @@ export default async function PlatformAnalyticsPage({ searchParams }: PageProps)
       { label: 'Signups started', value: Math.round(signups * 1.4) },
       { label: 'Signup completed', value: signups },
       { label: 'First unlock', value: unlocks },
-      { label: 'First purchase', value: purchases },
+      { label: 'Selar link clicks', value: selarClicks },
     ],
   }
 
