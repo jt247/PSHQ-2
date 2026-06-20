@@ -1,0 +1,470 @@
+/* ── Initiatives index page ── */
+
+.initiatives-hero {
+  padding: 6rem var(--spacing-margin-edge) 3rem;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.initiatives-hero-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent-warm);
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 1.25rem;
+}
+
+.initiatives-hero-eyebrow::before {
+  content: '';
+  display: block;
+  width: 2rem;
+  height: 2px;
+  background: var(--color-accent-warm);
+}
+
+.initiatives-hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--color-ink-deep);
+  margin: 0 0 1.5rem;
+  max-width: 18ch;
+}
+
+.initiatives-hero-lead {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--color-text-muted);
+  line-height: 1.75;
+  max-width: 52ch;
+  margin: 0;
+}
+
+/* ── Stack layout ── */
+.initiatives-stack {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 var(--spacing-margin-edge) 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Single initiative row ── */
+.initiative-row {
+  display: grid;
+  grid-template-columns: 1fr 2.5fr;
+  gap: 3rem;
+  padding: 3.5rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink-deep) 10%, transparent);
+  text-decoration: none;
+  color: inherit;
+  transition: background 200ms ease;
+  position: relative;
+}
+
+.initiative-row:last-child {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink-deep) 10%, transparent);
+}
+
+.initiative-row:hover {
+  background: color-mix(in srgb, var(--color-ink-deep) 2%, transparent);
+}
+
+.initiative-row-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+.initiative-number {
+  font-family: var(--font-serif);
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--color-ink-deep) 8%, transparent);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.initiative-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.25rem;
+  width: fit-content;
+}
+
+.initiative-status-badge.live {
+  background: color-mix(in srgb, #16a34a 10%, transparent);
+  color: #15803d;
+}
+
+.initiative-status-badge.coming-soon {
+  background: color-mix(in srgb, var(--color-ink-deep) 6%, transparent);
+  color: var(--color-text-muted);
+}
+
+.initiative-status-badge::before {
+  content: '';
+  display: block;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.initiative-row-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.initiative-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-deep);
+  margin: 0;
+  transition: color 200ms ease;
+}
+
+.initiative-row:hover .initiative-title {
+  color: color-mix(in srgb, var(--color-ink-deep) 75%, var(--color-accent-warm));
+}
+
+.initiative-description {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  line-height: 1.75;
+  margin: 0;
+  max-width: 60ch;
+}
+
+.initiative-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink-deep);
+  margin-top: 0.5rem;
+  transition: gap 200ms ease;
+}
+
+.initiative-row:hover .initiative-cta {
+  gap: 0.75rem;
+}
+
+/* ── Edition pill in content area ── */
+.initiative-edition-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: color-mix(in srgb, var(--color-accent-warm) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-warm) 30%, transparent);
+  color: color-mix(in srgb, var(--color-ink-deep) 90%, var(--color-accent-warm));
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.25rem;
+  width: fit-content;
+}
+
+/* ── Upcoming divider ── */
+.initiatives-upcoming-divider {
+  max-width: 80rem;
+  margin: 0 auto 1rem;
+  padding: 0 var(--spacing-margin-edge);
+}
+
+.initiatives-upcoming-divider p {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── CTA band ── */
+.initiatives-cta-band {
+  background: var(--color-ink-deep);
+  padding: 5rem var(--spacing-margin-edge);
+}
+
+.initiatives-cta-band-inner {
+  max-width: 80rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3rem;
+}
+
+.initiatives-cta-band h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  margin: 0;
+  max-width: 30ch;
+}
+
+.initiatives-cta-band p {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: rgba(255,255,255,0.6);
+  margin: 0.75rem 0 0;
+}
+
+@media (max-width: 768px) {
+  .initiative-row {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .initiative-number {
+    font-size: 2rem;
+  }
+
+  .initiatives-cta-band-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ── Detail page ── */
+.initiative-detail-hero {
+  background: var(--color-ink-deep);
+  padding: 7rem var(--spacing-margin-edge) 5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.initiative-detail-hero::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 50%;
+  height: 140%;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--color-accent-warm) 12%, transparent) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.initiative-detail-hero-inner {
+  max-width: 80rem;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.initiative-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  margin-bottom: 2rem;
+  transition: color 150ms ease;
+}
+
+.initiative-detail-back:hover { color: rgba(255,255,255,0.85); }
+
+.initiative-detail-hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin: 0 0 1.5rem;
+  max-width: 22ch;
+}
+
+.initiative-detail-lead {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.75;
+  color: rgba(255,255,255,0.72);
+  max-width: 56ch;
+  margin: 0;
+}
+
+.initiative-detail-body {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 5rem var(--spacing-margin-edge);
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+.initiative-detail-editions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.initiative-detail-editions h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-ink-deep);
+  margin: 0 0 0.25rem;
+}
+
+.edition-card {
+  border: 1px solid color-mix(in srgb, var(--color-ink-deep) 10%, transparent);
+  border-radius: 0.5rem;
+  padding: 1.75rem;
+  background: var(--color-surface-container-lowest);
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.edition-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.edition-number {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.edition-title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-ink-deep);
+  margin: 0;
+}
+
+.edition-focus {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.edition-stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink-deep) 7%, transparent);
+}
+
+.edition-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.edition-stat-value {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-ink-deep);
+}
+
+.edition-stat-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* sidebar */
+.initiative-detail-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: sticky;
+  top: 2rem;
+}
+
+.sidebar-block {
+  background: var(--color-paper-darker);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sidebar-block h3 {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.sidebar-block p {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  color: var(--color-ink-deep);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* placeholder state — no editions seeded yet */
+.initiative-placeholder-note {
+  padding: 2.5rem;
+  border: 1.5px dashed color-mix(in srgb, var(--color-ink-deep) 12%, transparent);
+  border-radius: 0.5rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+@media (max-width: 900px) {
+  .initiative-detail-body {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .initiative-detail-sidebar {
+    position: static;
+  }
+}

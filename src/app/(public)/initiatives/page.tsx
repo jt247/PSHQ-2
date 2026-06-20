@@ -1,142 +1,148 @@
+import Link from 'next/link'
+import { createServiceClient } from '@/lib/supabase/server'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+import './initiatives.css'
 
-interface Initiative {
+interface LatestEdition {
+  status: 'completed' | 'open' | 'coming_soon'
+  edition_number: string
   title: string
-  category: string
-  description: string
-  status: string
-  selarUrl?: string
-  selarLabel?: string
 }
 
-const INITIATIVES: Initiative[] = [
-  {
-    title: 'Product Lab with JT',
-    category: 'Cohort',
-    description: 'A hands-on cohort for product practitioners who want to go deeper — building real intuition for strategy, execution, and career growth through live sessions, peer critique, and direct access to JT.',
-    status: 'Active',
-    selarUrl: 'https://selar.co/productlabwithjt',
-    selarLabel: 'Join on Selar',
-  },
-  {
-    title: 'PM Mentorship Network',
-    category: 'Community',
-    description: 'Connecting emerging product managers with experienced practitioners across Africa for 1:1 mentorship and career guidance.',
-    status: 'Active',
-  },
-  {
-    title: 'Open PM Curriculum',
-    category: 'Education',
-    description: 'A freely available, community-maintained curriculum covering product fundamentals, analytics, strategy, and leadership.',
-    status: 'Active',
-  },
-  {
-    title: 'Startup PM Residency',
-    category: 'Career',
-    description: 'A structured 3-month programme placing talented PMs inside early-stage startups to gain real-world experience.',
-    status: 'Coming Soon',
-  },
-  {
-    title: 'Product Case Library',
-    category: 'Resources',
-    description: 'A growing archive of Africa-specific product case studies documenting how teams built, iterated, and scaled their products.',
-    status: 'Active',
-  },
-]
+interface Initiative {
+  id: string
+  slug: string
+  title: string
+  short_description: string | null
+  status: 'live' | 'coming_soon' | 'archived'
+  display_order: number
+  latest_edition: LatestEdition | null
+}
 
-export default function InitiativesPage() {
+async function getInitiatives(): Promise<Initiative[]> {
+  const service = createServiceClient()
+
+  const { data: rows, error } = await service
+    .from('initiatives')
+    .select(`
+      id, slug, title, short_description, status, display_order,
+      initiative_editions (
+        edition_number, title, status, display_order
+      )
+    `)
+    .neq('status', 'archived')
+    .order('display_order', { ascending: true })
+
+  if (error || !rows) return []
+
+  return rows.map((row) => {
+    const editions = (row.initiative_editions ?? []) as LatestEdition[]
+    const sorted = [...editions].sort((a, b) => {
+      const aOrder = (a as unknown as { display_order: number }).display_order
+      const bOrder = (b as unknown as { display_order: number }).display_order
+      return bOrder - aOrder
+    })
+    return {
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      short_description: row.short_description,
+      status: row.status as Initiative['status'],
+      display_order: row.display_order,
+      latest_edition: sorted[0] ?? null,
+    }
+  })
+}
+
+function editionBadgeLabel(edition: LatestEdition): string {
+  const map: Record<LatestEdition['status'], string> = {
+    open: 'Open',
+    coming_soon: 'Coming Soon',
+    completed: 'Edition Completed',
+  }
+  return `${edition.edition_number} · ${map[edition.status]}`
+}
+
+function StatusBadge({ status }: { status: Initiative['status'] }) {
+  const label = status === 'live' ? 'Live' : 'Coming Soon'
+  return (
+    <span className={`initiative-status-badge ${status === 'live' ? 'live' : 'coming-soon'}`}>
+      {label}
+    </span>
+  )
+}
+
+export default async function InitiativesPage() {
+  const initiatives = await getInitiatives()
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
       <PublicNav activeHref="/initiatives" />
 
-      <main style={{ flex: 1, maxWidth: '80rem', margin: '0 auto', width: '100%', padding: '5rem var(--spacing-margin-edge)' }}>
-        {/* Header */}
-        <section style={{ maxWidth: '48ch', marginBottom: '4rem' }}>
-          <p className="text-label-sm" style={{ color: 'var(--color-accent-warm)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.75rem' }}>
-            Our Work
-          </p>
-          <h1 className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', marginBottom: '1rem' }}>Initiatives</h1>
-          <p className="text-body-lg" style={{ color: 'var(--color-text-muted)', lineHeight: 1.75 }}>
-            Beyond content, we run programmes designed to build the professional infrastructure that product practitioners in Africa need to grow and thrive.
+      <main style={{ flex: 1 }}>
+        {/* Hero */}
+        <section className="initiatives-hero">
+          <p className="initiatives-hero-eyebrow">Our Work</p>
+          <h1>Initiatives &amp; Programmes</h1>
+          <p className="initiatives-hero-lead">
+            Beyond content — structured programmes that build the professional infrastructure
+            product practitioners in Africa need to grow, collaborate, and ship real work.
           </p>
         </section>
 
-        {/* Initiatives grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))', gap: '1.5rem' }}>
-          {INITIATIVES.map(item => (
-            <article key={item.title} style={{
-              background: '#ffffff',
-              border: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
-              borderRadius: '0.5rem',
-              padding: '1.75rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.875rem',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
-                <span className="text-label-sm" style={{
-                  background: 'color-mix(in srgb, var(--color-ink-deep) 8%, transparent)',
-                  color: 'var(--color-ink-deep)',
-                  padding: '0.1875rem 0.625rem',
-                  borderRadius: '0.125rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                }}>
-                  {item.category}
+        {/* Initiative rows */}
+        <section className="initiatives-stack" aria-label="Initiatives">
+          {initiatives.map((item, idx) => (
+            <Link
+              key={item.id}
+              href={`/initiatives/${item.slug}`}
+              className="initiative-row"
+              aria-label={`View ${item.title}`}
+            >
+              <div className="initiative-row-meta">
+                <span className="initiative-number" aria-hidden="true">
+                  {String(idx + 1).padStart(2, '0')}
                 </span>
-                <span className="text-label-sm" style={{
-                  color: item.status === 'Active' ? '#15803d' : 'var(--color-text-muted)',
-                  fontWeight: 600,
-                }}>
-                  {item.status === 'Active' ? '● Active' : '○ Coming Soon'}
-                </span>
+                <StatusBadge status={item.status} />
               </div>
 
-              <h2 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>
-                {item.title}
-              </h2>
-
-              <p className="text-body-md" style={{ color: 'var(--color-text-muted)', lineHeight: 1.65, margin: 0 }}>
-                {item.description}
-              </p>
-
-              {item.selarUrl && (
-                <a
-                  href={item.selarUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary"
-                  style={{ alignSelf: 'flex-start', marginTop: '0.25rem' }}
-                >
-                  {item.selarLabel ?? 'Join on Selar'} →
-                </a>
-              )}
-            </article>
+              <div className="initiative-row-content">
+                {item.latest_edition && (
+                  <span className="initiative-edition-pill">
+                    {editionBadgeLabel(item.latest_edition)}
+                  </span>
+                )}
+                <h2 className="initiative-title">{item.title}</h2>
+                {item.short_description && (
+                  <p className="initiative-description">{item.short_description}</p>
+                )}
+                <span className="initiative-cta">
+                  Explore initiative <span aria-hidden="true">→</span>
+                </span>
+              </div>
+            </Link>
           ))}
-        </div>
 
-        {/* CTA */}
-        <section style={{
-          marginTop: '4rem',
-          padding: '3rem',
-          background: 'var(--color-ink-deep)',
-          borderRadius: '0.75rem',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          gap: '1.25rem',
-        }}>
-          <h2 className="text-headline-lg" style={{ color: '#ffffff', margin: 0, maxWidth: '32ch' }}>
-            Want to get involved or propose a new initiative?
-          </h2>
-          <p className="text-body-md" style={{ color: 'rgba(255,255,255,0.7)', margin: 0 }}>
-            We&apos;re always looking for collaborators, mentors, and contributors.
-          </p>
-          <a href="/contact" className="btn-accent">
-            Reach out →
-          </a>
+          {initiatives.length === 0 && (
+            <p style={{ padding: '3rem 0', color: 'var(--color-text-muted)', fontFamily: 'var(--font-sans)' }}>
+              No initiatives found.
+            </p>
+          )}
         </section>
+
+        {/* CTA band */}
+        <div className="initiatives-cta-band">
+          <div className="initiatives-cta-band-inner">
+            <div>
+              <h2>Want to collaborate or contribute?</h2>
+              <p>We&apos;re always looking for mentors, collaborators, and practitioners to shape what we build.</p>
+            </div>
+            <Link href="/contact" className="btn-accent" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+              Reach out →
+            </Link>
+          </div>
+        </div>
       </main>
 
       <PublicFooter />
