@@ -16,7 +16,7 @@ const BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME!
 // e.g. https://pub-xxxx.r2.dev  or  https://assets.yourdomain.com
 const PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL ?? ''
 
-export type UploadFolder = 'thumbnails' | 'content-files'
+export type UploadFolder = 'thumbnails' | 'content-files' | 'case-library-files' | 'case-library-thumbnails'
 
 export async function uploadFileToR2(
   file: File,
