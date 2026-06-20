@@ -1,7 +1,24 @@
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 
-const INITIATIVES = [
+interface Initiative {
+  title: string
+  category: string
+  description: string
+  status: string
+  selarUrl?: string
+  selarLabel?: string
+}
+
+const INITIATIVES: Initiative[] = [
+  {
+    title: 'Product Lab with JT',
+    category: 'Cohort',
+    description: 'A hands-on cohort for product practitioners who want to go deeper — building real intuition for strategy, execution, and career growth through live sessions, peer critique, and direct access to JT.',
+    status: 'Active',
+    selarUrl: 'https://selar.co/productlabwithjt',
+    selarLabel: 'Join on Selar',
+  },
   {
     title: 'PM Mentorship Network',
     category: 'Community',
@@ -83,6 +100,18 @@ export default function InitiativesPage() {
               <p className="text-body-md" style={{ color: 'var(--color-text-muted)', lineHeight: 1.65, margin: 0 }}>
                 {item.description}
               </p>
+
+              {item.selarUrl && (
+                <a
+                  href={item.selarUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                  style={{ alignSelf: 'flex-start', marginTop: '0.25rem' }}
+                >
+                  {item.selarLabel ?? 'Join on Selar'} →
+                </a>
+              )}
             </article>
           ))}
         </div>

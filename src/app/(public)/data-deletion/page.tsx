@@ -28,7 +28,7 @@ We aim to process deletion requests within 14 days of receiving them.`,
           heading: '3. What We Retain, and Why',
           body: `Some information cannot be immediately deleted due to legal, tax, or fraud-prevention obligations:
 
-• Records of payment link clicks: Product Slice HQ does not process payment directly — paid resources are purchased via third-party platforms (Selar) or direct payment links (Paystack/Flutterwave). We may retain a basic record that you clicked a payment link for a given resource, for support purposes, even after account deletion. Your actual payment/transaction history lives with the third-party platform that processed it, not with us, and is subject to their own data retention policies.
+• Selar click records: Product Slice HQ does not process payment — all paid resources and initiatives are hosted, sold, and paid for entirely on Selar. We may retain a basic record that you clicked through to a Selar listing, for support purposes, even after account deletion. Your actual payment and transaction history lives with Selar, not with us, and is subject to Selar's own data retention policies.
 
 • Aggregated/anonymised analytics: usage data that has already been aggregated and anonymised (and therefore no longer identifies you personally) is not deleted, as it no longer constitutes personal data.
 
@@ -44,7 +44,7 @@ We aim to process deletion requests within 14 days of receiving them.`,
         },
         {
           heading: "6. What Happens to Free Content You've Unlocked",
-          body: "Once your account is deleted, you lose access to any content unlocks or library associations tied to your account. Since all content directly hosted on Product Slice HQ is free, we recommend downloading anything you wish to keep before requesting deletion. Paid resources purchased via Selar, Paystack, or Flutterwave are managed through those platforms' own access systems and are not affected by deleting your Product Slice HQ account.",
+          body: "Once your account is deleted, you lose access to any content unlocks or library associations tied to your account. Since all content directly hosted on Product Slice HQ is free, we recommend downloading anything you wish to keep before requesting deletion. Paid resources and initiatives obtained through Selar are managed entirely by Selar through their own access system and are not affected by deleting your Product Slice HQ account — contact Selar directly for any access questions related to those purchases.",
         },
         {
           heading: '7. Contact Us',

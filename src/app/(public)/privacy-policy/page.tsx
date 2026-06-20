@@ -14,7 +14,7 @@ export default function PrivacyPolicyPage() {
 • Account information: first name, last name, email address, password (if you sign up with email), or basic profile information provided by Google if you sign up with Google.
 • Profile information: job role, country, and areas of interest you select after signing up.
 • Content you submit: comments, ratings, reviews, content requests, and support ticket messages (including any image attachments you upload).
-• Payment-related information: all content hosted directly on Product Slice HQ is free to access. Paid resources are listed on the Platform but hosted and sold through third-party platforms (such as Selar) or via direct payment links (such as Paystack or Flutterwave). When you click a payment link, you leave Product Slice HQ and your payment is handled entirely by that third-party platform — we do not collect or store your card details, and in most cases we don't receive your payment information at all beyond knowing that a link was clicked.
+• Payment-related information: we collect none. All content directly hosted on Product Slice HQ is free. Paid resources and initiatives are listed on the Platform for discovery only — when you choose one, you are redirected to Selar, where the resource is hosted, sold, and paid for in full. Product Slice HQ never handles, sees, or stores any payment information. No card details, no transaction records, no payment processor data of any kind passes through us.
 
 1.2 Information collected automatically
 
@@ -26,11 +26,10 @@ export default function PrivacyPolicyPage() {
           body: `We use your information to:
 
 • Create and manage your account
-• Give you access to content you've unlocked or purchased
+• Give you access to content you've unlocked
 • Personalise recommendations and "trending" content shown to you
 • Respond to support requests and content requests
 • Send you notifications you've opted into (in-app and/or email)
-• Process payments and prevent fraud
 • Understand how the Platform is used so we can improve it
 • Generate AI summaries of articles you request (see Section 6)`,
         },
@@ -39,7 +38,7 @@ export default function PrivacyPolicyPage() {
           body: `We share information only with the service providers that help us run the Platform, and only as needed for them to provide their service:
 
 • Supabase — Database, authentication: account and profile data
-• Selar / Paystack / Flutterwave — Hosting and processing payment for paid resources: you're redirected to these platforms to complete payment; we don't see or store your card details
+• Selar — Hosting, selling, and processing payment for paid resources and initiatives: when you click through to a Selar listing, you leave Product Slice HQ entirely; we send nothing to Selar and receive nothing back — it is a one-way redirect
 • Resend — Transactional and broadcast email: your email address, name, and message content for emails we send you
 • PostHog — Product analytics: usage and behavioural data
 • Google Analytics — Website/traffic analytics: usage and behavioural data, device and location information
