@@ -1,6 +1,10 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { signOutAction } from '@/app/(auth)/actions/auth'
 import './admin.css'
+
+const ADMIN_ROLES = ['admin', 'super_admin'] as const
 
 const NAV_ITEMS: (null | { href: string; label: string })[] = [
   { href: '/admin',               label: 'Overview' },
@@ -18,13 +22,43 @@ const NAV_ITEMS: (null | { href: string; label: string })[] = [
   { href: '/admin/team', label: '👥 Team' },
 ]
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) redirect('/sign-in?redirect=/admin')
+
+  // Use service client to bypass RLS for role check
+  const service = createServiceClient()
+  const { data: profile } = await service
+    .from('users')
+    .select('role, full_name')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || !ADMIN_ROLES.includes(profile.role as typeof ADMIN_ROLES[number])) {
+    redirect('/dashboard')
+  }
+
+  const isSuperAdmin = profile.role === 'super_admin'
+
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-logo">
           <Link href="/admin">Product Slice HQ</Link>
-          <p>Tactical Ops</p>
+          <p style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            Tactical Ops
+            {isSuperAdmin && (
+              <span style={{
+                fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em',
+                textTransform: 'uppercase', background: 'oklch(55% 0.14 85)',
+                color: '#fff', padding: '0.1rem 0.375rem', borderRadius: '0.2rem',
+              }}>
+                Super Admin
+              </span>
+            )}
+          </p>
         </div>
         <nav className="admin-nav">
           {NAV_ITEMS.map((item, i) =>
