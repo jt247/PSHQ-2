@@ -5,39 +5,38 @@
 -- All in-platform payment tables, columns, and enums are removed.
 -- ============================================================
 
--- 1. Drop purchases RLS policies first (required before table drop)
+-- 1. Drop content_stats view first (depends on purchases table)
+DROP VIEW IF EXISTS public.content_stats;
+
+-- 2. Drop purchases RLS policies
 DROP POLICY IF EXISTS "purchases: super_admin only" ON public.purchases;
 
--- 2. Drop purchases trigger
+-- 3. Drop purchases trigger
 DROP TRIGGER IF EXISTS touch_purchases_updated_at ON public.purchases;
 
--- 3. Drop purchases indexes
+-- 4. Drop purchases indexes
 DROP INDEX IF EXISTS public.purchases_user_id_idx;
 DROP INDEX IF EXISTS public.purchases_paystack_reference_idx;
 DROP INDEX IF EXISTS public.purchases_status_idx;
 
--- 4. Drop purchases table
+-- 5. Drop purchases table
 DROP TABLE IF EXISTS public.purchases;
 
--- 5. Drop purchase_status enum
+-- 6. Drop purchase_status enum
 DROP TYPE IF EXISTS public.purchase_status;
 
--- 6. Remove payment columns from content
+-- 7. Remove payment columns from content
 ALTER TABLE public.content
   DROP COLUMN IF EXISTS price_amount,
   DROP COLUMN IF EXISTS currency;
 
--- 7. Add selar_url to content (nullable — only used when pricing_type = 'paid')
+-- 8. Add selar_url to content (nullable — only used when pricing_type = 'paid')
 ALTER TABLE public.content
   ADD COLUMN IF NOT EXISTS selar_url text;
 
--- 8. Add selar_click to interaction_type enum
+-- 9. Add selar_click to interaction_type enum
 -- (PostgreSQL requires this outside a transaction — run as a separate command)
 ALTER TYPE public.interaction_type ADD VALUE IF NOT EXISTS 'selar_click';
-
--- 9. Drop the content_stats view that referenced purchases / old columns
---    (it will be recreated below without those references)
-DROP VIEW IF EXISTS public.content_stats;
 
 -- 10. Recreate content_stats view without purchase data
 CREATE OR REPLACE VIEW public.content_stats AS
