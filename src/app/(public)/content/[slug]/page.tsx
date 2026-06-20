@@ -174,9 +174,7 @@ export default async function ContentDetailPage({ params }: Props) {
                   ✓ Free to access
                 </p>
                 <a
-                  href={fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={`/api/download/${rawItem.id}`}
                   className="btn-primary"
                   style={{ display: 'block', textAlign: 'center' }}
                 >

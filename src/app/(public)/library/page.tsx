@@ -16,7 +16,7 @@ export default async function LibraryPage({ searchParams }: Props) {
 
   let query = supabase
     .from('content')
-    .select('id,title,slug,type,summary,cover_image_url,tags,pricing_type,selar_url,view_count,upvote_count,comment_count,published_at')
+    .select('id,title,slug,type,summary,cover_image_url,tags,pricing_type,selar_url,view_count,upvote_count,comment_count,published_at,is_coming_soon')
     .eq('status', 'published')
     .order('published_at', { ascending: false })
 
@@ -27,6 +27,7 @@ export default async function LibraryPage({ searchParams }: Props) {
     ...item,
     pricing_type: (item as Record<string, unknown>).pricing_type as string ?? 'free',
     selar_url: (item as Record<string, unknown>).selar_url as string | null ?? null,
+    is_coming_soon: (item as Record<string, unknown>).is_coming_soon as boolean ?? false,
   }))
 
   const filtered = pricing === 'all' ? items : items.filter(i => i.pricing_type === pricing)

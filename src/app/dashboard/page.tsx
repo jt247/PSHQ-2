@@ -8,7 +8,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/sign-in')
 
-  const [profileRes, statsRes, trendingRes, ownedRes, recommendedRes] = await Promise.all([
+  const [profileRes, statsRes, trendingRes, ownedRes, recommendedRes, coursesRes, trendingEbooksRes, trendingTemplatesRes] = await Promise.all([
     supabase.from('users').select('full_name, areas_of_interest').eq('id', user.id).single(),
     supabase.from('content_interactions')
       .select('id, type', { count: 'exact' })
@@ -30,6 +30,24 @@ export default async function DashboardPage() {
       .eq('type', 'article')
       .order('published_at', { ascending: false })
       .limit(3),
+    supabase.from('content')
+      .select('id, title, slug, summary, cover_image_url, tags')
+      .eq('status', 'published')
+      .eq('type', 'course')
+      .order('published_at', { ascending: false })
+      .limit(3),
+    supabase.from('content')
+      .select('id, title, slug, cover_image_url, tags, published_at')
+      .eq('status', 'published')
+      .eq('type', 'ebook')
+      .order('published_at', { ascending: false })
+      .limit(3),
+    supabase.from('content')
+      .select('id, title, slug, cover_image_url, tags, published_at')
+      .eq('status', 'published')
+      .eq('type', 'template')
+      .order('published_at', { ascending: false })
+      .limit(3),
   ])
 
   const profile = profileRes.data as Pick<UserRow, 'full_name' | 'areas_of_interest'> | null
@@ -40,6 +58,18 @@ export default async function DashboardPage() {
   const recommended = (recommendedRes.data ?? []) as Array<{
     id: string; title: string; slug: string; summary: string | null;
     cover_image_url: string | null; tags: string[] | null; published_at: string | null;
+  }>
+  const courses = (coursesRes.data ?? []) as Array<{
+    id: string; title: string; slug: string; summary: string | null;
+    cover_image_url: string | null; tags: string[] | null;
+  }>
+  const trendingEbooks = (trendingEbooksRes.data ?? []) as Array<{
+    id: string; title: string; slug: string;
+    cover_image_url: string | null; tags: string[] | null;
+  }>
+  const trendingTemplates = (trendingTemplatesRes.data ?? []) as Array<{
+    id: string; title: string; slug: string;
+    cover_image_url: string | null; tags: string[] | null;
   }>
 
   const name = profile?.full_name?.split(' ')[0] ?? 'there'
@@ -172,6 +202,84 @@ export default async function DashboardPage() {
         </section>
       </div>
 
+      {/* Trending Ebooks */}
+      {trendingEbooks.length > 0 && (
+        <section style={{ marginTop: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <h3 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: 0, fontSize: '1.125rem' }}>
+              Trending E-books
+            </h3>
+            <Link href="/library?type=ebook" className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', textDecoration: 'none' }}>
+              All e-books →
+            </Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1rem' }}>
+            {trendingEbooks.map(ebook => (
+              <Link key={ebook.id} href={`/content/${ebook.slug}`} style={{
+                display: 'flex', gap: '1rem', alignItems: 'center', textDecoration: 'none',
+                background: 'var(--color-paper-darker)',
+                border: '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)',
+                borderRadius: '0.75rem', padding: '0.875rem',
+                transition: 'transform 150ms',
+              }} className="dash-ebook-card">
+                {ebook.cover_image_url ? (
+                  <img src={ebook.cover_image_url} alt={ebook.title} style={{ width: '52px', height: '52px', objectFit: 'cover', borderRadius: '0.25rem', flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: '52px', height: '52px', background: 'var(--color-paper-base)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>📚</div>
+                )}
+                <div style={{ minWidth: 0 }}>
+                  <p className="text-body-md" style={{ color: 'var(--color-ink-deep)', fontWeight: 600, margin: '0 0 0.25rem', lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {ebook.title}
+                  </p>
+                  {ebook.tags && ebook.tags.length > 0 && (
+                    <span className="text-label-sm" style={{ color: 'var(--color-text-muted)' }}>{ebook.tags[0]}</span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Trending Templates */}
+      {trendingTemplates.length > 0 && (
+        <section style={{ marginTop: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <h3 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: 0, fontSize: '1.125rem' }}>
+              Trending Templates
+            </h3>
+            <Link href="/library?type=template" className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', textDecoration: 'none' }}>
+              All templates →
+            </Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1rem' }}>
+            {trendingTemplates.map(template => (
+              <Link key={template.id} href={`/content/${template.slug}`} style={{
+                display: 'flex', gap: '1rem', alignItems: 'center', textDecoration: 'none',
+                background: 'var(--color-paper-darker)',
+                border: '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)',
+                borderRadius: '0.75rem', padding: '0.875rem',
+                transition: 'transform 150ms',
+              }} className="dash-ebook-card">
+                {template.cover_image_url ? (
+                  <img src={template.cover_image_url} alt={template.title} style={{ width: '52px', height: '52px', objectFit: 'cover', borderRadius: '0.25rem', flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: '52px', height: '52px', background: 'var(--color-paper-base)', borderRadius: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>📋</div>
+                )}
+                <div style={{ minWidth: 0 }}>
+                  <p className="text-body-md" style={{ color: 'var(--color-ink-deep)', fontWeight: 600, margin: '0 0 0.25rem', lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {template.title}
+                  </p>
+                  {template.tags && template.tags.length > 0 && (
+                    <span className="text-label-sm" style={{ color: 'var(--color-text-muted)' }}>{template.tags[0]}</span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Recommended for You */}
       {recommended.length > 0 && (
         <section style={{ marginTop: '2rem' }}>
@@ -206,6 +314,66 @@ export default async function DashboardPage() {
                   <span className="text-label-sm" style={{ color: 'var(--color-on-primary-container)' }}>Read →</span>
                 </div>
               </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Top Courses */}
+      {courses.length > 0 && (
+        <section style={{ marginTop: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <h3 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: 0, fontSize: '1.125rem' }}>
+              Top Courses
+            </h3>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1rem' }}>
+            {courses.map(course => (
+              <div key={course.id} style={{
+                display: 'flex', flexDirection: 'column',
+                background: 'var(--color-paper-darker)',
+                border: '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)',
+                borderRadius: '0.75rem', overflow: 'hidden',
+                opacity: 0.82,
+                cursor: 'default',
+              }} aria-disabled="true">
+                {course.cover_image_url && !course.cover_image_url.startsWith('PLACEHOLDER') ? (
+                  <div style={{ position: 'relative' }}>
+                    <img src={course.cover_image_url} alt={course.title} style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
+                    <span style={{
+                      position: 'absolute', top: '0.5rem', right: '0.5rem',
+                      background: 'oklch(55% 0.14 85)', color: '#fff',
+                      fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.1em',
+                      textTransform: 'uppercase', padding: '0.2rem 0.5rem', borderRadius: '0.2rem',
+                    }}>Coming Soon</span>
+                  </div>
+                ) : (
+                  <div style={{
+                    width: '100%', height: '80px',
+                    background: 'color-mix(in srgb, var(--color-accent-warm) 12%, var(--color-paper-base))',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.75rem', position: 'relative',
+                  }}>
+                    🎓
+                    <span style={{
+                      position: 'absolute', top: '0.5rem', right: '0.5rem',
+                      background: 'oklch(55% 0.14 85)', color: '#fff',
+                      fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.1em',
+                      textTransform: 'uppercase', padding: '0.2rem 0.5rem', borderRadius: '0.2rem',
+                    }}>Coming Soon</span>
+                  </div>
+                )}
+                <div style={{ padding: '0.875rem' }}>
+                  <p className="text-body-md" style={{ color: 'var(--color-ink-deep)', fontWeight: 600, margin: '0 0 0.375rem', lineHeight: 1.35 }}>
+                    {course.title}
+                  </p>
+                  {course.tags && course.tags.length > 0 && (
+                    <span className="text-label-sm" style={{ color: 'var(--color-text-muted)' }}>
+                      {course.tags[0]}
+                    </span>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </section>

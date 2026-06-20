@@ -12,6 +12,11 @@ export default async function HomePage() {
     cover_image_url: string | null; tags: string[] | null; published_at: string | null;
   }> = []
 
+  let topCourses: Array<{
+    id: string; title: string; slug: string; summary: string | null;
+    cover_image_url: string | null; tags: string[] | null;
+  }> = []
+
   try {
     const { data } = await supabase
       .from('content')
@@ -24,6 +29,38 @@ export default async function HomePage() {
     featuredArticles = data ?? []
   } catch {
     // featured column may not exist yet — skip section
+  }
+
+  let featuredEbooks: Array<{
+    id: string; title: string; slug: string; summary: string | null;
+    cover_image_url: string | null; tags: string[] | null;
+  }> = []
+
+  try {
+    const { data } = await supabase
+      .from('content')
+      .select('id, title, slug, summary, cover_image_url, tags')
+      .eq('status', 'published')
+      .eq('type', 'ebook')
+      .eq('featured', true)
+      .order('published_at', { ascending: false })
+      .limit(3)
+    featuredEbooks = data ?? []
+  } catch {
+    // ignore
+  }
+
+  try {
+    const { data } = await supabase
+      .from('content')
+      .select('id, title, slug, summary, cover_image_url, tags')
+      .eq('status', 'published')
+      .eq('type', 'course')
+      .order('published_at', { ascending: false })
+      .limit(3)
+    topCourses = data ?? []
+  } catch {
+    // ignore
   }
 
   return (
@@ -214,6 +251,130 @@ export default async function HomePage() {
                       </span>
                     </div>
                   </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Featured Ebooks */}
+        {featuredEbooks.length > 0 && (
+          <section style={{ padding: '5rem var(--spacing-margin-edge)', background: 'var(--color-paper-darker)' }}>
+            <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <p className="text-label-md" style={{ textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-secondary)', marginBottom: '0.75rem' }}>
+                    Free E-books
+                  </p>
+                  <h2 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>
+                    Take something with you.
+                  </h2>
+                </div>
+                <Link href="/library?type=ebook" className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', textDecoration: 'none' }}>
+                  All e-books →
+                </Link>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
+                {featuredEbooks.map(ebook => (
+                  <Link key={ebook.id} href={`/content/${ebook.slug}`} style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', background: 'var(--color-paper-base)', transition: 'transform 200ms, box-shadow 200ms' }} className="article-feature-card">
+                    {ebook.cover_image_url && (
+                      <img src={ebook.cover_image_url} alt={ebook.title} style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
+                    )}
+                    <div style={{ padding: '1.25rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.625rem', flexWrap: 'wrap' }}>
+                        <span className="badge" style={{ background: 'color-mix(in srgb, var(--color-ink-deep) 10%, transparent)', color: 'var(--color-ink-deep)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>E-book</span>
+                        <span className="badge" style={{ background: '#dcfce7', color: '#15803d' }}>Free</span>
+                      </div>
+                      <h3 className="text-body-lg" style={{ margin: '0 0 0.5rem', fontWeight: 600, lineHeight: 1.4, color: 'var(--color-ink-deep)' }}>
+                        {ebook.title}
+                      </h3>
+                      {ebook.summary && (
+                        <p className="text-body-sm" style={{ margin: '0 0 1rem', color: 'var(--color-text-muted)', lineHeight: 1.6, flex: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>
+                          {ebook.summary}
+                        </p>
+                      )}
+                      <span className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', marginTop: 'auto' }}>
+                        Download free →
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Top Courses */}
+        {topCourses.length > 0 && (
+          <section style={{ padding: '5rem var(--spacing-margin-edge)', background: 'var(--color-paper-darker)' }}>
+            <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <p className="text-label-md" style={{ textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-secondary)', marginBottom: '0.75rem' }}>
+                    Courses
+                  </p>
+                  <h2 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>
+                    Coming soon.
+                  </h2>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
+                {topCourses.map(course => (
+                  <div key={course.id} style={{
+                    display: 'flex', flexDirection: 'column',
+                    borderRadius: '0.5rem', overflow: 'hidden',
+                    border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
+                    background: 'var(--color-paper-base)',
+                    opacity: 0.85,
+                    cursor: 'default',
+                  }} aria-disabled="true">
+                    {course.cover_image_url && !course.cover_image_url.startsWith('PLACEHOLDER') ? (
+                      <div style={{ position: 'relative' }}>
+                        <img src={course.cover_image_url} alt={course.title} style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
+                        <span style={{
+                          position: 'absolute', top: '0.625rem', right: '0.625rem',
+                          background: 'oklch(55% 0.14 85)', color: '#fff',
+                          fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.1em',
+                          textTransform: 'uppercase', padding: '0.25rem 0.625rem', borderRadius: '0.25rem',
+                        }}>Coming Soon</span>
+                      </div>
+                    ) : (
+                      <div style={{
+                        width: '100%', height: '100px',
+                        background: 'color-mix(in srgb, var(--color-ink-deep) 8%, transparent)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '2rem', position: 'relative',
+                      }}>
+                        🎓
+                        <span style={{
+                          position: 'absolute', top: '0.625rem', right: '0.625rem',
+                          background: 'oklch(55% 0.14 85)', color: '#fff',
+                          fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.1em',
+                          textTransform: 'uppercase', padding: '0.25rem 0.625rem', borderRadius: '0.25rem',
+                        }}>Coming Soon</span>
+                      </div>
+                    )}
+                    <div style={{ padding: '1.25rem', flex: 1 }}>
+                      <span className="badge" style={{
+                        background: 'color-mix(in srgb, var(--color-ink-deep) 10%, transparent)',
+                        color: 'var(--color-ink-deep)', textTransform: 'uppercase',
+                        letterSpacing: '0.06em', marginBottom: '0.625rem', display: 'inline-block',
+                      }}>Course</span>
+                      <p className="text-body-lg" style={{ margin: '0 0 0.625rem', fontWeight: 600, lineHeight: 1.4, color: 'var(--color-ink-deep)' }}>
+                        {course.title}
+                      </p>
+                      {course.summary && (
+                        <p className="text-body-sm" style={{
+                          margin: 0, color: 'var(--color-text-muted)', lineHeight: 1.55,
+                          overflow: 'hidden', display: '-webkit-box',
+                          WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                        } as React.CSSProperties}>
+                          {course.summary}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
