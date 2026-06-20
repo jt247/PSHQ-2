@@ -4,28 +4,55 @@ export default function RefundPolicyPage() {
   return (
     <LegalPage
       title="Refund Policy"
-      lastUpdated="June 2025"
-      intro="We want you to be satisfied with every resource you purchase on Product Slice HQ. Here is our policy on refunds."
+      lastUpdated="June 20, 2026"
+      intro="This policy explains our approach to refunds for paid resources and initiatives associated with Product Slice HQ."
       sections={[
         {
-          heading: 'Digital Products',
-          body: 'Because our products are digital resources that are immediately accessible upon purchase, we generally do not offer refunds once a purchase is complete and the content has been accessed.',
+          heading: '1. How Paid Resources Work',
+          body: "Content directly hosted on Product Slice HQ (articles, e-books, templates, and courses available on the Platform itself) is free. Some resources are paid and are listed on Product Slice HQ for discovery only — when you choose one, you're directed via a payment link to a third-party platform (such as Selar) or a direct payment link (such as Paystack or Flutterwave) tied to the founder's personal or business account, where payment is completed and access or delivery instructions are provided. Live initiatives (such as Product Lab with JT) follow the same model.",
         },
         {
-          heading: 'Eligible Refund Situations',
-          body: 'We will issue a full refund if: the content was significantly misrepresented in its description, you were charged in error, or there was a technical failure that prevented you from accessing the content you paid for.',
+          heading: '2. General Policy: No Refunds',
+          body: `All payments for paid resources and initiatives are final. There is no money-back guarantee, and refunds are not available once a resource has been accessed, downloaded, or delivered, or once a live initiative has been attended or access granted.
+
+We take this position because:
+• Once you've downloaded a resource or accessed a course, we've already delivered the value you paid for — we have no way to "take it back," so we can't refund a transaction for a digital product that's already been delivered
+• For live initiatives, once a session has been delivered or recordings shared, the same logic applies`,
         },
         {
-          heading: 'How to Request a Refund',
-          body: 'To request a refund, please contact us via the Contact page within 7 days of purchase. Include your order reference and the reason for your request. We will respond within 3 business days.',
+          heading: '3. The One Exception: Payment Without Access',
+          body: `If you pay for a resource or initiative and a technical fault on our end or the hosting platform's end prevents you from actually accessing or receiving what you paid for, and we're able to confirm this from our records, we will work with you to either:
+• Resolve the access issue so you receive what you paid for, or
+• Process a refund, if access genuinely cannot be restored
+
+To request this, contact us within 7 days of payment at hello@productslicehq.com with:
+• Your email address used for payment
+• The resource or initiative purchased
+• The payment reference/receipt from Selar, Paystack, or Flutterwave
+• A description of the access issue
+
+We'll investigate and respond within 5 business days. Refunds approved under this exception are processed back to your original payment method, through whichever platform handled the original transaction — processing times depend on that platform and your bank.`,
         },
         {
-          heading: 'Processing',
-          body: 'Approved refunds are returned to the original payment method. Processing times depend on your bank or card provider but typically take 5–10 business days to appear on your statement.',
+          heading: '4. What This Policy Does Not Cover',
+          body: `This policy does not cover:
+• Change of mind after purchase
+• Not having enough time to use a resource or attend an initiative
+• Dissatisfaction with the content itself, once it has been successfully delivered and accessed
+
+We encourage you to review free content, testimonials, or descriptions carefully before purchasing, since paid resources are not refundable on the basis of preference once delivered.`,
         },
         {
-          heading: 'Subscription Products',
-          body: 'If we introduce subscription-based access in future, specific cancellation and pro-rata refund terms will be published and communicated clearly before any subscription is offered.',
+          heading: '5. Third-Party Platform Policies',
+          body: "Because payment is processed by Selar, Paystack, Flutterwave, or similar platforms rather than directly on Product Slice HQ, that platform's own refund/dispute process may also apply. We encourage you to review their terms as well.",
+        },
+        {
+          heading: '6. Chargebacks',
+          body: "If you initiate a chargeback or payment dispute without first contacting us to resolve the issue under Section 3, we reserve the right to restrict your access to future resources and initiatives while the dispute is investigated.",
+        },
+        {
+          heading: '7. Contact Us',
+          body: "Questions about a purchase or this policy? Reach us at hello@productslicehq.com or via our Contact page.",
         },
       ]}
     />
