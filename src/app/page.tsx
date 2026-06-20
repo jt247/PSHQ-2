@@ -7,6 +7,25 @@ export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  let featuredArticles: Array<{
+    id: string; title: string; slug: string; summary: string | null;
+    cover_image_url: string | null; tags: string[] | null; published_at: string | null;
+  }> = []
+
+  try {
+    const { data } = await supabase
+      .from('content')
+      .select('id, title, slug, summary, cover_image_url, tags, published_at')
+      .eq('status', 'published')
+      .eq('type', 'article')
+      .eq('featured', true)
+      .order('published_at', { ascending: false })
+      .limit(3)
+    featuredArticles = data ?? []
+  } catch {
+    // featured column may not exist yet — skip section
+  }
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
       <PublicNav />
@@ -148,6 +167,59 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Featured Articles */}
+        {featuredArticles.length > 0 && (
+          <section style={{ padding: '5rem var(--spacing-margin-edge)', background: 'var(--color-paper-base)' }}>
+            <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <p className="text-label-md" style={{ textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-secondary)', marginBottom: '0.75rem' }}>
+                    Featured reading
+                  </p>
+                  <h2 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>
+                    Start here.
+                  </h2>
+                </div>
+                <Link href="/articles" className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', textDecoration: 'none' }}>
+                  All articles →
+                </Link>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '1.5rem' }}>
+                {featuredArticles.map(article => (
+                  <Link key={article.id} href={`/articles/${article.slug}`} style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', background: 'var(--color-paper-darker)', transition: 'transform 200ms, box-shadow 200ms' }} className="article-feature-card">
+                    {article.cover_image_url && (
+                      <img
+                        src={article.cover_image_url}
+                        alt={article.title}
+                        style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                      />
+                    )}
+                    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      {article.tags && article.tags.length > 0 && (
+                        <span className="text-label-sm" style={{ color: 'var(--color-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>
+                          {article.tags[0]}
+                        </span>
+                      )}
+                      <h3 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: '0 0 0.75rem', fontSize: '1.0625rem', lineHeight: 1.4 }}>
+                        {article.title}
+                      </h3>
+                      {article.summary && (
+                        <p className="text-body-md" style={{ color: 'var(--color-text-muted)', margin: '0 0 1.25rem', lineHeight: 1.65, flex: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {article.summary}
+                        </p>
+                      )}
+                      <span className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', marginTop: 'auto' }}>
+                        Read article →
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* CTA */}
         {!user && (
           <section style={{ padding: '5rem var(--spacing-margin-edge)', background: 'var(--color-ink-deep)' }}>
@@ -186,7 +258,7 @@ export default async function HomePage() {
       <PublicFooter />
 
       <style>{`
-        .bento-feature-card:hover {
+        .bento-feature-card:hover, .article-feature-card:hover {
           transform: translateY(-2px);
           box-shadow: 0 8px 30px color-mix(in srgb, var(--color-ink-deep) 8%, transparent);
         }

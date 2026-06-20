@@ -8,22 +8,28 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/sign-in')
 
-  const [profileRes, statsRes, trendingRes, ownedRes] = await Promise.all([
+  const [profileRes, statsRes, trendingRes, ownedRes, recommendedRes] = await Promise.all([
     supabase.from('users').select('full_name, areas_of_interest').eq('id', user.id).single(),
     supabase.from('content_interactions')
       .select('id, type', { count: 'exact' })
       .eq('user_id', user.id),
     supabase.from('content')
-      .select('id, title, slug, type, view_count, upvote_count')
+      .select('id, title, slug, type, view_count, upvote_count, published_at')
       .eq('status', 'published')
-      .not('type', 'eq', 'course')
-      .order('view_count', { ascending: false })
-      .limit(5),
+      .eq('type', 'article')
+      .order('published_at', { ascending: false })
+      .limit(6),
     supabase.from('content_interactions')
       .select('content:content_id(id, title, slug, type, cover_image_url, pricing_type)')
       .eq('user_id', user.id)
-      .in('type', ['unlock', 'purchase'])
+      .in('type', ['unlock'])
       .limit(6),
+    supabase.from('content')
+      .select('id, title, slug, summary, cover_image_url, tags, published_at')
+      .eq('status', 'published')
+      .eq('type', 'article')
+      .order('published_at', { ascending: false })
+      .limit(3),
   ])
 
   const profile = profileRes.data as Pick<UserRow, 'full_name' | 'areas_of_interest'> | null
@@ -31,6 +37,10 @@ export default async function DashboardPage() {
   const trending = (trendingRes.data ?? []) as Array<Pick<ContentRow, 'id' | 'title' | 'slug' | 'type' | 'view_count' | 'upvote_count'>>
   const ownedRaw = (ownedRes.data ?? []) as Array<{ content: Partial<ContentRow> | null }>
   const owned = ownedRaw.map(r => r.content).filter(Boolean) as Array<Partial<ContentRow>>
+  const recommended = (recommendedRes.data ?? []) as Array<{
+    id: string; title: string; slug: string; summary: string | null;
+    cover_image_url: string | null; tags: string[] | null; published_at: string | null;
+  }>
 
   const name = profile?.full_name?.split(' ')[0] ?? 'there'
   const interests = (profile?.areas_of_interest as string[] | null) ?? []
@@ -84,7 +94,7 @@ export default async function DashboardPage() {
         {/* Trending Content */}
         <section style={{ background: 'var(--color-paper-darker)', border: '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)', borderRadius: '0.75rem', padding: '1.5rem' }}>
           <h3 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: '0 0 1.25rem', fontSize: '1.125rem' }}>
-            Trending Content
+            Trending Articles
           </h3>
           {trending.length === 0 ? (
             <p className="text-body-md" style={{ color: 'var(--color-text-muted)' }}>Nothing trending yet.</p>
@@ -161,6 +171,45 @@ export default async function DashboardPage() {
           )}
         </section>
       </div>
+
+      {/* Recommended for You */}
+      {recommended.length > 0 && (
+        <section style={{ marginTop: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <h3 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: 0, fontSize: '1.125rem' }}>
+              Recommended for You
+            </h3>
+            <Link href="/articles" className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', textDecoration: 'none' }}>
+              All articles →
+            </Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1rem' }}>
+            {recommended.map(article => (
+              <Link key={article.id} href={`/articles/${article.slug}`} style={{
+                display: 'flex', flexDirection: 'column', textDecoration: 'none',
+                background: 'var(--color-paper-darker)',
+                border: '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)',
+                borderRadius: '0.75rem', overflow: 'hidden',
+              }}>
+                {article.cover_image_url && (
+                  <img src={article.cover_image_url} alt={article.title} style={{ width: '100%', height: '140px', objectFit: 'cover' }} />
+                )}
+                <div style={{ padding: '1rem' }}>
+                  {article.tags && article.tags.length > 0 && (
+                    <span className="text-label-sm" style={{ color: 'var(--color-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.375rem' }}>
+                      {article.tags[0]}
+                    </span>
+                  )}
+                  <p className="text-body-md" style={{ color: 'var(--color-ink-deep)', fontWeight: 600, margin: '0 0 0.375rem', lineHeight: 1.4 }}>
+                    {article.title}
+                  </p>
+                  <span className="text-label-sm" style={{ color: 'var(--color-on-primary-container)' }}>Read →</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Quick actions */}
       <section style={{ marginTop: '2rem' }}>

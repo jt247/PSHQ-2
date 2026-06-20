@@ -8,6 +8,33 @@ import { RatingWidget } from '@/components/article/RatingWidget'
 
 interface Props { params: Promise<{ slug: string }> }
 
+function renderBody(text: string) {
+  return text.split(/\n\n+/).map((block, i) => {
+    const t = block.trim()
+    if (!t) return null
+    if (t.startsWith('#### ')) return (
+      <h4 key={i} className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: '2.25rem 0 0.625rem', fontSize: '1.0625rem' }}>
+        {t.slice(5)}
+      </h4>
+    )
+    if (t.startsWith('### ')) return (
+      <h3 key={i} className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: '2.5rem 0 0.75rem', fontSize: '1.25rem' }}>
+        {t.slice(4)}
+      </h3>
+    )
+    if (t.startsWith('## ')) return (
+      <h2 key={i} className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', margin: '3rem 0 1rem' }}>
+        {t.slice(3)}
+      </h2>
+    )
+    return (
+      <p key={i} className="text-body-lg" style={{ color: 'var(--color-text-main)', lineHeight: 1.85, marginBottom: '1.25rem' }}>
+        {t}
+      </p>
+    )
+  }).filter(Boolean)
+}
+
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params
   const supabase = await createClient()
@@ -181,13 +208,8 @@ export default async function ArticlePage({ params }: Props) {
           />
 
           {rawItem.body ? (
-            <div className="text-body-lg" style={{
-              lineHeight: 1.85,
-              color: 'var(--color-text-main)',
-              whiteSpace: 'pre-wrap',
-              marginBottom: '3rem',
-            }}>
-              {rawItem.body as string}
+            <div style={{ marginBottom: '3rem' }}>
+              {renderBody(rawItem.body as string)}
             </div>
           ) : (
             <p className="text-body-md" style={{ color: 'var(--color-text-muted)', marginBottom: '3rem' }}>No content yet.</p>
