@@ -20,7 +20,7 @@ export default async function MyLibraryPage() {
     .from('content_interactions')
     .select('content_id, created_at, content:content(id, title, slug, type, summary, cover_image_url, tags, file_url, published_at)')
     .eq('user_id', user.id)
-    .in('type', ['purchase', 'unlock'])
+    .in('type', ['unlock'])
     .order('created_at', { ascending: false })
 
   type ContentRef = {

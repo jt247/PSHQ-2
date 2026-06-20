@@ -89,17 +89,6 @@ export default function NotificationsPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div style={field}>
-              <label style={label}>Purchase status</label>
-              <select name="purchase_status" style={input}>
-                <option value="">Any</option>
-                <option value="has_purchased">Has purchased</option>
-                <option value="no_purchase">No purchase</option>
-              </select>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div style={field}>
               <label style={label}>Signed up after</label>
               <input type="date" name="signup_after" style={input} />
             </div>
