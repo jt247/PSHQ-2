@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Architecture of Collaborative Serendipity | Product Slice HQ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#735c00",
+                    "outline": "#74777e",
+                    "secondary-container": "#fed01b",
+                    "on-surface-variant": "#43474d",
+                    "on-secondary-fixed": "#231b00",
+                    "on-primary-fixed": "#001c38",
+                    "surface-dim": "#dcd9d9",
+                    "surface": "#fcf9f8",
+                    "primary-fixed": "#d2e4ff",
+                    "surface-container": "#f0eded",
+                    "on-primary-container": "#7992b4",
+                    "accent-warm": "#FACC15",
+                    "paper-base": "#FDFCFB",
+                    "background": "#fcf9f8",
+                    "surface-tint": "#476080",
+                    "inverse-on-surface": "#f3f0ef",
+                    "surface-bright": "#fcf9f8",
+                    "primary": "#00152c",
+                    "secondary-fixed": "#ffe083",
+                    "tertiary-fixed-dim": "#cac6bf",
+                    "tertiary-fixed": "#e6e2db",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-secondary-fixed-variant": "#574500",
+                    "inverse-surface": "#313030",
+                    "secondary-fixed-dim": "#eec200",
+                    "text-muted": "#54595F",
+                    "primary-fixed-dim": "#afc8ed",
+                    "surface-variant": "#e5e2e1",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-secondary-container": "#6f5900",
+                    "inverse-primary": "#afc8ed",
+                    "error": "#ba1a1a",
+                    "paper-darker": "#F5F2EE",
+                    "text-main": "#1A1A1A",
+                    "tertiary": "#151511",
+                    "on-tertiary-container": "#93908a",
+                    "surface-container-high": "#eae7e7",
+                    "on-primary-fixed-variant": "#2f4867",
+                    "surface-container-low": "#f6f3f2",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#1c1b1b",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#2a2925",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#1c1c17",
+                    "on-surface": "#1c1b1b",
+                    "primary-container": "#0e2a47",
+                    "ink-deep": "#0E2A47",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#c4c6ce",
+                    "on-tertiary-fixed-variant": "#484742",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "stack-sm": "8px",
+                    "gutter": "32px",
+                    "container-max": "1280px",
+                    "section-gap": "80px",
+                    "stack-md": "16px",
+                    "margin-edge": "40px",
+                    "stack-lg": "32px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Libre Caslon Text"],
+                    "headline-md": ["Libre Caslon Text"],
+                    "headline-lg-mobile": ["Libre Caslon Text"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Libre Caslon Text"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "label-md": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .fill-icon { font-variation-settings: 'FILL' 1 !important; }
+        
+        body {
+            background-color: #FDFCFB; /* paper-base */
+            color: #0E2A47; /* ink-deep */
+        }
+
+        .article-content p {
+            margin-bottom: 2rem;
+            color: #1A1A1A;
+            line-height: 1.8;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E2E1; border-radius: 10px; }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased selection:bg-accent-warm/30">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-paper-base border-b border-outline-variant/30 transition-all duration-300" id="main-nav">
+<div class="flex justify-between items-center h-20 px-margin-edge max-w-container-max mx-auto">
+<div class="flex items-center gap-12">
+<a class="font-headline-md text-headline-md text-ink-deep tracking-tight" href="#">Product Slice HQ</a>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Articles</a>
+<a class="font-label-md text-label-md text-primary border-b-2 border-accent-warm pb-1" href="#">Library</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Initiatives</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">About</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-ink-deep p-2 hover:bg-surface-container-low rounded-full transition-all">search</button>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div class="flex items-center gap-3">
+<span class="hidden sm:inline font-label-md text-label-md text-ink-deep">Joshua T.</span>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/50 ring-2 ring-accent-warm ring-offset-2 ring-offset-paper-base">
+<img class="w-full h-full object-cover" data-alt="A professional, high-end close-up portrait of Joshua Theophilus, a creative director in his late 30s with a warm and intellectual expression. He wears refined, dark-rimmed glasses and a charcoal cashmere sweater. The lighting is soft and cinematic, coming from a side window in a modern, sun-drenched architectural studio filled with books and plants. The overall aesthetic is one of calm, professional authority and thoughtful creativity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQkNcNE3jEHOTjnpffhm7bP6gWGpxjCL286u5zn7yOXdMTPFnvCjqG9FZ5LAQNfg7Yv4OYBLT-WjQ2Ex3EWt9GD51a1NDxkHjkJj9oHKkPdlUHI5IIMleofRR2Uv537vbk7ax6HWkDoaRM995jYqamVjcLwQMqsZnnEeMQY8ZoHqlCXRWlyTtJgKv-R4dxUy8Cqr1jEHtj4j1xAYWvb2ptxqvBES04rlXB59SXFSWtMGTZ7O7Lt1DEs79g-08HuQoKaMxejg6Z64uN"/>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-section-gap">
+<article class="max-w-container-max mx-auto px-margin-edge">
+<!-- Breadcrumb -->
+<nav class="flex items-center gap-2 mb-stack-lg font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">
+<a class="hover:text-primary transition-colors" href="#">Library</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Articles</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary truncate max-w-[200px] md:max-w-none">The Architecture of Collaborative Serendipity</span>
+</nav>
+<!-- Header -->
+<header class="mb-stack-lg max-w-4xl">
+<div class="inline-block px-3 py-1 bg-paper-darker text-primary font-label-md text-label-md tracking-[0.1em] mb-stack-md border border-outline-variant/30">STRATEGY</div>
+<h1 class="font-headline-xl text-headline-xl text-ink-deep mb-stack-md md:text-5xl lg:text-6xl leading-[1.1]">
+                    The Architecture of Collaborative Serendipity
+                </h1>
+<div class="flex flex-wrap items-center gap-y-4 gap-x-8 text-on-surface-variant font-label-md text-label-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-accent-warm">person</span>
+<span class="text-primary">Joshua Theophilus</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined">calendar_today</span>
+<span>October 24, 2024</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined">schedule</span>
+<span>12 min read</span>
+</div>
+<div class="flex items-center gap-2 ml-auto">
+<button class="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full hover:bg-primary-container transition-all active:scale-95 shadow-lg shadow-primary/10" id="ai-summary-btn">
+<span class="material-symbols-outlined fill-icon text-accent-warm">auto_awesome</span>
+<span class="font-label-md">Summarize with AI</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Hero Image -->
+<div class="relative w-full aspect-[21/9] mb-section-gap overflow-hidden rounded-lg">
+<div class="absolute inset-0 bg-ink-deep/10 z-10"></div>
+<img class="w-full h-full object-cover" data-alt="A breathtaking, minimalist architectural interior photograph of a modern co-working space designed for collaboration. The scene features vast floor-to-ceiling windows overlooking a serene botanical garden. Soft afternoon sunlight pours in, illuminating floating timber staircases and open-plan seating areas with premium mid-century modern furniture. The color palette is dominated by warm wood tones, crisp off-whites, and deep blue accents, creating a calm, intellectual, and high-end editorial atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBlEqlgep7lNwSX1cFZkT9bEw_5ZHBWQrxzBbvwg6WoAyK1SDJn4hBv0I2Cmo8acm25CJ5is5ZfpeF1a49JwP0Z01E2hnxdCCuWo5u8Y5_IyoObB4Za8Dwxy1H5HPFjMN5YIUdJ7YnBctCE2jFOR5qRaRqg1mSNHTw5hFZTENPCB4gGN1jWNBU1Z3vkdp3aAo7yYub2Wpya-2cvbAcjqHcSbyxATvWuY13OotXt3U0mJniiQGS0QOMqthvBRyHWKoOeMzlbqe8IJGk"/>
+</div>
+<!-- Article Body -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Floating Sidebar Controls -->
+<aside class="hidden lg:block lg:col-span-1">
+<div class="sticky top-32 flex flex-col items-center gap-8">
+<div class="flex flex-col items-center gap-2">
+<button class="w-12 h-12 flex items-center justify-center rounded-full border border-outline-variant/30 hover:bg-paper-darker transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">thumb_up</span>
+</button>
+<span class="font-label-sm text-label-sm text-on-surface-variant">124</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<button class="w-12 h-12 flex items-center justify-center rounded-full border border-outline-variant/30 hover:bg-paper-darker transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">bookmark</span>
+</button>
+</div>
+<div class="flex flex-col items-center gap-2">
+<button class="w-12 h-12 flex items-center justify-center rounded-full border border-outline-variant/30 hover:bg-paper-darker transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">share</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Content Text Area -->
+<div class="lg:col-span-8 lg:col-start-2">
+<div class="article-content font-headline-md text-body-lg text-ink-deep">
+<p class="first-letter:text-7xl first-letter:font-bold first-letter:mr-3 first-letter:float-left first-letter:text-primary">In the frantic rush for productivity, we often engineer away the very thing that makes creative work profound: the happy accident. Collaborative serendipity isn't about leaving things to chance; it's about building environments—both digital and physical—where unexpected connections are almost inevitable.</p>
+<div class="my-12 border-l-4 border-accent-warm pl-8 py-4">
+<p class="font-headline-md italic text-2xl leading-relaxed text-ink-deep">
+                                "The most impactful insights don't come from a scheduled brainstorming session; they come from the periphery of a conversation you weren't supposed to hear."
+                            </p>
+<cite class="font-label-md text-label-md text-on-surface-variant">— Editorial Note: The Creator's Paradox</cite>
+</div>
+<p>We must look at the 'Water Cooler Effect' through a strategic lens. In a remote-first world, how do we replicate the peripheral vision of an office? The answer lies in architectural transparency. By making work-in-progress visible by default, we create 'hooks' for others to latch onto.</p>
+<h2 class="font-headline-lg text-headline-lg text-ink-deep mt-16 mb-8">The Physics of Idea Collision</h2>
+<p>When two disparate streams of thought collide, the resulting synthesis is often greater than the sum of its parts. Strategic leaders today are focusing less on 'efficiency' and more on 'permeability'. How easily can information flow across department borders without a formal request?</p>
+<div class="my-section-gap">
+<div class="p-8 bg-paper-darker border border-outline-variant/20 rounded-lg">
+<h3 class="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant mb-4">Practical Application</h3>
+<p class="mb-0 font-body-md text-body-md">Consider implementing a 'Digital Commons'—a space for unrefined thoughts, half-baked sketches, and failed experiments. It is in the vulnerability of showing the process that we invite others to contribute to the outcome.</p>
+</div>
+</div>
+<p>As we move into 2025, the architecture of our workflows will define our creative output more than any single tool. Let us build for the unexpected. Let us engineer for serendipity.</p>
+</div>
+<!-- Post-Article Section -->
+<div class="mt-section-gap pt-12 border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+<div>
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase mb-4 tracking-widest">Rate this article</h4>
+<div class="flex items-center gap-1" id="star-rating">
+<button class="material-symbols-outlined text-3xl text-accent-warm cursor-pointer transition-transform hover:scale-110 fill-icon" data-star="1">star</button>
+<button class="material-symbols-outlined text-3xl text-accent-warm cursor-pointer transition-transform hover:scale-110 fill-icon" data-star="2">star</button>
+<button class="material-symbols-outlined text-3xl text-accent-warm cursor-pointer transition-transform hover:scale-110 fill-icon" data-star="3">star</button>
+<button class="material-symbols-outlined text-3xl text-accent-warm cursor-pointer transition-transform hover:scale-110 fill-icon" data-star="4">star</button>
+<button class="material-symbols-outlined text-3xl text-outline-variant cursor-pointer transition-transform hover:scale-110" data-star="5">star</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-3 bg-paper-darker border border-outline-variant/30 px-6 py-3 rounded-full hover:border-accent-warm transition-all active:scale-95" id="upvote-btn">
+<span class="material-symbols-outlined text-primary">thumb_up</span>
+<span class="font-label-md text-primary" id="upvote-count">124</span>
+</button>
+<button class="flex items-center gap-3 bg-paper-darker border border-outline-variant/30 px-6 py-3 rounded-full hover:border-accent-warm transition-all">
+<span class="material-symbols-outlined text-primary">ios_share</span>
+<span class="font-label-md text-primary">Share</span>
+</button>
+</div>
+</div>
+<!-- Comments Section -->
+<section class="mt-16">
+<h3 class="font-headline-md text-headline-md mb-8">Reflections (24)</h3>
+<!-- Comment Input -->
+<div class="mb-12 flex gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border border-outline-variant/50">
+<img class="w-full h-full object-cover" data-alt="A professional user avatar image for Joshua Theophilus, showing a close-up of a stylish man with glasses." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4r2bv4TEnatHPNW11E2xe2CMsK48dB5q2cZJPxA9H0JbJHQ6D6i1b6QU3QgHkIKc092Zvnas9LnsUq4JjsG-OUnBR6sYEhHfIKXj45DABEmLKIX8RC1-dtQ6z40ZvdOFe-94i_LVjmDSoPIK_Bp2GiaoK5c6jBtaEj1E7yGrbDb_3_d-mqMlur3qtfhW2bbaWzgR6A8s2i16Wd44AKaJ5t977Rv9XQNYfwiWK_C7BiksSA_kVw1PCR9yrdqMdVucVI7nx5EyY2L3u"/>
+</div>
+<div class="flex-grow">
+<textarea class="w-full bg-paper-base border-b border-outline-variant/50 focus:border-accent-warm focus:ring-0 transition-all resize-none font-body-md py-2 min-h-[40px]" placeholder="Add your insight..."></textarea>
+<div class="flex justify-end mt-4">
+<button class="bg-primary text-white px-6 py-2 font-label-md rounded-full hover:bg-primary-container transition-colors">Post Comment</button>
+</div>
+</div>
+</div>
+<!-- Sample Comments -->
+<div class="space-y-12">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-primary flex-shrink-0">S</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<span class="font-label-md text-primary">Sarah M.</span>
+<span class="text-[12px] text-on-surface-variant">2 hours ago</span>
+</div>
+<p class="font-body-md text-on-surface mb-3">This resonates deeply with our current transition to a hybrid model. The concept of 'architectural transparency' is exactly what's missing in our project documentation.</p>
+<div class="flex items-center gap-6">
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-[13px] font-medium">
+<span class="material-symbols-outlined text-[18px]">thumb_up</span> 12
+                                            </button>
+<button class="text-on-surface-variant hover:text-primary transition-colors text-[13px] font-medium">Reply</button>
+</div>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center font-bold text-white flex-shrink-0">D</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<span class="font-label-md text-primary">David K.</span>
+<span class="text-[12px] text-on-surface-variant">5 hours ago</span>
+</div>
+<p class="font-body-md text-on-surface mb-3">Brilliant. The analogy of 'hooks' in digital work is spot on. I've found that keeping a 'working' document open for public viewing leads to 10x more engagement than a finished presentation.</p>
+<div class="flex items-center gap-6">
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-[13px] font-medium">
+<span class="material-symbols-outlined text-[18px]">thumb_up</span> 8
+                                            </button>
+<button class="text-on-surface-variant hover:text-primary transition-colors text-[13px] font-medium">Reply</button>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full mt-12 py-4 border border-outline-variant/30 font-label-md text-label-md text-on-surface-variant hover:bg-paper-darker transition-colors rounded-lg">
+                                View all 24 reflections
+                            </button>
+</section>
+</div>
+</div>
+</div>
+</article>
+</main>
+<!-- Footer -->
+<footer class="w-full py-section-gap bg-paper-darker border-t border-outline-variant/20">
+<div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-gutter px-margin-edge max-w-container-max mx-auto">
+<div class="lg:col-span-2">
+<a class="font-headline-md text-headline-md text-ink-deep mb-stack-md block" href="#">Product Slice HQ</a>
+<p class="font-body-md text-on-surface-variant mb-stack-lg max-w-xs">A space for deep synthesis, intellectual authority, and curated insights for the thoughtful creator.</p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/30 hover:border-accent-warm transition-all group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">share</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/30 hover:border-accent-warm transition-all group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">rss_feed</span>
+</a>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h5 class="font-label-md text-label-md text-ink-deep font-bold mb-2">Explore</h5>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Articles</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Library</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Initiatives</a>
+</div>
+<div class="flex flex-col gap-4">
+<h5 class="font-label-md text-label-md text-ink-deep font-bold mb-2">Company</h5>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">About</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Contact</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Newsletter</a>
+</div>
+<div class="flex flex-col gap-4">
+<h5 class="font-label-md text-label-md text-ink-deep font-bold mb-2">Legal</h5>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Terms &amp; Conditions</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Refund Policy</a>
+</div>
+<div class="lg:col-span-6 mt-12 pt-12 border-t border-outline-variant/20 flex flex-col md:flex-row justify-between items-center gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant">© 2024 Product Slice HQ. All rights reserved.</span>
+<div class="flex gap-8">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary" href="#">Cookie Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary" href="#">Data Deletion</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions and effects
+
+        // Upvote Logic
+        const upvoteBtn = document.getElementById('upvote-btn');
+        const upvoteCount = document.getElementById('upvote-count');
+        let count = 124;
+        let upvoted = false;
+
+        upvoteBtn.addEventListener('click', () => {
+            if(!upvoted) {
+                count++;
+                upvoteCount.innerText = count;
+                upvoteBtn.classList.add('bg-accent-warm/20', 'border-accent-warm');
+                upvoted = true;
+            } else {
+                count--;
+                upvoteCount.innerText = count;
+                upvoteBtn.classList.remove('bg-accent-warm/20', 'border-accent-warm');
+                upvoted = false;
+            }
+        });
+
+        // AI Summary Simulation
+        const aiBtn = document.getElementById('ai-summary-btn');
+        aiBtn.addEventListener('click', () => {
+            const originalText = aiBtn.innerHTML;
+            aiBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-accent-warm">sync</span><span class="font-label-md">Analyzing context...</span>`;
+            
+            setTimeout(() => {
+                aiBtn.innerHTML = `<span class="material-symbols-outlined text-accent-warm fill-icon">check_circle</span><span class="font-label-md">Summary Ready</span>`;
+                alert("AI Insight Generated: Creative impact is maximized through deliberate architectural transparency and peripheral interaction hooks.");
+                setTimeout(() => {
+                    aiBtn.innerHTML = originalText;
+                }, 3000);
+            }, 1500);
+        });
+
+        // Star Rating Simulation
+        const stars = document.querySelectorAll('#star-rating button');
+        stars.forEach((star, index) => {
+            star.addEventListener('mouseenter', () => {
+                highlightStars(index + 1);
+            });
+            star.addEventListener('click', () => {
+                highlightStars(index + 1, true);
+                console.log(`Rated ${index + 1} stars`);
+            });
+        });
+
+        function highlightStars(count, permanent = false) {
+            stars.forEach((s, i) => {
+                if (i < count) {
+                    s.classList.add('fill-icon', 'text-accent-warm');
+                    s.classList.remove('text-outline-variant');
+                } else {
+                    s.classList.remove('fill-icon', 'text-accent-warm');
+                    s.classList.add('text-outline-variant');
+                }
+            });
+        }
+
+        // Navbar visibility on scroll
+        let lastScroll = 0;
+        const nav = document.getElementById('main-nav');
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll > 100) {
+                nav.classList.add('bg-white/95', 'backdrop-blur-sm', 'shadow-sm');
+                if (currentScroll > lastScroll) {
+                    nav.style.transform = 'translateY(-100%)';
+                } else {
+                    nav.style.transform = 'translateY(0)';
+                }
+            } else {
+                nav.classList.remove('shadow-sm');
+                nav.style.transform = 'translateY(0)';
+            }
+            lastScroll = currentScroll;
+        });
+    </script>
+</body></html>

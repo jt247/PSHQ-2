@@ -33,71 +33,126 @@ export default async function DashboardPage() {
   const owned = ownedRaw.map(r => r.content).filter(Boolean) as Array<Partial<ContentRow>>
 
   const name = profile?.full_name?.split(' ')[0] ?? 'there'
+  const interests = (profile?.areas_of_interest as string[] | null) ?? []
+
+  const TYPE_BG: Record<string, string> = {
+    article: 'color-mix(in srgb, var(--color-primary-fixed) 40%, transparent)',
+    ebook: '#fce7f3',
+    template: '#dcfce7',
+    course: '#fef3c7',
+  }
+  const TYPE_COLOR: Record<string, string> = {
+    article: 'var(--color-on-primary-fixed-variant)',
+    ebook: '#be185d',
+    template: '#15803d',
+    course: '#b45309',
+  }
 
   return (
-    <div style={page}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={h1}>Good day, {name}</h1>
-        <p style={sub}>Here&apos;s what&apos;s happening on PSHQ.</p>
-      </div>
+    <div className="dash-content">
+      {/* Welcome Header */}
+      <section style={{ marginBottom: '2.5rem' }}>
+        <h2 className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', marginBottom: '0.375rem' }}>
+          Welcome back, {name}
+        </h2>
+        <p className="text-body-lg" style={{ color: 'var(--color-text-muted)', maxWidth: '56ch' }}>
+          Your personal library of synthesis and deep work. Here&apos;s what&apos;s happening with your curated insights today.
+        </p>
+      </section>
 
-      <div style={statsGrid}>
+      {/* Stat Cards */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
         {[
-          { label: 'Content interactions', value: interactionCount },
-          { label: 'Items in library', value: owned.length },
-          { label: 'Interest areas', value: ((profile?.areas_of_interest as string[] | null) ?? []).length },
+          { label: 'Content Unlocked', value: owned.length, icon: '🔓' },
+          { label: 'Interactions', value: interactionCount, icon: '📈' },
+          { label: 'Interest Areas', value: interests.length, icon: '🎯' },
         ].map(s => (
-          <div key={s.label} style={statCard}>
-            <span style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111827' }}>{s.value}</span>
-            <span style={{ fontSize: '0.8125rem', color: '#6b7280', marginTop: '0.25rem' }}>{s.label}</span>
+          <div key={s.label} className="stat-card">
+            <span style={{ fontSize: '1.125rem' }}>{s.icon}</span>
+            <div style={{ marginTop: '0.5rem' }}>
+              <p className="text-headline-lg" style={{ margin: '0', color: 'var(--color-ink-deep)' }}>{s.value}</p>
+              <p className="text-label-sm" style={{ margin: '0.125rem 0 0', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                {s.label}
+              </p>
+            </div>
           </div>
         ))}
-      </div>
+      </section>
 
-      <div style={twoCol}>
-        <section style={section}>
-          <h2 style={sectionHead}>Trending content</h2>
+      {/* Two Column */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: '1.5rem' }}>
+        {/* Trending Content */}
+        <section style={{ background: 'var(--color-paper-darker)', border: '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)', borderRadius: '0.75rem', padding: '1.5rem' }}>
+          <h3 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: '0 0 1.25rem', fontSize: '1.125rem' }}>
+            Trending Content
+          </h3>
           {trending.length === 0 ? (
-            <p style={emptyText}>Nothing trending yet.</p>
+            <p className="text-body-md" style={{ color: 'var(--color-text-muted)' }}>Nothing trending yet.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {trending.map((c, i) => (
                 <Link
                   key={c.id}
                   href={c.type === 'article' ? `/articles/${c.slug}` : `/content/${c.slug}`}
-                  style={listItem}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.75rem 0',
+                    borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)',
+                    textDecoration: 'none',
+                  }}
                 >
-                  <span style={{ color: '#d1d5db', fontSize: '0.8125rem', width: '1.25rem', flexShrink: 0 }}>{i + 1}</span>
-                  <span style={{ flex: 1, color: '#111827', fontWeight: 500, fontSize: '0.9375rem' }}>
+                  <span className="text-label-sm" style={{ color: 'var(--color-accent-warm)', width: '1.25rem', flexShrink: 0, fontWeight: 700 }}>
+                    {i + 1}
+                  </span>
+                  <span className="text-body-md" style={{ flex: 1, color: 'var(--color-ink-deep)', fontWeight: 500 }}>
                     {c.title}
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{c.view_count ?? 0} views</span>
+                  <span className="text-label-sm" style={{ color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
+                    {c.view_count ?? 0} views
+                  </span>
                 </Link>
               ))}
             </div>
           )}
         </section>
 
-        <section style={section}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ ...sectionHead, margin: 0 }}>My library</h2>
-            <Link href="/library" style={{ fontSize: '0.8125rem', color: '#6366f1' }}>Browse all →</Link>
+        {/* My Library */}
+        <section style={{ background: 'var(--color-paper-darker)', border: '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)', borderRadius: '0.75rem', padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <h3 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: 0, fontSize: '1.125rem' }}>
+              My Library
+            </h3>
+            <Link href="/dashboard/library" className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', textDecoration: 'none' }}>
+              View all →
+            </Link>
           </div>
           {owned.length === 0 ? (
-            <p style={emptyText}>
-              No content unlocked yet.{' '}
-              <Link href="/library" style={{ color: '#6366f1' }}>Explore →</Link>
-            </p>
+            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+              <p className="text-body-md" style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
+                No content unlocked yet.
+              </p>
+              <Link href="/library" className="btn-primary" style={{ fontSize: '0.8125rem', padding: '0.5rem 1.125rem' }}>
+                Explore library →
+              </Link>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {owned.map(c => (
                 <Link
                   key={c.id}
                   href={c.type === 'article' ? `/articles/${c.slug}` : `/content/${c.slug}`}
-                  style={listItem}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.75rem 0',
+                    borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)',
+                    textDecoration: 'none',
+                  }}
                 >
-                  <span style={{ flex: 1, color: '#111827', fontWeight: 500, fontSize: '0.9375rem' }}>{c.title}</span>
-                  <span style={{ ...typeBadge, background: TYPE_BG[c.type ?? ''] ?? '#f3f4f6', color: TYPE_COLOR[c.type ?? ''] ?? '#374151' }}>
+                  <span className="text-body-md" style={{ flex: 1, color: 'var(--color-ink-deep)', fontWeight: 500 }}>{c.title}</span>
+                  <span className="badge" style={{
+                    background: TYPE_BG[c.type ?? ''] ?? 'var(--color-surface-container)',
+                    color: TYPE_COLOR[c.type ?? ''] ?? 'var(--color-text-muted)',
+                  }}>
                     {c.type}
                   </span>
                 </Link>
@@ -106,21 +161,15 @@ export default async function DashboardPage() {
           )}
         </section>
       </div>
+
+      {/* Quick actions */}
+      <section style={{ marginTop: '2rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <Link href="/library" className="btn-primary">Browse Library</Link>
+          <Link href="/articles" className="btn-outline">Read Articles</Link>
+          <Link href="/dashboard/requests" className="btn-outline">Request Content</Link>
+        </div>
+      </section>
     </div>
   )
 }
-
-const TYPE_BG: Record<string, string> = { article: '#dbeafe', ebook: '#fce7f3', template: '#dcfce7', course: '#fef3c7' }
-const TYPE_COLOR: Record<string, string> = { article: '#1e40af', ebook: '#be185d', template: '#15803d', course: '#b45309' }
-
-const page: React.CSSProperties = { maxWidth: '960px', margin: '0 auto', padding: '2rem 1.5rem', fontFamily: 'system-ui, sans-serif' }
-const h1: React.CSSProperties = { fontSize: '1.75rem', fontWeight: 700, color: '#111827', margin: 0 }
-const sub: React.CSSProperties = { color: '#6b7280', fontSize: '0.9375rem', margin: '0.25rem 0 0' }
-const statsGrid: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }
-const statCard: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column' }
-const twoCol: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }
-const section: React.CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1.25rem 1.5rem' }
-const sectionHead: React.CSSProperties = { fontSize: '1rem', fontWeight: 600, color: '#111827', margin: '0 0 1rem' }
-const listItem: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem 0', borderBottom: '1px solid #f3f4f6', textDecoration: 'none' }
-const emptyText: React.CSSProperties = { color: '#9ca3af', fontSize: '0.875rem', margin: 0 }
-const typeBadge: React.CSSProperties = { display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Library | Product Slice HQ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .editorial-shadow {
+            box-shadow: 0 20px 40px -10px rgba(14, 42, 71, 0.05);
+        }
+        .active-tab-indicator {
+            position: relative;
+        }
+        .active-tab-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #FACC15;
+        }
+        /* Custom Scrollbar for subtle editorial feel */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #FDFCFB; }
+        ::-webkit-scrollbar-thumb { background: #E5E2E1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #DCD9D9; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "text-muted": "#54595F",
+                        "tertiary": "#151511",
+                        "secondary-fixed-dim": "#eec200",
+                        "outline": "#74777e",
+                        "secondary": "#735c00",
+                        "paper-base": "#FDFCFB",
+                        "on-background": "#1c1b1b",
+                        "on-secondary-container": "#6f5900",
+                        "inverse-on-surface": "#f3f0ef",
+                        "paper-darker": "#F5F2EE",
+                        "surface-bright": "#fcf9f8",
+                        "on-secondary-fixed-variant": "#574500",
+                        "on-tertiary-container": "#93908a",
+                        "primary": "#00152c",
+                        "on-primary-container": "#7992b4",
+                        "surface-tint": "#476080",
+                        "primary-fixed": "#d2e4ff",
+                        "ink-deep": "#0E2A47",
+                        "background": "#fcf9f8",
+                        "surface-container": "#f0eded",
+                        "tertiary-fixed-dim": "#cac6bf",
+                        "inverse-primary": "#afc8ed",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f6f3f2",
+                        "inverse-surface": "#313030",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#ffe083",
+                        "surface-container-highest": "#e5e2e1",
+                        "primary-fixed-dim": "#afc8ed",
+                        "on-tertiary-fixed": "#1c1c17",
+                        "accent-warm": "#FACC15",
+                        "outline-variant": "#c4c6ce",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#e6e2db",
+                        "surface-variant": "#e5e2e1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1c1b1b",
+                        "text-main": "#1A1A1A",
+                        "surface-container-high": "#eae7e7",
+                        "on-secondary": "#ffffff",
+                        "surface": "#fcf9f8",
+                        "on-secondary-fixed": "#231b00",
+                        "on-tertiary-fixed-variant": "#484742",
+                        "on-primary-fixed": "#001c38",
+                        "secondary-container": "#fed01b",
+                        "primary-container": "#0e2a47",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#43474d",
+                        "on-primary-fixed-variant": "#2f4867",
+                        "tertiary-container": "#2a2925"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-edge": "40px",
+                        "section-gap": "80px",
+                        "gutter": "32px",
+                        "stack-lg": "32px",
+                        "container-max": "1280px",
+                        "stack-md": "16px",
+                        "unit": "8px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Libre Caslon Text"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-xl": ["Libre Caslon Text"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline-md": ["Libre Caslon Text"],
+                        "body-md": ["Plus Jakarta Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-paper-base text-ink-deep font-body-md antialiased">
+<div class="flex min-h-screen">
+<!-- Side Navigation (Shared Component Logic) -->
+<aside class="hidden md:flex flex-col w-64 fixed inset-y-0 left-0 bg-paper-darker border-r border-tertiary/10 z-50">
+<div class="px-6 py-8">
+<span class="font-headline-md text-headline-md font-bold text-ink-deep">Product Slice HQ</span>
+</div>
+<nav class="flex-1 px-4 space-y-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-text-muted font-body-md hover:text-ink-deep transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Overview
+                </a>
+<!-- Library is Active -->
+<a class="flex items-center gap-3 px-3 py-2 text-ink-deep font-bold border-b-2 border-accent-warm pb-1 transition-opacity opacity-80" href="#">
+<span class="material-symbols-outlined">library_books</span>
+                    Library
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-muted font-body-md hover:text-ink-deep transition-colors" href="#">
+<span class="material-symbols-outlined">article</span>
+                    Articles
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-muted font-body-md hover:text-ink-deep transition-colors" href="#">
+<span class="material-symbols-outlined">lightbulb</span>
+                    Initiatives
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-muted font-body-md hover:text-ink-deep transition-colors" href="#">
+<span class="material-symbols-outlined">info</span>
+                    About
+                </a>
+</nav>
+<div class="p-4 border-t border-tertiary/5">
+<div class="flex items-center gap-3 px-3 py-2">
+<div class="w-8 h-8 bg-ink-deep rounded-full flex items-center justify-center text-paper-base text-xs font-bold">JD</div>
+<div class="flex flex-col">
+<span class="text-label-md font-semibold truncate">Jane Doe</span>
+<span class="text-[10px] text-text-muted uppercase tracking-widest">Thoughtful Creator</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 min-h-screen">
+<!-- Top Bar (Contextual) -->
+<header class="sticky top-0 bg-paper-base/90 backdrop-blur-md z-40 border-b border-tertiary/10">
+<div class="max-w-container-max mx-auto px-margin-edge py-4 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-ink-deep">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-ink-deep">My Library</h1>
+</div>
+<div class="flex items-center gap-gutter">
+<div class="hidden sm:flex items-center bg-paper-darker border border-tertiary/5 rounded px-3 py-1.5 w-64 focus-within:border-accent-warm transition-colors">
+<span class="material-symbols-outlined text-text-muted text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-full placeholder:text-text-muted" placeholder="Search your owned content..." type="text"/>
+</div>
+<button class="text-ink-deep relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-accent-warm rounded-full"></span>
+</button>
+</div>
+</div>
+</header>
+<div class="max-w-container-max mx-auto px-margin-edge py-stack-lg">
+<!-- Page Header Info -->
+<div class="mb-section-gap flex flex-col md:flex-row md:items-end justify-between gap-stack-md">
+<div>
+<p class="font-label-md text-label-md text-text-muted uppercase tracking-[0.1em] mb-unit">Personal Curations</p>
+<h2 class="font-headline-xl text-headline-xl text-ink-deep leading-tight">Your Synthetic Workspace</h2>
+<p class="text-body-lg font-body-lg text-text-muted mt-4 max-w-2xl">Access all your acquired knowledge slices, articles, and comprehensive courses in one unified editorial view.</p>
+</div>
+<div class="flex items-center gap-stack-sm bg-paper-darker px-4 py-3 border-l-4 border-accent-warm">
+<span class="font-headline-md text-headline-md text-ink-deep">42</span>
+<span class="text-label-md text-text-muted uppercase tracking-wider">Total Items Owned</span>
+</div>
+</div>
+<!-- Filter Pills -->
+<div class="flex flex-wrap items-center gap-stack-md mb-stack-lg border-b border-tertiary/5 pb-4">
+<button class="px-6 py-2 bg-ink-deep text-paper-base text-label-md font-semibold transition-all hover:bg-opacity-90">All Content</button>
+<button class="px-6 py-2 text-text-muted hover:text-ink-deep text-label-md font-semibold border border-tertiary/10 transition-all hover:border-accent-warm">Articles</button>
+<button class="px-6 py-2 text-text-muted hover:text-ink-deep text-label-md font-semibold border border-tertiary/10 transition-all hover:border-accent-warm">E-books</button>
+<button class="px-6 py-2 text-text-muted hover:text-ink-deep text-label-md font-semibold border border-tertiary/10 transition-all hover:border-accent-warm">Courses</button>
+<button class="px-6 py-2 text-text-muted hover:text-ink-deep text-label-md font-semibold border border-tertiary/10 transition-all hover:border-accent-warm">Resources</button>
+</div>
+<!-- Content Grid (Asymmetric Editorial Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1: Course -->
+<div class="group bg-paper-darker border border-tertiary/5 p-6 hover:border-accent-warm transition-all duration-300 flex flex-col h-full editorial-shadow">
+<div class="relative w-full aspect-video mb-6 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="A sophisticated digital workspace overhead shot with a notebook, a glass of water, and a high-end laptop. The lighting is soft morning sunlight, casting long, gentle shadows across a light oak desk. The mood is calm, focused, and intellectually rigorous, utilizing the Product Slice HQ ink-blue and warm-paper color palette." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCS21_OFuCOxzJbU9GkO3YBSpPgiNR9TBysjuz8fqEO8IhvTQ41LU8-fLlfFi1zB7epbAfp__oAxqanzU35jAGnxf-nUraRko4jrElqkdLlinM4r9voy89cAtowWjpIl_tjInRCIdFRua-MUjGlpy84Jnm-0CUssAwpuj1JbYNkQVOiaEULHze9_0RtSmsIj-Fx3igzW18ybC6zMif7NEEVUec0Tn-VMsX3cCgNqrz0d4NoVCZA0u-ZRolOwWBBJwvXrbWaZsT5jkVn')"></div>
+<div class="absolute top-3 left-3 bg-accent-warm text-ink-deep text-[10px] font-bold uppercase tracking-widest px-2 py-1">Course</div>
+<div class="absolute top-3 right-3 bg-paper-base/90 backdrop-blur text-ink-deep text-[10px] font-bold uppercase tracking-widest px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                Owned
+                            </div>
+</div>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-2">Systems Thinking for Modern Product Managers</h3>
+<p class="text-body-md text-text-muted mb-6 flex-1">A deep dive into the interconnected nature of software ecosystems and organizational design.</p>
+<div class="flex items-center justify-between pt-6 border-t border-tertiary/5">
+<span class="text-label-md text-text-muted">75% Complete</span>
+<button class="flex items-center gap-2 text-ink-deep font-bold hover:text-accent-warm transition-colors">
+                                Continue <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Article -->
+<div class="group bg-paper-darker border border-tertiary/5 p-6 hover:border-accent-warm transition-all duration-300 flex flex-col h-full editorial-shadow">
+<div class="relative w-full aspect-video mb-6 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="An abstract representation of data flowing like a river of ink on a textured paper background. The visualization uses deep navy blues and sharp golden highlights to represent insights. The style is reminiscent of high-end editorial illustrations found in financial journals, emphasizing precision and intellectual depth." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEFe_-rsFEIR5T19_95LECv7D-q6DhguhyRdeL53NnGKZS9uCxGUI3MjawLBQnGvFFspdnXzJPMiNyKNzbEhX_qrL6y9ZpoBdq-moYZD-VRb65HGSdlUq4SrAIwksbsMn-EX0UZxRjI03J7PUnZuy2Vddom8iMe-1X2NLLNOnhhJNOSNYVVS9s3gxL34Jm6viYwnCiX3EM_jdFQTagcSi-7AoNT-fy5u3I-puR1nl93GpByqHUcQ67Sms7Z0dJ7wtBawlM-LlB5vPU')"></div>
+<div class="absolute top-3 left-3 bg-ink-deep text-paper-base text-[10px] font-bold uppercase tracking-widest px-2 py-1">Article</div>
+<div class="absolute top-3 right-3 bg-paper-base/90 backdrop-blur text-ink-deep text-[10px] font-bold uppercase tracking-widest px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                Owned
+                            </div>
+</div>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-2">The Ethics of Algorithmic Curation</h3>
+<p class="text-body-md text-text-muted mb-6 flex-1">Exploring the moral obligations of engineers in the age of personal newsfeeds.</p>
+<div class="flex items-center justify-between pt-6 border-t border-tertiary/5">
+<span class="text-label-md text-text-muted">12 min read</span>
+<button class="flex items-center gap-2 text-ink-deep font-bold hover:text-accent-warm transition-colors">
+                                Read Now <span class="material-symbols-outlined">menu_book</span>
+</button>
+</div>
+</div>
+<!-- Card 3: E-Book -->
+<div class="group bg-paper-darker border border-tertiary/5 p-6 hover:border-accent-warm transition-all duration-300 flex flex-col h-full editorial-shadow">
+<div class="relative w-full aspect-video mb-6 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="A clean, minimalist book cover design featuring bold typography and geometric shapes in a palette of cream, charcoal, and ochre. The book is presented in a modern 3D mockup on a soft gray surface, suggesting a physical presence. The lighting is diffused and professional, reinforcing the premium quality of the digital resource." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB_uLfIgw2T4umXOCq2kY_jU10Ro7iNNYfw2jv78w7MDo-d29OFKmcHHSqZ0l1rm31DCzTORJW-XOeG2DYRdnJVjtaffjK66_CR7VpHowuG37zUVDZudRMWV02Ee0lHwflcYQfFnFS1CPbT3PwXdbnyyu617glnSTWupVVwoYYmaqDhNJavjlkFTLe4t2lCusVWDHn7IBeQEyY-QVGc2AfjZ07sVvSn5iCgP3o4ahkDJytoR2TJ5dRK_AK-RnLEsMNPV-nwjUT-tgVU')"></div>
+<div class="absolute top-3 left-3 bg-tertiary text-paper-base text-[10px] font-bold uppercase tracking-widest px-2 py-1">E-Book</div>
+<div class="absolute top-3 right-3 bg-paper-base/90 backdrop-blur text-ink-deep text-[10px] font-bold uppercase tracking-widest px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                Owned
+                            </div>
+</div>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-2">Mental Models for Founders</h3>
+<p class="text-body-md text-text-muted mb-6 flex-1">A comprehensive guide to the psychological frameworks of successful technology entrepreneurs.</p>
+<div class="flex items-center justify-between pt-6 border-t border-tertiary/5">
+<span class="text-label-md text-text-muted">2.4 MB PDF</span>
+<button class="flex items-center gap-2 text-ink-deep font-bold hover:text-accent-warm transition-colors">
+                                Download <span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<!-- Card 4: Resource -->
+<div class="group bg-paper-darker border border-tertiary/5 p-6 hover:border-accent-warm transition-all duration-300 flex flex-col h-full editorial-shadow">
+<div class="relative w-full aspect-video mb-6 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="A grid of meticulously organized UI components and design tokens. Each element is displayed with surgical precision, showcasing a sophisticated design system. The color palette is muted and professional, using shades of gray and navy with small, intentional pops of yellow. The composition is clean and technical, appealing to a senior creator's sensibility." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfDczBhIhd9w0bqNg7CtNkHwE2umNVicGkWmDzK29uS7puADUGVeBM-cDlEEUspUuG-3TyfldxkiW_EqMNaKL13RVyip3OIHbTQ6JvGv-b1NvHzZVR0O_6hoEtLp237xRlrvOrIpR0is7jt9snH4WSAotrlRW6j-EDGcB1-S44iq-8kmd9C3DM5I1qbevKwJjCkm5HbTpUbLx1PyG__l3aQXQWkcRWdZP4ob7WYbP9wtfRfehl4gE5nqZA2qDI5X8iSXH_7SNOj_DB')"></div>
+<div class="absolute top-3 left-3 bg-on-secondary-container text-paper-base text-[10px] font-bold uppercase tracking-widest px-2 py-1">Resource</div>
+<div class="absolute top-3 right-3 bg-paper-base/90 backdrop-blur text-ink-deep text-[10px] font-bold uppercase tracking-widest px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                Owned
+                            </div>
+</div>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-2">Product Architecture Blueprint v2.1</h3>
+<p class="text-body-md text-text-muted mb-6 flex-1">Fully customizable Figma files and documentation for scalable product infrastructures.</p>
+<div class="flex items-center justify-between pt-6 border-t border-tertiary/5">
+<span class="text-label-md text-text-muted">Figma / Docs</span>
+<button class="flex items-center gap-2 text-ink-deep font-bold hover:text-accent-warm transition-colors">
+                                Access <span class="material-symbols-outlined">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Card 5: Article -->
+<div class="group bg-paper-darker border border-tertiary/5 p-6 hover:border-accent-warm transition-all duration-300 flex flex-col h-full editorial-shadow">
+<div class="relative w-full aspect-video mb-6 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="An artistic photograph of a vintage typewriter next to a modern smartphone, representing the bridge between classical thought and modern technology. The scene is shot in a moody, dimly lit room with a single warm light source hitting the objects. The rich textures of wood and metal are emphasized, creating a feeling of timeless intellectual craftsmanship." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD2fgGCIkugMGmPsGvP2-X1oXoPdAL3xHCpPlBFVmcW1f_SShdUGL7xmscblusLsbkQ9mGpTCdb_vGHjOOdnxwYtdvPTneTfw1G_aVDekU_dEGwqQIj1jPAZl9rkIZZ-D_sXL6HtYtLo0XHfn0xbgIdRpaGU6RJq4IOq6X2OsFfag5JD7JoItutBUJ1ROqQeHBUXawTsfRFfyUF5rmgDXo9T8HRwn9qf1JPD5I8Z7tphhGN98hyeKUdOkz6dEEzrYsUJRHu9VTLQ2cN')"></div>
+<div class="absolute top-3 left-3 bg-ink-deep text-paper-base text-[10px] font-bold uppercase tracking-widest px-2 py-1">Article</div>
+<div class="absolute top-3 right-3 bg-paper-base/90 backdrop-blur text-ink-deep text-[10px] font-bold uppercase tracking-widest px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                Owned
+                            </div>
+</div>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-2">The Renaissance PM</h3>
+<p class="text-body-md text-text-muted mb-6 flex-1">Why polymathy is becoming the most sought-after trait in product leadership.</p>
+<div class="flex items-center justify-between pt-6 border-t border-tertiary/5">
+<span class="text-label-md text-text-muted">18 min read</span>
+<button class="flex items-center gap-2 text-ink-deep font-bold hover:text-accent-warm transition-colors">
+                                Read Now <span class="material-symbols-outlined">menu_book</span>
+</button>
+</div>
+</div>
+<!-- Add New / Explore More Placeholder -->
+<div class="flex flex-col items-center justify-center border-2 border-dashed border-tertiary/10 p-12 text-center group hover:border-accent-warm transition-all duration-300 cursor-pointer">
+<div class="w-16 h-16 rounded-full bg-paper-darker flex items-center justify-center mb-6 group-hover:bg-accent-warm transition-colors">
+<span class="material-symbols-outlined text-ink-deep text-3xl">add</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-2">Expand Your Library</h3>
+<p class="text-body-md text-text-muted max-w-[200px]">Browse the public store for more high-quality knowledge slices.</p>
+<button class="mt-6 text-label-md font-bold uppercase tracking-widest text-ink-deep hover:underline decoration-accent-warm decoration-2 underline-offset-4">Explore Store</button>
+</div>
+</div>
+<!-- Footer Section (Inside Main) -->
+<footer class="mt-section-gap pt-stack-lg border-t border-tertiary/10 grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="md:col-span-2">
+<span class="font-headline-md text-headline-md font-bold text-ink-deep">Product Slice HQ</span>
+<p class="mt-4 text-body-md text-text-muted max-w-sm">Dedicated to the synthesizer, the thinker, and the builder. Curated knowledge for the intentional creator.</p>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-ink-deep uppercase tracking-widest mb-4">Legal</h4>
+<ul class="space-y-2">
+<li><a class="text-body-md text-text-muted hover:text-accent-warm transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="text-body-md text-text-muted hover:text-accent-warm transition-colors" href="#">Terms of Service</a></li>
+<li><a class="text-body-md text-text-muted hover:text-accent-warm transition-colors" href="#">Editorial Guidelines</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-ink-deep uppercase tracking-widest mb-4">Social</h4>
+<ul class="space-y-2">
+<li><a class="text-body-md text-text-muted hover:text-accent-warm transition-colors" href="#">Twitter</a></li>
+<li><a class="text-body-md text-text-muted hover:text-accent-warm transition-colors" href="#">LinkedIn</a></li>
+</ul>
+</div>
+<div class="md:col-span-4 mt-8 pt-8 border-t border-tertiary/5 text-center">
+<p class="text-label-md text-text-muted uppercase tracking-widest">© 2024 Product Slice HQ. For the thoughtful creator.</p>
+</div>
+</footer>
+</div>
+</main>
+</div>
+<!-- Mobile Nav Bar (Shared Component Logic) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-paper-base border-t border-tertiary/10 flex justify-around items-center py-3 px-margin-edge z-50">
+<a class="flex flex-col items-center gap-1 text-text-muted" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Overview</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-ink-deep" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">library_books</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Library</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-muted" href="#">
+<span class="material-symbols-outlined">article</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Articles</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-muted" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple Micro-interactions for Filter Tabs
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function() {
+                if (this.parentElement.classList.contains('flex-wrap')) {
+                    document.querySelectorAll('.flex-wrap button').forEach(btn => {
+                        btn.classList.remove('bg-ink-deep', 'text-paper-base');
+                        btn.classList.add('text-text-muted', 'border', 'border-tertiary/10');
+                    });
+                    this.classList.add('bg-ink-deep', 'text-paper-base');
+                    this.classList.remove('text-text-muted', 'border', 'border-tertiary/10');
+                }
+            });
+        });
+
+        // Hover tilt effect placeholder
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                // Future implementation of subtle 3D tilt logic
+            });
+        });
+    </script>
+</body></html>

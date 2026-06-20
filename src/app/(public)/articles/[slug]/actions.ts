@@ -45,13 +45,17 @@ export async function toggleUpvoteAction(contentId: string, currentlyUpvoted: bo
   if (!user) return { error: 'Sign in to upvote.' }
 
   if (currentlyUpvoted) {
-    await supabase
+    const { error } = await supabase
       .from('content_upvotes')
       .delete()
       .eq('content_id', contentId)
       .eq('user_id', user.id)
+    if (error) return { error: 'Failed to remove upvote.' }
   } else {
-    await supabase.from('content_upvotes').insert({ content_id: contentId, user_id: user.id })
+    const { error } = await supabase
+      .from('content_upvotes')
+      .insert({ content_id: contentId, user_id: user.id })
+    if (error) return { error: 'Failed to upvote.' }
   }
 
   revalidatePath(`/articles`)

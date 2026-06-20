@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Library | Product Slice HQ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "ink-deep": "#0E2A47",
+                        "background": "#fcf9f8",
+                        "primary-fixed": "#d2e4ff",
+                        "surface-tint": "#476080",
+                        "on-primary-container": "#7992b4",
+                        "tertiary-fixed-dim": "#cac6bf",
+                        "surface-container": "#f0eded",
+                        "on-secondary-fixed-variant": "#574500",
+                        "surface-bright": "#fcf9f8",
+                        "primary": "#00152c",
+                        "on-tertiary-container": "#93908a",
+                        "paper-base": "#FDFCFB",
+                        "on-background": "#1c1b1b",
+                        "paper-darker": "#F5F2EE",
+                        "on-secondary-container": "#6f5900",
+                        "inverse-on-surface": "#f3f0ef",
+                        "text-muted": "#54595F",
+                        "secondary": "#735c00",
+                        "secondary-fixed-dim": "#eec200",
+                        "outline": "#74777e",
+                        "tertiary": "#151511",
+                        "on-surface-variant": "#43474d",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#2a2925",
+                        "on-primary-fixed-variant": "#2f4867",
+                        "on-secondary-fixed": "#231b00",
+                        "surface": "#fcf9f8",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#fed01b",
+                        "primary-container": "#0e2a47",
+                        "on-tertiary-fixed-variant": "#484742",
+                        "on-primary-fixed": "#001c38",
+                        "surface-variant": "#e5e2e1",
+                        "tertiary-fixed": "#e6e2db",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c4c6ce",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#eae7e7",
+                        "text-main": "#1A1A1A",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1c1b1b",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f6f3f2",
+                        "inverse-surface": "#313030",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#afc8ed",
+                        "primary-fixed-dim": "#afc8ed",
+                        "on-tertiary-fixed": "#1c1c17",
+                        "accent-warm": "#FACC15",
+                        "surface-container-highest": "#e5e2e1",
+                        "secondary-fixed": "#ffe083",
+                        "surface-dim": "#dcd9d9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "margin-edge": "40px",
+                        "section-gap": "80px",
+                        "gutter": "32px",
+                        "unit": "8px",
+                        "stack-sm": "8px",
+                        "container-max": "1280px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Libre Caslon Text"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Libre Caslon Text"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline-md": ["Libre Caslon Text"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-xl": ["Libre Caslon Text"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-shadow {
+            box-shadow: 0 20px 40px -10px rgba(14, 42, 71, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-paper-base text-ink-deep font-body-md selection:bg-accent-warm/30">
+<!-- TopNavBar -->
+<header class="docked full-width top-0 sticky z-50 bg-paper-base border-b border-tertiary/10">
+<nav class="flex justify-between items-center w-full px-margin-edge py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-lg">
+<a class="font-headline-md text-headline-md font-bold text-ink-deep" href="#">Product Slice HQ</a>
+<div class="hidden md:flex items-center gap-gutter">
+<a class="font-body-md text-body-md tracking-wide text-text-muted hover:text-ink-deep transition-colors duration-200" href="#">Articles</a>
+<a class="font-body-md text-body-md tracking-wide text-ink-deep font-bold border-b-2 border-accent-warm pb-1 transition-opacity" href="#">Library</a>
+<a class="font-body-md text-body-md tracking-wide text-text-muted hover:text-ink-deep transition-colors duration-200" href="#">Initiatives</a>
+<a class="font-body-md text-body-md tracking-wide text-text-muted hover:text-ink-deep transition-colors duration-200" href="#">About</a>
+<a class="font-body-md text-body-md tracking-wide text-text-muted hover:text-ink-deep transition-colors duration-200" href="#">Contact</a>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="hidden sm:block text-ink-deep font-label-md px-4 py-2 hover:opacity-80 transition-opacity">Sign In</button>
+<button class="bg-ink-deep text-white px-6 py-2 font-label-md hover:opacity-90 transition-opacity">Get Started</button>
+</div>
+</nav>
+</header>
+<main class="max-w-container-max mx-auto px-margin-edge py-section-gap">
+<!-- Header Section -->
+<section class="mb-stack-lg max-w-2xl">
+<h1 class="font-headline-xl text-headline-xl mb-stack-sm">Library</h1>
+<p class="font-body-lg text-body-lg text-text-muted">A curated collection of resources for the thoughtful creator. From deep-dive articles to interactive courses, designed to help you synthesize ideas and cultivate professional mastery.</p>
+</section>
+<!-- Search & Filters -->
+<section class="mb-section-gap">
+<div class="flex flex-col gap-stack-md border-y border-tertiary/10 py-stack-lg">
+<!-- Search Bar -->
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">search</span>
+<input class="w-full bg-paper-darker border-none focus:ring-1 focus:ring-accent-warm pl-12 pr-4 py-3 font-body-md outline-none" placeholder="Search the collection..." type="text"/>
+</div>
+<!-- Filter Groups -->
+<div class="flex flex-wrap items-center gap-gutter">
+<div class="flex flex-col gap-2">
+<span class="font-label-md text-label-md uppercase text-text-muted opacity-60">Content Type</span>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-1.5 rounded-sm bg-ink-deep text-white font-label-md text-label-sm">All</button>
+<button class="px-4 py-1.5 rounded-sm bg-paper-darker text-ink-deep border border-tertiary/10 font-label-md text-label-sm hover:border-ink-deep transition-colors">Articles</button>
+<button class="px-4 py-1.5 rounded-sm bg-paper-darker text-ink-deep border border-tertiary/10 font-label-md text-label-sm hover:border-ink-deep transition-colors">E-books</button>
+<button class="px-4 py-1.5 rounded-sm bg-paper-darker text-ink-deep border border-tertiary/10 font-label-md text-label-sm hover:border-ink-deep transition-colors">Courses</button>
+<button class="px-4 py-1.5 rounded-sm bg-paper-darker text-ink-deep border border-tertiary/10 font-label-md text-label-sm hover:border-ink-deep transition-colors">Resources</button>
+</div>
+</div>
+<div class="h-10 w-px bg-tertiary/10 hidden md:block"></div>
+<div class="flex flex-col gap-2">
+<span class="font-label-md text-label-md uppercase text-text-muted opacity-60">Pricing</span>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-1.5 rounded-sm bg-ink-deep text-white font-label-md text-label-sm">All</button>
+<button class="px-4 py-1.5 rounded-sm bg-paper-darker text-ink-deep border border-tertiary/10 font-label-md text-label-sm hover:border-ink-deep transition-colors">Free</button>
+<button class="px-4 py-1.5 rounded-sm bg-paper-darker text-ink-deep border border-tertiary/10 font-label-md text-label-sm hover:border-ink-deep transition-colors">Paid</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Results Count -->
+<div class="mt-stack-md flex justify-between items-center">
+<span class="font-label-md text-label-md text-text-muted uppercase">Showing 24 items</span>
+<button class="flex items-center gap-1 text-ink-deep font-label-md group hover:text-accent-warm transition-colors">
+                    Sort by: Latest
+                    <span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+</section>
+<!-- Grid Layout -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<article class="group bg-paper-darker p-4 flex flex-col border border-tertiary/5 hover:border-accent-warm transition-all duration-300">
+<div class="relative overflow-hidden mb-stack-md aspect-square">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A sophisticated digital artwork showing an abstract neural network of light and shadow, with deep indigo blues and glowing amber highlights. The style is modern editorial, clean and professional, suggesting deep technological intelligence and thoughtful curation of knowledge in a high-end digital environment." src="https://lh3.googleusercontent.com/aida/AP1WRLvKYCiusDsRg5us2JCJiuROaRFlBKnPki7NIucZ9WF_djP5lD06uM7JfDtmLz64GEWeYxvBnH-RlSqNZ_kTnjW3ZEea7pnoOP_sOyuIb2AyFMgdsD7XYRXkR7x3RaNI1koAowyTbacjV-RpEVnHg5LieX3e4kOpCssgk2WHm54PWv1otqjDrTQPIgzcoSsSnCebD-gflLa9-r8Y4cSBiq1JnpKpJe8b7I7R9BFMUbAhsbigPFFjUzSapZTR"/>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-ink-deep text-white font-label-md text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider">Course</span>
+<span class="bg-accent-warm text-ink-deep font-label-md text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider">$49</span>
+</div>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-md text-headline-md mb-2 group-hover:text-surface-tint transition-colors">Designing for Synthesis</h3>
+<p class="text-text-muted font-body-md text-sm mb-4 line-clamp-2">Learn the mental models and visual frameworks required to turn raw information into curated knowledge structures.</p>
+</div>
+<div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-tertiary/5">
+<span class="text-[11px] font-label-md uppercase text-on-primary-container">#Strategy</span>
+<span class="text-[11px] font-label-md uppercase text-on-primary-container">#UI Design</span>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="group bg-paper-darker p-4 flex flex-col border border-tertiary/5 hover:border-accent-warm transition-all duration-300">
+<div class="relative overflow-hidden mb-stack-md aspect-square">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A minimalist architectural detail of a library with soft natural lighting falling across clean, modern surfaces. The color palette consists of paper-like neutrals and subtle cool grays, evoking a sense of calm focus and intellectual authority. The image has a high-end digital journal feel, perfectly aligned with a professional mentoring spirit." src="https://lh3.googleusercontent.com/aida/AP1WRLsnVu3sqmEGCyKS_tgUenPqGGYbPLBDI-FkMCu73Mr5L_j99yrLXfCZxM93Pe0o1GpbxVYo9kCXaNZHx4YJwsW2zK50rJX75T0fxnKU0cjDpxTsZjy_5OadeezH0Sa9bFxg9bT5W6r-z4ngxWGrMID3qj42uDz6v1QXyNx3r8xhfw1-I0MHia826N-PmPlsL0RoHSu0XshKRasoeqqg7mTtGUdZbY0oSL473glqoVytXYRk4fbCAs_31HPd"/>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-ink-deep text-white font-label-md text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider">Article</span>
+<span class="bg-paper-base text-ink-deep border border-tertiary/20 font-label-md text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider">Free</span>
+</div>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-md text-headline-md mb-2 group-hover:text-surface-tint transition-colors">The Editor's Mindset</h3>
+<p class="text-text-muted font-body-md text-sm mb-4 line-clamp-2">Why the best product managers act more like editors than managers. A deep dive into selective curation and decision making.</p>
+</div>
+<div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-tertiary/5">
+<span class="text-[11px] font-label-md uppercase text-on-primary-container">#Leadership</span>
+<span class="text-[11px] font-label-md uppercase text-on-primary-container">#Editorial</span>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="group bg-paper-darker p-4 flex flex-col border border-tertiary/5 hover:border-accent-warm transition-all duration-300">
+<div class="relative overflow-hidden mb-stack-md aspect-square">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="An abstract visualization of complex data structures rendered as delicate, overlapping translucent layers. The lighting is warm and inviting, using soft golds and ink-deep blues to create a professional yet approachable aesthetic. This high-resolution digital art conveys the beauty of organized information and thoughtful professional expertise." src="https://lh3.googleusercontent.com/aida/AP1WRLug6zgOB9fbNHRr_eLsIMxYgMGBfgJsSdgV2DC7yfzCkzxISDp4gtn4h-Vv_6sm8o8WL0h9A46HfHkENC74xHZjnEOjbSQllMGNZAUcR_lUNqZmip95Gu7vZe-nk5uWasMO20DP9tmjwE3-1h0RMrKxoGwYuQKQ7jZtxHGHLSelCGHJFARg1jzI9N87FhhdPHXtjYZd_tBlaofQc91yWK3bKyiyxR0lFE-bCoctWHvPuG0YwEv93C8HPwxj"/>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-ink-deep text-white font-label-md text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider">Resource</span>
+<span class="bg-accent-warm text-ink-deep font-label-md text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider">$19</span>
+</div>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-md text-headline-md mb-2 group-hover:text-surface-tint transition-colors">Framework Directory</h3>
+<p class="text-text-muted font-body-md text-sm mb-4 line-clamp-2">A comprehensive library of 50+ templates and frameworks for discovery, definition, and delivery phases.</p>
+</div>
+<div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-tertiary/5">
+<span class="text-[11px] font-label-md uppercase text-on-primary-container">#Templates</span>
+<span class="text-[11px] font-label-md uppercase text-on-primary-container">#Execution</span>
+</div>
+</article>
+<!-- Additional filler cards for grid structure -->
+<!-- Row 2 Card 1 -->
+<article class="group bg-paper-darker p-4 flex flex-col border border-tertiary/5 hover:border-accent-warm transition-all duration-300">
+<div class="relative overflow-hidden mb-stack-md aspect-square bg-surface-container flex items-center justify-center">
+<div class="p-8 text-center">
+<span class="material-symbols-outlined text-4xl text-ink-deep/20 mb-2">auto_stories</span>
+<p class="font-label-md text-[10px] uppercase text-text-muted tracking-widest">Library Collection</p>
+</div>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-ink-deep text-white font-label-md text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider">E-Book</span>
+<span class="bg-paper-base text-ink-deep border border-tertiary/20 font-label-md text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider">Free</span>
+</div>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-md text-headline-md mb-2 group-hover:text-surface-tint transition-colors">The Intentional Workflow</h3>
+<p class="text-text-muted font-body-md text-sm mb-4 line-clamp-2">Breaking free from the productivity trap and reclaiming space for deep synthesis work in product development.</p>
+</div>
+<div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-tertiary/5">
+<span class="text-[11px] font-label-md uppercase text-on-primary-container">#Philosophy</span>
+<span class="text-[11px] font-label-md uppercase text-on-primary-container">#Workflow</span>
+</div>
+</article>
+<!-- Editorial Callout -->
+<div class="lg:col-span-2 bg-ink-deep p-gutter flex flex-col md:flex-row items-center gap-gutter editorial-shadow relative overflow-hidden">
+<div class="absolute -right-10 -bottom-10 opacity-10">
+<span class="material-symbols-outlined text-[200px] text-white">lightbulb</span>
+</div>
+<div class="flex-1 z-10">
+<span class="font-label-md text-label-sm uppercase text-accent-warm mb-4 block tracking-widest">Insight Spotlight</span>
+<h2 class="font-headline-lg text-headline-lg text-white mb-4 leading-tight italic">"Synthesis is not simply summarizing; it is the act of creating a new perspective from disparate elements."</h2>
+<p class="text-on-primary-container font-body-md">Our library is organized to foster this very synthesis. Every resource is a piece of a larger puzzle designed for mastery.</p>
+</div>
+<div class="z-10 flex flex-col gap-4">
+<button class="bg-accent-warm text-ink-deep font-label-md py-4 px-8 hover:brightness-110 transition-all">Join the Newsletter</button>
+<p class="text-white/40 text-[11px] font-label-md uppercase text-center">Thoughtful updates weekly</p>
+</div>
+</div>
+</section>
+<!-- Pagination -->
+<div class="mt-section-gap flex justify-center items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center border border-tertiary/10 text-text-muted hover:border-ink-deep transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center bg-ink-deep text-white font-label-md">1</button>
+<button class="w-10 h-10 flex items-center justify-center border border-tertiary/10 text-text-muted hover:border-ink-deep transition-colors font-label-md">2</button>
+<button class="w-10 h-10 flex items-center justify-center border border-tertiary/10 text-text-muted hover:border-ink-deep transition-colors font-label-md">3</button>
+<button class="w-10 h-10 flex items-center justify-center border border-tertiary/10 text-text-muted hover:border-ink-deep transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-paper-darker border-t border-tertiary/5">
+<div class="w-full px-margin-edge py-section-gap max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="md:col-span-1">
+<a class="font-headline-md text-headline-md text-ink-deep mb-4 block" href="#">Product Slice HQ</a>
+<p class="font-body-md text-text-muted mb-gutter">For the thoughtful creator.</p>
+<p class="font-label-md text-label-sm text-text-muted opacity-60">© 2024 Product Slice HQ.</p>
+</div>
+<div>
+<h4 class="font-label-md text-label-md uppercase text-ink-deep mb-stack-md">Explore</h4>
+<ul class="flex flex-col gap-stack-sm">
+<li><a class="font-body-md text-text-muted hover:text-accent-warm transition-all hover:translate-x-1 inline-block" href="#">Articles</a></li>
+<li><a class="font-body-md text-text-muted hover:text-accent-warm transition-all hover:translate-x-1 inline-block" href="#">Library</a></li>
+<li><a class="font-body-md text-text-muted hover:text-accent-warm transition-all hover:translate-x-1 inline-block" href="#">Initiatives</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-md text-label-md uppercase text-ink-deep mb-stack-md">Company</h4>
+<ul class="flex flex-col gap-stack-sm">
+<li><a class="font-body-md text-text-muted hover:text-accent-warm transition-all hover:translate-x-1 inline-block" href="#">Privacy Policy</a></li>
+<li><a class="font-body-md text-text-muted hover:text-accent-warm transition-all hover:translate-x-1 inline-block" href="#">Terms of Service</a></li>
+<li><a class="font-body-md text-text-muted hover:text-accent-warm transition-all hover:translate-x-1 inline-block" href="#">Editorial Guidelines</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-md text-label-md uppercase text-ink-deep mb-stack-md">Connect</h4>
+<ul class="flex flex-col gap-stack-sm">
+<li><a class="font-body-md text-text-muted hover:text-accent-warm transition-all hover:translate-x-1 inline-block" href="#">Twitter</a></li>
+<li><a class="font-body-md text-text-muted hover:text-accent-warm transition-all hover:translate-x-1 inline-block" href="#">LinkedIn</a></li>
+<li><a class="font-body-md text-text-muted hover:text-accent-warm transition-all hover:translate-x-1 inline-block" href="#">LinkedIn</a></li>
+</ul>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions for filters
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Simplified active state toggle for demo
+                const parent = this.parentElement;
+                if (parent && (parent.classList.contains('flex-wrap') || parent.classList.contains('gap-2'))) {
+                    parent.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('bg-ink-deep', 'text-white');
+                        btn.classList.add('bg-paper-darker', 'text-ink-deep', 'border', 'border-tertiary/10');
+                    });
+                    this.classList.remove('bg-paper-darker', 'text-ink-deep', 'border', 'border-tertiary/10');
+                    this.classList.add('bg-ink-deep', 'text-white');
+                }
+            });
+        });
+    </script>
+</body></html>

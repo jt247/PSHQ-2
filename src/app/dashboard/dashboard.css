@@ -1,8 +1,7 @@
-/* ── Dashboard shell ──────────────────────────────────────── */
+/* Dashboard styles now in globals.css. This file kept for import compatibility. */
 .dash-layout {
   min-height: 100vh;
-  background: #f9fafb;
-  font-family: system-ui, sans-serif;
+  background: var(--color-paper-base);
 }
 
 .dash-header {

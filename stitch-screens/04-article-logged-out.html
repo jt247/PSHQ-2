@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Architecture of Collaborative Serendipity | Product Slice HQ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#735c00",
+                    "outline": "#74777e",
+                    "secondary-container": "#fed01b",
+                    "on-surface-variant": "#43474d",
+                    "on-secondary-fixed": "#231b00",
+                    "on-primary-fixed": "#001c38",
+                    "surface-dim": "#dcd9d9",
+                    "surface": "#fcf9f8",
+                    "primary-fixed": "#d2e4ff",
+                    "surface-container": "#f0eded",
+                    "on-primary-container": "#7992b4",
+                    "accent-warm": "#FACC15",
+                    "paper-base": "#FDFCFB",
+                    "background": "#fcf9f8",
+                    "surface-tint": "#476080",
+                    "inverse-on-surface": "#f3f0ef",
+                    "surface-bright": "#fcf9f8",
+                    "primary": "#00152c",
+                    "secondary-fixed": "#ffe083",
+                    "tertiary-fixed-dim": "#cac6bf",
+                    "tertiary-fixed": "#e6e2db",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-secondary-fixed-variant": "#574500",
+                    "inverse-surface": "#313030",
+                    "secondary-fixed-dim": "#eec200",
+                    "text-muted": "#54595F",
+                    "primary-fixed-dim": "#afc8ed",
+                    "surface-variant": "#e5e2e1",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-secondary-container": "#6f5900",
+                    "inverse-primary": "#afc8ed",
+                    "error": "#ba1a1a",
+                    "paper-darker": "#F5F2EE",
+                    "text-main": "#1A1A1A",
+                    "tertiary": "#151511",
+                    "on-tertiary-container": "#93908a",
+                    "surface-container-high": "#eae7e7",
+                    "on-primary-fixed-variant": "#2f4867",
+                    "surface-container-low": "#f6f3f2",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#1c1b1b",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#2a2925",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#1c1c17",
+                    "on-surface": "#1c1b1b",
+                    "primary-container": "#0e2a47",
+                    "ink-deep": "#0E2A47",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#c4c6ce",
+                    "on-tertiary-fixed-variant": "#484742",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "stack-sm": "8px",
+                    "gutter": "32px",
+                    "container-max": "1280px",
+                    "section-gap": "80px",
+                    "stack-md": "16px",
+                    "margin-edge": "40px",
+                    "stack-lg": "32px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Libre Caslon Text"],
+                    "headline-md": ["Libre Caslon Text"],
+                    "headline-lg-mobile": ["Libre Caslon Text"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Libre Caslon Text"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "label-md": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-shadow {
+            box-shadow: 0 20px 40px -15px rgba(14, 42, 71, 0.05);
+        }
+        .bg-noise {
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body class="bg-paper-base text-on-surface selection:bg-accent-warm/30">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-paper-base border-b border-outline-variant/30">
+<div class="flex justify-between items-center h-20 px-margin-edge max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-lg">
+<a class="font-headline-md text-headline-md text-ink-deep tracking-tight" href="#">Product Slice HQ</a>
+<nav class="hidden md:flex items-center gap-gutter">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Articles</a>
+<a class="font-label-md text-label-md text-primary border-b-2 border-accent-warm pb-1" href="#">Library</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Initiatives</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">About</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Contact</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="hidden lg:block font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors px-stack-md py-2">Sign In</button>
+<button class="bg-ink-deep text-on-primary font-label-md text-label-md px-6 py-3 rounded-lg hover:scale-95 transition-transform duration-150">Get Started</button>
+</div>
+</div>
+</header>
+<main class="pt-20">
+<!-- Breadcrumb & Header Section -->
+<section class="max-w-container-max mx-auto px-margin-edge pt-section-gap">
+<nav class="flex items-center gap-2 mb-stack-lg overflow-x-auto whitespace-nowrap">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary" href="#">Library</a>
+<span class="material-symbols-outlined text-label-sm text-outline-variant">chevron_right</span>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary" href="#">Articles</a>
+<span class="material-symbols-outlined text-label-sm text-outline-variant">chevron_right</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">The Architecture of Collaborative Serendipity</span>
+</nav>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-end">
+<div class="lg:col-span-8">
+<span class="font-label-md text-label-md text-secondary tracking-[0.1em] uppercase mb-4 block">Strategy</span>
+<h1 class="font-headline-xl text-headline-xl text-ink-deep mb-stack-md leading-tight">
+                        The Architecture of Collaborative Serendipity
+                    </h1>
+<div class="flex flex-wrap items-center gap-stack-lg text-on-surface-variant">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-paper-darker flex items-center justify-center overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="A sophisticated professional portrait of a male author with glasses and a thoughtful expression, set against a warm, neutrally toned studio background with soft editorial lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe95C4iZfHgS518-KqDvlJdlIpwaSm_uUPeSCds335tylRlimnam7cQlyDHMJXqPq3o01IpN4QB0S6vZdWwKrKYR5ZL7FzIPcivxSnc1V3G4tA6yNFWtjQHACPr-01IlfwqdMGeawKSGnNcWg1uKVMyh3aoJgk66TWv51LsYcYfhAZyvhcJI_kPZhdDQmUM3H1B83zo11d2EnKHtVibSzkLVkgRgbNa811SWBGSfv0ouPQbabKzZKLxc35-xfOx56C2cGK1cWoPNmW"/>
+</div>
+<span class="font-label-md text-label-md">Joshua Theophilus</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span class="font-label-md text-label-md">October 24, 2024</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span class="font-label-md text-label-md">12 min read</span>
+</div>
+</div>
+</div>
+<div class="lg:col-span-4 flex justify-start lg:justify-end">
+<button class="group relative flex items-center gap-2 bg-paper-darker border border-outline-variant/50 px-6 py-3 rounded-xl hover:bg-surface transition-all duration-300">
+<span class="material-symbols-outlined text-ink-deep" data-weight="fill">lock</span>
+<span class="font-label-md text-label-md text-ink-deep">Sign in to use AI Summary</span>
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-ink-deep text-on-primary px-3 py-1 rounded text-label-sm whitespace-nowrap">
+                            Members only feature
+                        </div>
+</button>
+</div>
+</div>
+</section>
+<!-- Hero Image -->
+<section class="max-w-container-max mx-auto px-margin-edge mt-stack-lg">
+<div class="relative w-full aspect-[21/9] rounded-xl overflow-hidden editorial-shadow border border-outline-variant/20">
+<img class="w-full h-full object-cover" data-alt="An abstract, high-end editorial digital artwork representing collaboration through flowing interconnected golden lines and deep navy translucent geometric planes. The composition is balanced and serene, set in a vast minimal space with soft professional lighting, embodying the 'Thoughtful Creator' aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9zqzUeXLVU58pthAZavMuaCg4h3V80nJ24wTPgk3bnicnpe88NzE8LLRscFXJSg9pN7Vyw-nn9DsQMkmViQSKdyj8SxztDSz5vfOp9YCC2UIFxkzC663tMHeBu8xbqH-fb60iBorjd86EzCL4VSb0OS89qKPf43paZeoRu_CTT2Pg2VsL6k8duJy7gg9Pzfk-rCGLYut7QSgQBXmSwgu6kL6MTBb4OE3XQfd-PprsujksrCQ3OoOWeruOMfC8Rt1gximHx8QYYt3L"/>
+</div>
+</section>
+<!-- Article Content -->
+<section class="max-w-container-max mx-auto px-margin-edge py-section-gap">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<article class="lg:col-start-3 lg:col-span-8">
+<div class="space-y-stack-lg">
+<p class="font-headline-md text-headline-md text-on-surface-variant italic border-l-4 border-accent-warm pl-stack-lg mb-stack-lg">
+                            "Innovation isn't always about the grand design; it's often found in the spaces between scheduled meetings and formal agendas—the architecture of chance."
+                        </p>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+                            In the modern landscape of knowledge work, we have mastered the art of efficiency. Our calendars are tetris-blocks of productivity, our tasks are tracked in granular detail, and our communications are streamlined through dozens of specialized channels. Yet, in this pursuit of frictionless execution, we have inadvertently paved over the wild gardens where serendipity grows.
+                        </p>
+<h2 class="font-headline-lg text-headline-lg text-ink-deep pt-stack-md">The Engineered Spontaneity</h2>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+                            True collaborative serendipity is not merely "luck." It is the result of a deliberate environmental design—both physical and digital—that encourages low-stakes interactions between disparate experts. When we look at the history of the most significant intellectual breakthroughs, they rarely happen in isolation or under the rigid pressure of a deadline.
+                        </p>
+<div class="bg-paper-darker p-stack-lg border-l-4 border-accent-warm my-stack-lg">
+<span class="font-label-md text-label-md text-secondary block mb-2">EDITORIAL INSIGHT</span>
+<p class="font-headline-md text-headline-md text-ink-deep italic">
+                                Creating 'Serendipity Sockets' means designing digital spaces where unfinished thoughts are welcomed, not just polished final deliverables.
+                            </p>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+                            To architect this environment, we must move away from the "siloed ticket" model of collaboration. Instead, we should embrace tools that function more like public common rooms. This involves three core pillars:
+                        </p>
+<ul class="list-disc pl-stack-lg space-y-4 font-body-lg text-body-lg text-on-surface">
+<li><strong>Radial Visibility:</strong> Allowing peripheral vision into adjacent workstreams without requiring active participation.</li>
+<li><strong>Asynchronous Loitering:</strong> Creating non-task-oriented digital hubs where discussion flows without a specific 'end state' in mind.</li>
+<li><strong>Knowledge Permeability:</strong> Breaking down the strict access controls that prevent curiosity from crossing team boundaries.</li>
+</ul>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+                            As creators, our responsibility is to balance the "focused deep work" with the "accidental connection." The most successful organizations of the next decade will be those that view serendipity not as a happy accident, but as a core infrastructure requirement.
+                        </p>
+</div>
+<!-- Post-Article Interactions -->
+<div class="mt-section-gap pt-stack-lg border-t border-outline-variant/30 flex flex-wrap items-center justify-between gap-stack-lg">
+<div class="flex items-center gap-stack-lg">
+<div class="group relative">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">thumb_up</span>
+<span class="font-label-md text-label-md">Upvote</span>
+</button>
+<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-ink-deep text-on-primary text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">Sign in to upvote</span>
+</div>
+<div class="group relative">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">star</span>
+<span class="font-label-md text-label-md">Rate</span>
+</button>
+<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-ink-deep text-on-primary text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">Sign in to rate</span>
+</div>
+<div class="group relative">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-md text-label-md">12 Comments</span>
+</button>
+<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-ink-deep text-on-primary text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">Sign in to comment</span>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant/30 hover:bg-paper-darker transition-colors">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant/30 hover:bg-paper-darker transition-colors">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Related Content -->
+<section class="bg-paper-darker py-section-gap">
+<div class="max-w-container-max mx-auto px-margin-edge">
+<div class="flex items-center justify-between mb-stack-lg">
+<h3 class="font-headline-lg text-headline-lg text-ink-deep">Further Exploration</h3>
+<a class="font-label-md text-label-md text-secondary hover:underline" href="#">View all articles</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="group cursor-pointer">
+<div class="aspect-[16/10] overflow-hidden rounded-lg mb-stack-md border border-outline-variant/20">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A minimalist architectural shot of a modern library with clean lines and warm wood textures. Soft natural light flows through large windows, creating a peaceful and intellectual atmosphere. The visual style follows a high-end editorial aesthetic with deep navy and golden highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCovny4fiWIQ7t8dTP9604R2twVnDRz3jTMG2459BEms7J1J3Gaajt9gq8-kqlxtWmfqpJKH4eIgV1CxhmY0eJWvvBmv2gN7GadoIwi7pDQqJB6Q-jPHxmguZnBzKV6jLSNkZT3St7_KdXnr4nmV9EgYJnI1friSX8hoduCnqEb6N7VaQrjyqWO-HX6h_Tszs0nR9vG6YT8F6CbHO4BvP6XYXPnidpOBmpLVRc960dv7e5CUSw_RTj6b2LJb4C38y7wHhd2hSFATviI"/>
+</div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest mb-2 block">Curation</span>
+<h4 class="font-headline-md text-headline-md text-ink-deep mb-2 group-hover:text-primary transition-colors">The Librarian’s Mindset in Product Management</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">How organizing information is the hidden superpower of the modern product leader.</p>
+</div>
+<!-- Card 2 -->
+<div class="group cursor-pointer">
+<div class="aspect-[16/10] overflow-hidden rounded-lg mb-stack-md border border-outline-variant/20">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="An abstract visualization of digital networks resembling organic root systems, rendered in subtle tones of ink blue and cream with delicate gold connections. The style is sophisticated and calm, emphasizing the 'Thoughtful Creator' brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_FbSGbwu3eLqT3jmQZ9M7Qqdu8SRi0_8ZzMnn7ilNAq6u2XHr34NHJbZY_Uu47NUIWjdY5vtnLqLlgwG65S-mfDber3eH88zaS2P-CpKBUioCKli2qBhJzvMIppHyGrZaj6w9xZY4dn02uffoU1SuvVsxFZMhUhxtSCGBMgA-4NfIEIglTNfBQFOuV7CiSArz0HNK811MeFEYc__PDP7kx_i0cJ4MFQJQIFwzB9L_ovW5iBVj4qTf6QKC_fVPI9fauWFuP9QFbi6U"/>
+</div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest mb-2 block">Systems</span>
+<h4 class="font-headline-md text-headline-md text-ink-deep mb-2 group-hover:text-primary transition-colors">Designing for Friction: Why Speed isn't Everything</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Exploring the benefits of intentional pauses and slow-thinking in high-stakes environments.</p>
+</div>
+<!-- Card 3 -->
+<div class="group cursor-pointer">
+<div class="aspect-[16/10] overflow-hidden rounded-lg mb-stack-md border border-outline-variant/20">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A top-down view of a designer's desk featuring a high-quality journal, a luxury fountain pen, and a single green leaf. The lighting is soft and artistic, highlighting textures of paper and metal. The color palette is composed of neutrals, deep navy, and a touch of warm yellow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm5jrtLpbTCY368DowW_M-RGCGL5NXJSclomUuaZATV6BMIYxMKfdTQGGcRaSxugCQ4DFRzNs8fxsAKYCYM2iqwh2TbYMnQtK4u_hfbX-DVzZKJsjIAE92-T1awch4LVa9iMJ3mI30HNxn_VOq6SRR5WYTDXNuCVvWaFcFl4v_H6wWhJB5u-WAA2EvRpc7s-8YoDTUS7A_Epr1I_UPsalKiibEvhg0pWFoLmw7xDBo63U-ZDb72U0EFPAGPEY4GQvVTKGziWqgMvNc"/>
+</div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest mb-2 block">Reflection</span>
+<h4 class="font-headline-md text-headline-md text-ink-deep mb-2 group-hover:text-primary transition-colors">The Journaling Habit for Technical Leads</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Synthesizing daily chaos into actionable wisdom through the power of the written word.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-paper-darker w-full py-section-gap border-t border-outline-variant/20">
+<div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-gutter px-margin-edge max-w-container-max mx-auto">
+<div class="lg:col-span-2">
+<a class="font-headline-md text-headline-md text-ink-deep mb-4 block" href="#">Product Slice HQ</a>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xs">
+                    Curating high-level insights for the thoughtful creator. A space for synthesis, strategy, and deep work.
+                </p>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-ink-deep mb-4">Resources</h5>
+<ul class="space-y-2">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Articles</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Library</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Initiatives</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-ink-deep mb-4">Company</h5>
+<ul class="space-y-2">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">About</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Contact</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Privacy Policy</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-ink-deep mb-4">Legal</h5>
+<ul class="space-y-2">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Terms &amp; Conditions</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Cookie Policy</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Data Deletion Policy</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-ink-deep mb-4">Support</h5>
+<ul class="space-y-2">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-accent-warm transition-colors" href="#">Refund Policy</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-edge mt-section-gap pt-stack-lg border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant">© 2024 Product Slice HQ. All rights reserved.</span>
+<div class="flex items-center gap-stack-lg">
+<a class="text-on-surface-variant hover:text-accent-warm transition-colors" href="#"><span class="material-symbols-outlined">public</span></a>
+<a class="text-on-surface-variant hover:text-accent-warm transition-colors" href="#"><span class="material-symbols-outlined">mail</span></a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('scale-95');
+            });
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('scale-95');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('scale-95');
+            });
+        });
+
+        // Reading progress bar
+        const progressBar = document.createElement('div');
+        progressBar.className = 'fixed top-20 left-0 h-1 bg-accent-warm z-50 transition-all duration-75';
+        progressBar.style.width = '0%';
+        document.body.appendChild(progressBar);
+
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            progressBar.style.width = scrolled + "%";
+        });
+    </script>
+</body></html>

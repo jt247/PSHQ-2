@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Product Lab with JT | Product Slice HQ</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "paper-darker": "#F5F2EE",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e5e2e1",
+                        "surface-variant": "#e5e2e1",
+                        "on-secondary-fixed": "#231b00",
+                        "primary-fixed-dim": "#afc8ed",
+                        "on-surface-variant": "#43474d",
+                        "on-background": "#1c1b1b",
+                        "on-secondary-container": "#6f5900",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#ffe083",
+                        "on-tertiary-container": "#93908a",
+                        "on-surface": "#1c1b1b",
+                        "background": "#fcf9f8",
+                        "inverse-surface": "#313030",
+                        "primary-fixed": "#d2e4ff",
+                        "on-secondary-fixed-variant": "#574500",
+                        "text-main": "#1A1A1A",
+                        "inverse-primary": "#afc8ed",
+                        "on-primary-fixed": "#001c38",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#74777e",
+                        "on-tertiary-fixed-variant": "#484742",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "on-error": "#ffffff",
+                        "secondary": "#735c00",
+                        "surface-dim": "#dcd9d9",
+                        "on-primary-fixed-variant": "#2f4867",
+                        "inverse-on-surface": "#f3f0ef",
+                        "tertiary-fixed-dim": "#cac6bf",
+                        "primary": "#00152c",
+                        "tertiary": "#151511",
+                        "on-secondary": "#ffffff",
+                        "text-muted": "#54595F",
+                        "primary-container": "#0e2a47",
+                        "accent-warm": "#FACC15",
+                        "tertiary-container": "#2a2925",
+                        "tertiary-fixed": "#e6e2db",
+                        "surface-container-low": "#f6f3f2",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#7992b4",
+                        "paper-base": "#FDFCFB",
+                        "surface-container-high": "#eae7e7",
+                        "ink-deep": "#0E2A47",
+                        "secondary-container": "#fed01b",
+                        "outline-variant": "#c4c6ce",
+                        "on-tertiary-fixed": "#1c1c17",
+                        "surface-tint": "#476080",
+                        "surface": "#fcf9f8",
+                        "secondary-fixed-dim": "#eec200"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "unit": "8px",
+                        "margin-edge": "40px",
+                        "container-max": "1280px",
+                        "section-gap": "80px",
+                        "gutter": "32px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-md": ["Libre Caslon Text"],
+                        "headline-lg": ["Libre Caslon Text"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline-xl": ["Libre Caslon Text"],
+                        "headline-lg-mobile": ["Libre Caslon Text"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-callout {
+            border-left: 4px solid #FACC15;
+            padding-left: 24px;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 32px;
+        }
+    </style>
+</head>
+<body class="bg-paper-base text-on-surface font-body-md selection:bg-accent-warm/30">
+<!-- TopNavBar -->
+<header class="w-full top-0 sticky bg-paper-base z-50 border-b border-surface-container-highest">
+<nav class="flex justify-between items-center h-20 px-margin-edge max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-ink-deep">Product Slice HQ</div>
+<!-- Desktop Nav -->
+<div class="hidden md:flex items-center gap-stack-lg">
+<a class="text-on-surface-variant hover:text-ink-deep transition-colors font-body-md text-body-md tracking-wide" href="#">Articles</a>
+<a class="text-on-surface-variant hover:text-ink-deep transition-colors font-body-md text-body-md tracking-wide" href="#">Library</a>
+<a class="text-ink-deep font-bold border-b-2 border-accent-warm pb-1 font-body-md text-body-md tracking-wide" href="#">Initiatives</a>
+<a class="text-on-surface-variant hover:text-ink-deep transition-colors font-body-md text-body-md tracking-wide" href="#">About</a>
+<a class="text-on-surface-variant hover:text-ink-deep transition-colors font-body-md text-body-md tracking-wide" href="#">Contact</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden lg:block text-ink-deep font-label-md hover:opacity-80 transition-opacity">Sign In</button>
+<button class="bg-ink-deep text-white px-6 py-2 rounded-sm font-label-md hover:opacity-90 active:scale-95 transition-all">Get Started</button>
+</div>
+</nav>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative overflow-hidden pt-section-gap pb-20">
+<div class="max-w-container-max mx-auto px-margin-edge flex flex-col md:flex-row items-center gap-12">
+<div class="flex-1 space-y-6">
+<span class="inline-block px-3 py-1 bg-paper-darker text-ink-deep font-label-md text-label-sm uppercase tracking-widest rounded-sm">Initiative 04</span>
+<h1 class="font-headline-xl text-headline-xl text-ink-deep leading-tight">Product Lab with JT</h1>
+<p class="font-body-lg text-body-lg text-text-muted max-w-xl">
+                        A focused series of hands-on, AI-assisted development workshops designed to turn non-technical founders into confident builders.
+                    </p>
+<div class="pt-4">
+<a class="inline-flex items-center bg-accent-warm text-ink-deep px-8 py-4 rounded-sm font-label-md hover:brightness-105 transition-all shadow-sm" href="#waitlist">
+                            Join Waitlist
+                            <span class="material-symbols-outlined ml-2">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="flex-1 w-full relative">
+<!-- Workshop Visual -->
+<div class="aspect-square bg-paper-darker rounded-sm relative overflow-hidden flex items-center justify-center border border-tertiary-fixed">
+<div class="absolute inset-0 opacity-40">
+
+</div>
+<div class="relative z-10 p-12 text-center space-y-4">
+<span class="material-symbols-outlined text-6xl text-ink-deep/20" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<p class="font-headline-md italic text-ink-deep">"Deep work, synthesized with machine intelligence."</p>
+</div>
+</div>
+<!-- Absolute overlay card -->
+<div class="absolute -bottom-6 -left-6 bg-white p-6 shadow-xl border border-surface-container-highest max-w-[240px] hidden lg:block">
+<div class="flex items-center gap-2 mb-2">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="font-label-sm text-ink-deep uppercase tracking-tighter">Next Cohort: Oct 2024</span>
+</div>
+<p class="text-xs text-text-muted">Limited to 12 participants per session for high-intensity mentoring.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- What we cover section -->
+<section class="py-section-gap bg-paper-darker">
+<div class="max-w-container-max mx-auto px-margin-edge">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+<div class="max-w-2xl">
+<h2 class="font-headline-lg text-headline-lg text-ink-deep mb-4">The Synthesis Curriculum</h2>
+<p class="text-text-muted font-body-md">We don't just teach tools; we teach a new mental model for creation in the age of AI. Move from spectator to architect.</p>
+</div>
+<div class="editorial-callout bg-paper-base p-6 max-w-sm rounded-sm">
+<p class="font-headline-md text-ink-deep italic text-lg leading-relaxed">
+                            "The modern builder doesn't need to know every syntax; they need to know every system." — JT
+                        </p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Outcome 1 -->
+<div class="bg-paper-base p-stack-lg border border-tertiary-fixed hover:border-accent-warm transition-colors group">
+<div class="mb-8 flex items-center justify-between">
+<span class="material-symbols-outlined text-ink-deep text-4xl group-hover:scale-110 transition-transform">architecture</span>
+<span class="text-surface-container-highest font-headline-xl opacity-20">01</span>
+</div>
+<h3 class="font-headline-md text-ink-deep mb-4">Building with No-Code</h3>
+<p class="text-text-muted font-body-md">Master the art of stacking complex logic using modern platforms. Learn to prototype at the speed of thought without touching a compiler.</p>
+</div>
+<!-- Outcome 2 -->
+<div class="bg-paper-base p-stack-lg border border-tertiary-fixed hover:border-accent-warm transition-colors group">
+<div class="mb-8 flex items-center justify-between">
+<span class="material-symbols-outlined text-ink-deep text-4xl group-hover:scale-110 transition-transform">psychology</span>
+<span class="text-surface-container-highest font-headline-xl opacity-20">02</span>
+</div>
+<h3 class="font-headline-md text-ink-deep mb-4">AI-Workflow Optimization</h3>
+<p class="text-text-muted font-body-md">Turn LLMs into your technical co-founder. We cover prompt engineering for code architecture, debugging, and unit testing automation.</p>
+</div>
+<!-- Outcome 3 -->
+<div class="bg-paper-base p-stack-lg border border-tertiary-fixed hover:border-accent-warm transition-colors group">
+<div class="mb-8 flex items-center justify-between">
+<span class="material-symbols-outlined text-ink-deep text-4xl group-hover:scale-110 transition-transform">foundation</span>
+<span class="text-surface-container-highest font-headline-xl opacity-20">03</span>
+</div>
+<h3 class="font-headline-md text-ink-deep mb-4">Technical Foundations</h3>
+<p class="text-text-muted font-body-md">Understand the "Why" behind the "How." Learn APIs, database schemas, and cloud deployment for non-technical creators.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Past Results / Highlights -->
+<section class="py-section-gap overflow-hidden">
+<div class="max-w-container-max mx-auto px-margin-edge">
+<h2 class="font-headline-lg text-headline-lg text-ink-deep mb-12 text-center">Laboratory Echoes</h2>
+<!-- Masonry-like Bento Grid for highlights -->
+<div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[600px]">
+<div class="md:col-span-2 md:row-span-2 relative bg-ink-deep overflow-hidden group">
+<div class="absolute inset-0 bg-cover bg-center opacity-60 group-hover:scale-105 transition-transform duration-700" data-alt="A cinematic, high-contrast black and white photograph of a modern workspace with multiple glowing monitors showing complex code structures. A person is seen from the back, deeply focused, illuminated only by the screens. The atmosphere is intellectual, quiet, and professional, perfectly capturing the spirit of a product lab." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCZQOvyeHwXLCPjHcNVknuNk2IHyzLtMJb43Sqm6NtfiuxQlhsvuLwLqY1G81UApyay3AbXWKTGvn5MEs5lIoswzNEgT708oy0nhrpSsaYAr4jn2rEy-r3vYQa0K5f1xGnpfXHuQjzM9vWv2EWMf5XXFNsZM65UEe-YsO-JkKG-7C9WgKoAedK8x9-WgOUgkcVYRl6HqoeKLyY_3-JoKINf9lJIiyHAfED0CYzhehPSyD4KMklXDoxFrRUEHsWFpgnfyVp3QQHvq356')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-ink-deep to-transparent"></div>
+<div class="absolute bottom-0 p-stack-lg">
+<span class="font-label-sm text-accent-warm tracking-widest uppercase">Success Story</span>
+<h4 class="font-headline-md text-white mt-2">The 'Omni-Search' App</h4>
+<p class="text-primary-fixed-dim text-sm mt-2 max-w-sm">From concept to production-ready beta in 48 hours during the Summer Intensive.</p>
+</div>
+</div>
+<div class="md:col-span-1 md:row-span-1 bg-paper-darker p-8 border border-tertiary-fixed flex flex-col justify-center">
+<span class="font-headline-xl text-ink-deep">85%</span>
+<p class="text-text-muted text-sm mt-2">of participants launched their MVP within 3 weeks of the lab completion.</p>
+</div>
+<div class="md:col-span-1 md:row-span-1 relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A minimalist architectural shot of a brightly lit studio space with white walls and a large window. A single wooden table sits in the center with a laptop and a notebook. Soft sunlight streams in, creating long, clean shadows. The aesthetic is extremely minimalist and high-end, representing a space for deep thought." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCvgmzo6R8zD8ZM1akNaE-rl5lHrd6LCiBCR9G2uEET6NzlMuqH8JvaVmWETHbR4npdph5mckUQ5OeZ_gHUqAAF6JQMtYuna9F01dXu5wBe4qLgJO5IWMYkM70CXOjeo8pSoUQd2-QVe5mnTQF7Qt62-nKPSKynusjhTidty2RlfguaNcyFqBg5a2VmjzhxTxJUFAV2cow096VL1cpjm-QDAiVLW1E4DHZ_ZZaCr5IziGWi8OfqgYPE0AwGOgZul1D8aZUUzxNuCCa4')"></div>
+</div>
+<div class="md:col-span-2 md:row-span-1 bg-accent-warm/10 border border-accent-warm/20 p-8 flex flex-col justify-center">
+<p class="font-headline-md text-ink-deep leading-tight italic">
+                            "The lab removed the technical fear. I finally feel like I own the tools instead of them owning me."
+                        </p>
+<p class="mt-4 font-label-md text-ink-deep">— Sarah K., Product Lead</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Signup Form -->
+<section class="py-section-gap bg-paper-base relative" id="waitlist">
+<div class="max-w-[800px] mx-auto px-margin-edge text-center mb-16">
+<h2 class="font-headline-lg text-headline-lg text-ink-deep mb-4">Enter the Lab</h2>
+<p class="text-text-muted">Applications for the Autumn Cohort are now open. We select 12 individuals based on project potential and community fit.</p>
+</div>
+<div class="max-w-[600px] mx-auto px-margin-edge">
+<form class="space-y-8 p-stack-lg bg-paper-darker/50 rounded-sm border border-tertiary-fixed">
+<div>
+<label class="block font-label-md text-ink-deep mb-2 uppercase" for="name">Full Name</label>
+<input class="w-full bg-transparent border-b-2 border-surface-container-highest focus:border-ink-deep outline-none py-3 transition-colors text-body-md" id="name" name="name" placeholder="Julian Thorne" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-ink-deep mb-2 uppercase" for="email">Professional Email</label>
+<input class="w-full bg-transparent border-b-2 border-surface-container-highest focus:border-ink-deep outline-none py-3 transition-colors text-body-md" id="email" name="email" placeholder="jt@productslice.hq" type="email"/>
+</div>
+<div>
+<label class="block font-label-md text-ink-deep mb-2 uppercase" for="message">What are you building? (Optional)</label>
+<textarea class="w-full bg-transparent border-b-2 border-surface-container-highest focus:border-ink-deep outline-none py-3 transition-colors text-body-md resize-none" id="message" name="message" placeholder="Briefly describe your vision or current technical roadblock..." rows="3"></textarea>
+</div>
+<div class="pt-4">
+<button class="w-full bg-ink-deep text-white font-label-md py-5 rounded-sm hover:opacity-95 active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-3" type="submit">
+                            Apply for Next Cohort
+                            <span class="material-symbols-outlined">send</span>
+</button>
+<p class="text-[10px] text-center mt-4 text-text-muted uppercase tracking-widest">Confirmation will be sent within 48 hours of review.</p>
+</div>
+</form>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-section-gap bg-paper-darker">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter py-stack-lg px-margin-edge max-w-container-max mx-auto">
+<div class="md:col-span-1">
+<div class="font-headline-md text-headline-md text-ink-deep mb-6">Product Slice HQ</div>
+<p class="font-body-md text-body-md text-text-muted">Curating excellence for the thoughtful creator.</p>
+</div>
+<div class="flex flex-col gap-2">
+<h5 class="font-label-md text-ink-deep uppercase mb-4">Explore</h5>
+<a class="text-text-muted hover:text-ink-deep transition-colors font-body-md text-body-md" href="#">Articles</a>
+<a class="text-text-muted hover:text-ink-deep transition-colors font-body-md text-body-md" href="#">Library</a>
+<a class="text-ink-deep underline font-body-md text-body-md" href="#">Initiatives</a>
+</div>
+<div class="flex flex-col gap-2">
+<h5 class="font-label-md text-ink-deep uppercase mb-4">Company</h5>
+<a class="text-text-muted hover:text-ink-deep transition-colors font-body-md text-body-md" href="#">About</a>
+<a class="text-text-muted hover:text-ink-deep transition-colors font-body-md text-body-md" href="#">Contact</a>
+<a class="text-text-muted hover:text-ink-deep transition-colors font-body-md text-body-md" href="#">Privacy Policy</a>
+</div>
+<div class="flex flex-col gap-2">
+<h5 class="font-label-md text-ink-deep uppercase mb-4">Legal</h5>
+<a class="text-text-muted hover:text-ink-deep transition-colors font-body-md text-body-md" href="#">Terms of Service</a>
+<a class="text-text-muted hover:text-ink-deep transition-colors font-body-md text-body-md" href="#">Cookie Settings</a>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-edge py-8 border-t border-surface-container-highest">
+<p class="text-xs text-text-muted">© 2024 Product Slice HQ. All rights reserved.</p>
+</div>
+</footer>
+<script>
+        // Simple micro-interaction for the form fields
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('label').style.color = '#FACC15';
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('label').style.color = '';
+            });
+        });
+    </script>
+</body></html>

@@ -1,4 +1,4 @@
-/* Minimal functional auth styles — replace entirely when real UI comes in */
+/* Auth styles now live in globals.css. Keeping legacy classes here as fallback. */
 
 .auth-container {
   max-width: 400px;

@@ -56,6 +56,18 @@ export function ProfileSettings({ user }: { user: UserRow }) {
         </div>
 
         <div className="settings-field">
+          <label htmlFor="bio">Bio</label>
+          <textarea
+            id="bio"
+            name="bio"
+            defaultValue={user.bio ?? ''}
+            placeholder="Tell us a bit about yourself…"
+            rows={3}
+            style={{ resize: 'vertical' }}
+          />
+        </div>
+
+        <div className="settings-field">
           <label htmlFor="country">Country</label>
           <select id="country" name="country" defaultValue={user.country ?? ''}>
             <option value="">Select country…</option>

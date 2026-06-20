@@ -76,7 +76,7 @@ export default async function ArticlePage({ params }: Props) {
       user_id: user.id,
       type: 'view',
       metadata: {},
-    } as never).then(() => null).catch(() => null)
+    } as never).then(() => null, () => null)
   }
 
   const hasUpvoted = !!upvoteResult.data
@@ -102,102 +102,122 @@ export default async function ArticlePage({ params }: Props) {
     : null
 
   return (
-    <div style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-      <nav style={{ marginBottom: '1.5rem' }}>
-        <Link href="/articles" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '0.875rem' }}>
-          ← Back to articles
+    <div style={{ minHeight: '100vh', background: 'var(--color-paper-base)' }}>
+      {/* Sticky nav */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 40,
+        background: 'color-mix(in srgb, var(--color-paper-base) 92%, transparent)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
+        padding: '0.875rem var(--spacing-margin-edge)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <Link href="/articles" className="text-label-sm" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+          ← Articles
+        </Link>
+        <Link href="/" className="text-label-sm" style={{ color: 'var(--color-ink-deep)', fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-serif)' }}>
+          Product Slice HQ
         </Link>
       </nav>
 
-      <article>
-        <header style={{ marginBottom: '1.5rem' }}>
-          {rawItem.cover_image_url && (
-            <img
-              src={rawItem.cover_image_url as string}
-              alt={rawItem.title as string}
-              style={{ width: '100%', borderRadius: '10px', marginBottom: '1.5rem', maxHeight: '400px', objectFit: 'cover' }}
-            />
-          )}
+      <main style={{ maxWidth: '44rem', margin: '0 auto', padding: '3rem var(--spacing-margin-edge) 5rem' }}>
+        <article>
+          <header style={{ marginBottom: '2rem' }}>
+            {rawItem.cover_image_url && (
+              <img
+                src={rawItem.cover_image_url as string}
+                alt={rawItem.title as string}
+                style={{ width: '100%', borderRadius: '0.25rem', marginBottom: '2rem', maxHeight: '420px', objectFit: 'cover' }}
+              />
+            )}
 
-          {rawItem.tags && Array.isArray(rawItem.tags) && (rawItem.tags as string[]).length > 0 && (
-            <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-              {(rawItem.tags as string[]).map(tag => (
-                <span key={tag} style={{
-                  background: '#f3f4f6', color: '#6b7280',
-                  fontSize: '0.75rem', padding: '0.125rem 0.5rem', borderRadius: '4px',
-                }}>
-                  {tag}
-                </span>
-              ))}
+            {rawItem.tags && Array.isArray(rawItem.tags) && (rawItem.tags as string[]).length > 0 && (
+              <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                {(rawItem.tags as string[]).map(tag => (
+                  <span key={tag} className="text-label-sm" style={{
+                    background: 'var(--color-paper-darker)',
+                    color: 'var(--color-text-muted)',
+                    padding: '0.125rem 0.5rem',
+                    borderRadius: '0.125rem',
+                    border: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
+                  }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <h1 className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', margin: '0 0 1rem' }}>
+              {rawItem.title as string}
+            </h1>
+
+            {rawItem.summary && (
+              <p className="text-body-lg" style={{ color: 'var(--color-text-muted)', lineHeight: 1.7, margin: '0 0 1.25rem' }}>
+                {rawItem.summary as string}
+              </p>
+            )}
+
+            <div className="text-label-sm" style={{
+              display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap',
+              color: 'var(--color-text-muted)',
+              paddingBottom: '1.25rem',
+              borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
+            }}>
+              {publishedDate && <span>{publishedDate}</span>}
+              <span>{(item.view_count as number ?? 0).toLocaleString()} views</span>
+              <UpvoteButton
+                contentId={rawItem.id}
+                initialCount={rawItem.upvote_count as number ?? 0}
+                initialUpvoted={hasUpvoted}
+                isLoggedIn={!!user}
+              />
             </div>
-          )}
+          </header>
 
-          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 700, lineHeight: 1.3, color: '#111827', margin: '0 0 0.75rem' }}>
-            {rawItem.title as string}
-          </h1>
-
-          {rawItem.summary && (
-            <p style={{ fontSize: '1.0625rem', color: '#6b7280', lineHeight: 1.6, margin: '0 0 0.875rem' }}>
-              {rawItem.summary as string}
-            </p>
-          )}
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-            {publishedDate && <span style={{ fontSize: '0.8125rem', color: '#9ca3af' }}>{publishedDate}</span>}
-            <span style={{ fontSize: '0.8125rem', color: '#9ca3af' }}>{(item.view_count as number ?? 0).toLocaleString()} views</span>
-
-            {/* Upvote button */}
-            <UpvoteButton
-              contentId={rawItem.id}
-              initialCount={rawItem.upvote_count as number ?? 0}
-              initialUpvoted={hasUpvoted}
-              isLoggedIn={!!user}
-            />
-          </div>
-        </header>
-
-        {/* AI Summary */}
-        <AiSummaryPanel
-          contentId={rawItem.id}
-          isLoggedIn={!!user}
-          cachedSummary={cachedSummary}
-        />
-
-        {/* Article body */}
-        {rawItem.body ? (
-          <div style={{
-            lineHeight: 1.8,
-            fontSize: '1.0625rem',
-            color: '#374151',
-            whiteSpace: 'pre-wrap',
-            marginBottom: '2.5rem',
-          }}>
-            {rawItem.body as string}
-          </div>
-        ) : (
-          <p style={{ color: '#9ca3af', marginBottom: '2.5rem' }}>No content yet.</p>
-        )}
-
-        {/* Rating */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#111827', margin: '0 0 0.75rem' }}>
-            Rate this article
-          </h2>
-          <RatingWidget
+          <AiSummaryPanel
             contentId={rawItem.id}
             isLoggedIn={!!user}
-            existingRating={existingRating?.rating ?? null}
-            existingReview={existingRating?.review_text ?? null}
+            cachedSummary={cachedSummary}
           />
-        </div>
 
-        {/* Comments */}
-        <CommentsSection
-          contentId={rawItem.id}
-          comments={comments}
-          isLoggedIn={!!user}
-        />
-      </article>
+          {rawItem.body ? (
+            <div className="text-body-lg" style={{
+              lineHeight: 1.85,
+              color: 'var(--color-text-main)',
+              whiteSpace: 'pre-wrap',
+              marginBottom: '3rem',
+            }}>
+              {rawItem.body as string}
+            </div>
+          ) : (
+            <p className="text-body-md" style={{ color: 'var(--color-text-muted)', marginBottom: '3rem' }}>No content yet.</p>
+          )}
+
+          <div style={{
+            marginBottom: '2.5rem',
+            padding: '1.5rem',
+            background: 'var(--color-paper-darker)',
+            borderRadius: '0.5rem',
+            border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
+          }}>
+            <h2 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: '0 0 1rem' }}>
+              Rate this article
+            </h2>
+            <RatingWidget
+              contentId={rawItem.id}
+              isLoggedIn={!!user}
+              existingRating={existingRating?.rating ?? null}
+              existingReview={existingRating?.review_text ?? null}
+            />
+          </div>
+
+          <CommentsSection
+            contentId={rawItem.id}
+            comments={comments}
+            isLoggedIn={!!user}
+          />
+        </article>
+      </main>
     </div>
   )
 }

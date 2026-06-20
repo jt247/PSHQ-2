@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Library | Product Slice HQ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "ink-deep": "#0E2A47",
+                        "background": "#fcf9f8",
+                        "primary-fixed": "#d2e4ff",
+                        "surface-tint": "#476080",
+                        "on-primary-container": "#7992b4",
+                        "tertiary-fixed-dim": "#cac6bf",
+                        "surface-container": "#f0eded",
+                        "on-secondary-fixed-variant": "#574500",
+                        "surface-bright": "#fcf9f8",
+                        "primary": "#00152c",
+                        "on-tertiary-container": "#93908a",
+                        "paper-base": "#FDFCFB",
+                        "on-background": "#1c1b1b",
+                        "paper-darker": "#F5F2EE",
+                        "on-secondary-container": "#6f5900",
+                        "inverse-on-surface": "#f3f0ef",
+                        "text-muted": "#54595F",
+                        "secondary": "#735c00",
+                        "secondary-fixed-dim": "#eec200",
+                        "outline": "#74777e",
+                        "tertiary": "#151511",
+                        "on-surface-variant": "#43474d",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#2a2925",
+                        "on-primary-fixed-variant": "#2f4867",
+                        "on-secondary-fixed": "#231b00",
+                        "surface": "#fcf9f8",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#fed01b",
+                        "primary-container": "#0e2a47",
+                        "on-tertiary-fixed-variant": "#484742",
+                        "on-primary-fixed": "#001c38",
+                        "surface-variant": "#e5e2e1",
+                        "tertiary-fixed": "#e6e2db",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c4c6ce",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#eae7e7",
+                        "text-main": "#1A1A1A",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1c1b1b",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f6f3f2",
+                        "inverse-surface": "#313030",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#afc8ed",
+                        "primary-fixed-dim": "#afc8ed",
+                        "on-tertiary-fixed": "#1c1c17",
+                        "accent-warm": "#FACC15",
+                        "surface-container-highest": "#e5e2e1",
+                        "secondary-fixed": "#ffe083",
+                        "surface-dim": "#dcd9d9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "margin-edge": "40px",
+                        "section-gap": "80px",
+                        "gutter": "32px",
+                        "unit": "8px",
+                        "stack-sm": "8px",
+                        "container-max": "1280px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Libre Caslon Text"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Libre Caslon Text"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline-md": ["Libre Caslon Text"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-xl": ["Libre Caslon Text"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #FDFCFB;
+            color: #1A1A1A;
+            -webkit-font-smoothing: antialiased;
+        }
+        .editorial-shadow {
+            box-shadow: 0 20px 40px -15px rgba(14, 42, 71, 0.05);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md bg-paper-base">
+<!-- TopNavBar (Logged In) -->
+<nav class="docked full-width top-0 sticky z-50 bg-paper-base border-b border-tertiary/10">
+<div class="flex justify-between items-center w-full px-margin-edge py-4 max-w-container-max mx-auto">
+<!-- Brand Logo -->
+<a class="font-headline-md text-headline-md font-bold text-ink-deep" href="/">Product Slice HQ</a>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center space-gap-stack-lg gap-8">
+<a class="font-body-md text-body-md tracking-wide text-text-muted hover:text-ink-deep transition-colors duration-200" href="#">Articles</a>
+<a class="font-body-md text-body-md tracking-wide text-ink-deep font-bold border-b-2 border-accent-warm pb-1 transition-colors duration-200" href="#">Library</a>
+<a class="font-body-md text-body-md tracking-wide text-text-muted hover:text-ink-deep transition-colors duration-200" href="#">Initiatives</a>
+<a class="font-body-md text-body-md tracking-wide text-text-muted hover:text-ink-deep transition-colors duration-200" href="#">About</a>
+<a class="font-body-md text-body-md tracking-wide text-text-muted hover:text-ink-deep transition-colors duration-200" href="#">Contact</a>
+</div>
+<!-- Profile / Actions Cluster -->
+<div class="flex items-center gap-6">
+<div class="hidden sm:flex items-center gap-2 text-ink-deep cursor-pointer">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</div>
+<div class="flex items-center gap-3 pl-6 border-l border-tertiary/10">
+<div class="text-right hidden lg:block">
+<p class="font-label-md text-label-md text-ink-deep leading-none">Julian Deville</p>
+<p class="text-[10px] uppercase tracking-widest text-on-primary-container font-bold">Pro Member</p>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-tertiary/20">
+<img class="w-full h-full object-cover" data-alt="A professional and warm close-up portrait of Julian Deville, a mid-30s man with a thoughtful expression, set against a soft-focus studio background with warm lighting. The aesthetic is clean, editorial, and sophisticated, matching the brand's ink blue and paper neutral palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp_WXgc_ryjt_ipf6ZWxBpH18iNcm4JXyGVwRFF2lQhw-RdvtUzWS7WVfQ680fXWCXtWLP4hlFnOKVg07N9XvAhiPIjGmHSvBkO7XTyPWvdUdyVCgY2vo3l7pBnGd93zt-btQ46FoTMDItMMPB7T-8TlqnA0SwoRKTKCAMCt3zOZ01OoHEAebDHgBke3xPYxfaKzglnqZotBbZKHHuGehOgdiGEX5ZaDbPcTrN6pu61bUpQtsyms2mgEd_KLmd2YHmDyUkAZ3ShI9U"/>
+</div>
+<span class="material-symbols-outlined text-text-muted cursor-pointer" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+</nav>
+<!-- Header Section -->
+<header class="max-w-container-max mx-auto px-margin-edge pt-20 pb-12">
+<div class="max-w-3xl">
+<h1 class="font-headline-xl text-headline-xl text-ink-deep mb-4">The Curated Library</h1>
+<p class="font-body-lg text-body-lg text-text-muted">A deep-dive collection of frameworks, case studies, and synthesis tools designed for the thoughtful product creator.</p>
+</div>
+<!-- Filter Bar -->
+<div class="flex flex-wrap items-center gap-4 mt-12 border-b border-tertiary/10 pb-6">
+<button class="bg-ink-deep text-white px-6 py-2 rounded-sm font-label-md text-label-md">ALL COLLECTIONS</button>
+<button class="text-text-muted hover:text-ink-deep px-4 py-2 font-label-md text-label-md transition-colors">STRATEGY</button>
+<button class="text-text-muted hover:text-ink-deep px-4 py-2 font-label-md text-label-md transition-colors">EXECUTION</button>
+<button class="text-text-muted hover:text-ink-deep px-4 py-2 font-label-md text-label-md transition-colors">MENTORSHIP</button>
+<div class="ml-auto flex items-center gap-2 text-text-muted">
+<span class="font-label-md text-label-md">SORT BY:</span>
+<select class="border-none bg-transparent font-label-md text-label-md text-ink-deep focus:ring-0 cursor-pointer">
+<option>RECENTLY ADDED</option>
+<option>MOST POPULAR</option>
+</select>
+</div>
+</div>
+</header>
+<!-- Library Grid -->
+<main class="max-w-container-max mx-auto px-margin-edge pb-section-gap">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1: Owned -->
+<div class="group flex flex-col bg-paper-darker border border-tertiary/5 overflow-hidden transition-all duration-300 hover:border-accent-warm/30 editorial-shadow">
+<div class="aspect-square relative overflow-hidden">
+<img alt="Product Visionary Guide" class="w-full h-full object-cover grayscale-[0.2] group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AP1WRLvKYCiusDsRg5us2JCJiuROaRFlBKnPki7NIucZ9WF_djP5lD06uM7JfDtmLz64GEWeYxvBnH-RlSqNZ_kTnjW3ZEea7pnoOP_sOyuIb2AyFMgdsD7XYRXkR7x3RaNI1koAowyTbacjV-RpEVnHg5LieX3e4kOpCssgk2WHm54PWv1otqjDrTQPIgzcoSsSnCebD-gflLa9-r8Y4cSBiq1JnpKpJe8b7I7R9BFMUbAhsbigPFFjUzSapZTR"/>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-accent-warm text-ink-deep font-label-sm text-label-sm px-3 py-1 rounded-sm flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            OWNED
+                        </span>
+</div>
+</div>
+<div class="p-stack-lg flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-on-primary-container mb-2">COLLECTION: STRATEGY</span>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-3">The Synthesis Framework 2024</h3>
+<p class="text-text-muted font-body-md text-body-md mb-6 line-clamp-2">Master the art of distilling complex user feedback into actionable product roadmaps using our proprietary 4-step method.</p>
+<div class="mt-auto pt-6 border-t border-tertiary/10 flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-ink-deep">Read Now</span>
+<span class="material-symbols-outlined text-accent-warm group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Available -->
+<div class="group flex flex-col bg-paper-darker border border-tertiary/5 overflow-hidden transition-all duration-300 hover:border-ink-deep/20 editorial-shadow">
+<div class="aspect-square relative overflow-hidden">
+<img alt="Editorial Design Systems" class="w-full h-full object-cover grayscale-[0.2] group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AP1WRLsnVu3sqmEGCyKS_tgUenPqGGYbPLBDI-FkMCu73Mr5L_j99yrLXfCZxM93Pe0o1GpbxVYo9kCXaNZHx4YJwsW2zK50rJX75T0fxnKU0cjDpxTsZjy_5OadeezH0Sa9bFxg9bT5W6r-z4ngxWGrMID3qj42uDz6v1QXyNx3r8xhfw1-I0MHia826N-PmPlsL0RoHSu0XshKRasoeqqg7mTtGUdZbY0oSL473glqoVytXYRk4fbCAs_31HPd"/>
+<div class="absolute top-4 right-4">
+<span class="bg-ink-deep text-white font-label-sm text-label-sm px-3 py-1 rounded-sm">$49.00</span>
+</div>
+</div>
+<div class="p-stack-lg flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-on-primary-container mb-2">COLLECTION: DESIGN</span>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-3">Modern Editorial Interfaces</h3>
+<p class="text-text-muted font-body-md text-body-md mb-6 line-clamp-2">A comprehensive guide to moving beyond the standard SaaS look towards a high-end, content-first digital experience.</p>
+<div class="mt-auto pt-6 border-t border-tertiary/10 flex items-center justify-between">
+<span class="font-label-md text-label-md text-ink-deep">PURCHASE ACCESS</span>
+<span class="material-symbols-outlined text-text-muted" data-icon="shopping_bag">shopping_bag</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Owned (Free Content) -->
+<div class="group flex flex-col bg-paper-darker border border-tertiary/5 overflow-hidden transition-all duration-300 hover:border-accent-warm/30 editorial-shadow">
+<div class="aspect-square relative overflow-hidden">
+<img alt="The Product Library" class="w-full h-full object-cover grayscale-[0.2] group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AP1WRLug6zgOB9fbNHRr_eLsIMxYgMGBfgJsSdgV2DC7yfzCkzxISDp4gtn4h-Vv_6sm8o8WL0h9A46HfHkENC74xHZjnEOjbSQllMGNZAUcR_lUNqZmip95Gu7vZe-nk5uWasMO20DP9tmjwE3-1h0RMrKxoGwYuQKQ7jZtxHGHLSelCGHJFARg1jzI9N87FhhdPHXtjYZd_tBlaofQc91yWK3bKyiyxR0lFE-bCoctWHvPuG0YwEv93C8HPwxj"/>
+<div class="absolute top-4 left-4">
+<span class="bg-accent-warm text-ink-deep font-label-sm text-label-sm px-3 py-1 rounded-sm flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            OWNED
+                        </span>
+</div>
+</div>
+<div class="p-stack-lg flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-on-primary-container mb-2">COLLECTION: MENTORSHIP</span>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-3">Mentorship for Senior Leads</h3>
+<p class="text-text-muted font-body-md text-body-md mb-6 line-clamp-2">Tools and conversational scripts for senior product managers looking to elevate their teams through intentional coaching.</p>
+<div class="mt-auto pt-6 border-t border-tertiary/10 flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-ink-deep">Read Now</span>
+<span class="material-symbols-outlined text-accent-warm group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Card 4: Available (Premium) -->
+<div class="group flex flex-col bg-paper-darker border border-tertiary/5 overflow-hidden transition-all duration-300 hover:border-ink-deep/20 editorial-shadow">
+<div class="aspect-square relative overflow-hidden bg-ink-deep flex items-center justify-center p-8">
+<div class="text-center">
+<span class="material-symbols-outlined text-accent-warm text-6xl mb-4" data-icon="auto_stories">auto_stories</span>
+<p class="text-white font-headline-md text-headline-md">Case Study: The 2023 Tech Pivot</p>
+</div>
+<div class="absolute top-4 right-4">
+<span class="bg-white text-ink-deep font-label-sm text-label-sm px-3 py-1 rounded-sm">$12.00</span>
+</div>
+</div>
+<div class="p-stack-lg flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-on-primary-container mb-2">COLLECTION: CASE STUDIES</span>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-3">Analyzing the 2023 Tech Pivot</h3>
+<p class="text-text-muted font-body-md text-body-md mb-6 line-clamp-2">A deep dive into how 15 market leaders successfully navigated the shift from hyper-growth to efficiency.</p>
+<div class="mt-auto pt-6 border-t border-tertiary/10 flex items-center justify-between">
+<span class="font-label-md text-label-md text-ink-deep">PURCHASE ACCESS</span>
+<span class="material-symbols-outlined text-text-muted" data-icon="shopping_bag">shopping_bag</span>
+</div>
+</div>
+</div>
+<!-- Card 5: Owned -->
+<div class="group flex flex-col bg-paper-darker border border-tertiary/5 overflow-hidden transition-all duration-300 hover:border-accent-warm/30 editorial-shadow">
+<div class="aspect-square relative overflow-hidden">
+<div class="bg-cover bg-center w-full h-full grayscale-[0.2] group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist layout of architectural blueprints and fine pens on a light wooden desk. Soft morning light creates a peaceful, focused atmosphere. The color palette is composed of soft beige, charcoal grey, and hints of warm gold." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD2PBAaLrWsullYTCS8YSHooKtILhMoWGFSiPDW78QViapS5ZoNd7qnnn8m_RerksFNpUuwxxuRdymN9uHUMQdpoeETNUB3DEkEvazgX8HgvXDqsM_4gALPDMuCdVsPpqva-sJ3I8Yya01QzWkMn_Xzm77mKzKkSak5q4YPFkfdpwe7Vl-njAHfEZSOcDuXmJkOrMLTKRmR_SHxHhFmewpDzqk1fYHE8JEzNK1w66DCcoWq8i_mf2xhIYiOfjskkxNoCt6aqPek99f1')"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-accent-warm text-ink-deep font-label-sm text-label-sm px-3 py-1 rounded-sm flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            OWNED
+                        </span>
+</div>
+</div>
+<div class="p-stack-lg flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-on-primary-container mb-2">COLLECTION: EXECUTION</span>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-3">Architecting Focus</h3>
+<p class="text-text-muted font-body-md text-body-md mb-6 line-clamp-2">A guide to designing rituals and environments that support deep, uninterrupted work sessions.</p>
+<div class="mt-auto pt-6 border-t border-tertiary/10 flex items-center justify-between">
+<span class="font-headline-md text-headline-md text-ink-deep">Read Now</span>
+<span class="material-symbols-outlined text-accent-warm group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Card 6: Available (Free) -->
+<div class="group flex flex-col bg-paper-darker border border-tertiary/5 overflow-hidden transition-all duration-300 hover:border-ink-deep/20 editorial-shadow">
+<div class="aspect-square relative overflow-hidden">
+<div class="bg-cover bg-center w-full h-full grayscale-[0.2] group-hover:scale-105 transition-transform duration-500" data-alt="A macro photograph of high-quality, textured paper with delicate handwritten notes in deep blue ink. The focus is sharp on the elegant handwriting, with a soft blur in the background. The mood is intimate, intellectual, and traditional." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD1qFHRHNOL-6PDZyQFGbt06AulSBbGwQ9kqSeLg8U8PlRRyV3A3l3S4Xdr_7Tr21r106Qu4SWFpzgORhUMaDdkAhTmRu9HWx0YV8yc0Y76EXn76jPS_7nKuGQg0-G99XcImT3Ddqnaa2vjX7QjXoXVBkoNy2MHD88QMyZiqYuCctl6xtDmdWel3TnPVBI6bHUeNKM14CI11HoQQ_TBoEXEvn9nrXW8oxbxzT3slnvwy4j7wlXicCUDnYtErZGONNZRg5fERCNEYQu3')"></div>
+<div class="absolute top-4 right-4">
+<span class="bg-ink-deep text-white font-label-sm text-label-sm px-3 py-1 rounded-sm">FREE</span>
+</div>
+</div>
+<div class="p-stack-lg flex flex-col flex-grow">
+<span class="font-label-sm text-label-sm text-on-primary-container mb-2">COLLECTION: ESSAYS</span>
+<h3 class="font-headline-md text-headline-md text-ink-deep mb-3">The Death of the Feature Factory</h3>
+<p class="text-text-muted font-body-md text-body-md mb-6 line-clamp-2">Why the next decade of product development will prioritize value synthesis over velocity.</p>
+<div class="mt-auto pt-6 border-t border-tertiary/10 flex items-center justify-between">
+<span class="font-label-md text-label-md text-ink-deep">GET ACCESS</span>
+<span class="material-symbols-outlined text-text-muted" data-icon="download">download</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-20 flex justify-center items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center border border-tertiary/20 text-text-muted hover:text-ink-deep transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center bg-ink-deep text-white font-label-md text-label-md">1</button>
+<button class="w-10 h-10 flex items-center justify-center border border-tertiary/20 text-text-muted hover:text-ink-deep font-label-md text-label-md transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center border border-tertiary/20 text-text-muted hover:text-ink-deep font-label-md text-label-md transition-colors">3</button>
+<button class="w-10 h-10 flex items-center justify-center border border-tertiary/20 text-text-muted hover:text-ink-deep transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Editorial Callout Section -->
+<section class="bg-paper-darker py-section-gap">
+<div class="max-w-container-max mx-auto px-margin-edge">
+<div class="border-l-4 border-accent-warm pl-8 md:pl-16 py-4">
+<span class="font-label-md text-label-md text-on-primary-container block mb-4">MEMBER INSIGHT</span>
+<h2 class="font-headline-xl text-headline-xl text-ink-deep max-w-4xl italic">"The most valuable asset in the modern economy isn't data—it's the ability to synthesize it into a coherent narrative."</h2>
+<div class="mt-8 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-ink-deep flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="history_edu">history_edu</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-ink-deep">FROM THE EDITORIAL TEAM</p>
+<p class="text-text-muted font-body-md text-body-md">Reflections on Library Volume 04</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-paper-darker border-t border-tertiary/10">
+<div class="w-full px-margin-edge py-section-gap max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="col-span-1 md:col-span-1">
+<h2 class="font-headline-md text-headline-md text-ink-deep mb-6">Product Slice HQ</h2>
+<p class="font-body-md text-body-md text-text-muted mb-8 max-w-xs">Elevating the craft of product management through editorial excellence.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-md text-label-md uppercase text-ink-deep tracking-wider mb-2">Knowledge</h4>
+<a class="font-body-md text-body-md text-text-muted hover:text-accent-warm hover:translate-x-1 transition-all" href="#">Articles</a>
+<a class="font-body-md text-body-md text-text-muted hover:text-accent-warm hover:translate-x-1 transition-all" href="#">Library</a>
+<a class="font-body-md text-body-md text-text-muted hover:text-accent-warm hover:translate-x-1 transition-all" href="#">Case Studies</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-md text-label-md uppercase text-ink-deep tracking-wider mb-2">Company</h4>
+<a class="font-body-md text-body-md text-text-muted hover:text-accent-warm hover:translate-x-1 transition-all" href="#">About</a>
+<a class="font-body-md text-body-md text-text-muted hover:text-accent-warm hover:translate-x-1 transition-all" href="#">Contact</a>
+<a class="font-body-md text-body-md text-text-muted hover:text-accent-warm hover:translate-x-1 transition-all" href="#">Twitter</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-md text-label-md uppercase text-ink-deep tracking-wider mb-2">Legal</h4>
+<a class="font-body-md text-body-md text-text-muted hover:text-accent-warm hover:translate-x-1 transition-all" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-text-muted hover:text-accent-warm hover:translate-x-1 transition-all" href="#">Terms of Service</a>
+<a class="font-body-md text-body-md text-text-muted hover:text-accent-warm hover:translate-x-1 transition-all" href="#">Cookie Policy</a>
+</div>
+</div>
+<div class="w-full px-margin-edge py-8 max-w-container-max mx-auto border-t border-tertiary/10 text-center md:text-left">
+<p class="font-body-md text-body-md text-text-muted">© 2024 Product Slice HQ. For the thoughtful creator.</p>
+</div>
+</footer>
+<script>
+        // Micro-interactions for library cards
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0px)';
+            });
+        });
+    </script>
+</body></html>

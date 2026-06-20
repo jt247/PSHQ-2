@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Product Slice HQ | Practical Product Thinking</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "paper-darker": "#F5F2EE",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#476080",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "inverse-on-surface": "#f3f0ef",
+                    "secondary-fixed": "#ffe083",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#c4c6ce",
+                    "on-tertiary-container": "#93908a",
+                    "tertiary-fixed": "#e6e2db",
+                    "on-tertiary-fixed-variant": "#484742",
+                    "surface-container-low": "#f6f3f2",
+                    "on-secondary-fixed-variant": "#574500",
+                    "secondary-fixed-dim": "#eec200",
+                    "primary": "#00152c",
+                    "inverse-surface": "#313030",
+                    "inverse-primary": "#afc8ed",
+                    "primary-container": "#0e2a47",
+                    "on-surface": "#1c1b1b",
+                    "on-secondary-container": "#6f5900",
+                    "surface-container": "#f0eded",
+                    "on-tertiary-fixed": "#1c1c17",
+                    "surface-bright": "#fcf9f8",
+                    "tertiary-container": "#2a2925",
+                    "surface-dim": "#dcd9d9",
+                    "on-background": "#1c1b1b",
+                    "background": "#fcf9f8",
+                    "tertiary-fixed-dim": "#cac6bf",
+                    "secondary-container": "#fed01b",
+                    "on-primary-container": "#7992b4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#e5e2e1",
+                    "outline": "#74777e",
+                    "on-secondary": "#ffffff",
+                    "surface": "#fcf9f8",
+                    "ink-deep": "#0E2A47",
+                    "text-main": "#1A1A1A",
+                    "secondary": "#735c00",
+                    "surface-container-high": "#eae7e7",
+                    "primary-fixed-dim": "#afc8ed",
+                    "on-surface-variant": "#43474d",
+                    "paper-base": "#FDFCFB",
+                    "accent-warm": "#FACC15",
+                    "text-muted": "#54595F",
+                    "tertiary": "#151511",
+                    "on-secondary-fixed": "#231b00",
+                    "on-primary-fixed-variant": "#2f4867",
+                    "surface-container-highest": "#e5e2e1",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#001c38",
+                    "primary-fixed": "#d2e4ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "stack-lg": "32px",
+                    "gutter": "32px",
+                    "unit": "8px",
+                    "section-gap": "80px",
+                    "margin-edge": "40px",
+                    "container-max": "1280px",
+                    "stack-md": "16px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Libre Caslon Text"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Libre Caslon Text"],
+                    "label-md": ["Plus Jakarta Sans"],
+                    "headline-md": ["Libre Caslon Text"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Libre Caslon Text"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bento-card {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        }
+        .bento-card:hover {
+            transform: translateY(-4px);
+        }
+        .editorial-border {
+            position: relative;
+        }
+        .editorial-border::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #FACC15;
+            transition: width 0.3s ease;
+        }
+        .editorial-border:hover::after {
+            width: 100%;
+        }
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+    </style>
+</head>
+<body class="bg-paper-base text-ink-deep font-body-md text-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-paper-base/90 backdrop-blur-md border-b border-outline-variant/30">
+<nav class="flex justify-between items-center h-20 px-margin-edge max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-lg">
+<a class="font-headline-md text-headline-md text-ink-deep tracking-tight" href="#">Product Slice HQ</a>
+<div class="hidden md:flex gap-stack-md items-center ml-stack-lg">
+<a class="font-label-md text-label-md text-primary dark:text-secondary-container border-b-2 border-accent-warm pb-1 transition-all" href="#articles">Articles</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#library">Library</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#initiatives">Initiatives</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#about">About</a>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="hidden lg:block font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors px-4 py-2">Sign In</button>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-6 py-2.5 rounded-sm hover:opacity-90 active:scale-95 transition-all">Get Started</button>
+</div>
+</nav>
+</header>
+<main class="pt-20">
+<!-- Hero Section -->
+<section class="relative min-h-[870px] flex items-center overflow-hidden bg-paper-base">
+<div class="max-w-container-max mx-auto px-margin-edge grid lg:grid-cols-2 gap-gutter items-center z-10 py-section-gap">
+<div class="space-y-stack-lg">
+<span class="inline-block px-3 py-1 bg-accent-warm/20 text-ink-deep font-label-sm text-label-sm tracking-widest uppercase rounded-sm">The Thoughtful Creator</span>
+<h1 class="font-headline-xl text-headline-xl text-ink-deep max-w-xl">
+                        Practical Product Thinking for Real-World Builders.
+                    </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
+                        Master your craft with editorial-grade insights, templates, and courses designed for the modern creator. No fluff, just structure.
+                    </p>
+<div class="flex flex-wrap gap-stack-md pt-stack-md">
+<button class="bg-primary text-on-primary font-label-md text-label-md px-8 py-4 rounded-sm hover:opacity-95 transition-all shadow-lg shadow-primary/5">Get Started</button>
+<button class="border border-primary text-primary font-label-md text-label-md px-8 py-4 rounded-sm hover:bg-paper-darker transition-all">Browse Library</button>
+</div>
+</div>
+<div class="relative mt-stack-lg lg:mt-0">
+<div class="aspect-square relative w-full overflow-hidden rounded-xl border border-outline-variant/30 shadow-2xl">
+<img class="w-full h-full object-cover" data-alt="A premium editorial-style abstract geometric composition with overlapping shapes of gold, ink blue, and muted paper tones. The lighting is dramatic and directional, creating deep shadows and highlights that emphasize the professional and sophisticated mood. The style is inspired by modern architectural drawings and high-end digital journals, reflecting intellectual authority and calm focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7_OItz_tNpr2U0iNfJ9L-p9Z9Jdm3u10IBWZvOvMvsMq5SJgGWQTGCPsrY7RwWkbSf8upgdeSMN3vkyZYVjQhMEExkHOBQ7eW_U3d8p-472773XPCoJmqSXwZfrnHj1GWfnDqCHA-3ZwDyr6nbAD_jMgkdivpqB_V5AO47C9DpChlpMG8wLTuAHk5PhT-kDqLKOM1DqKttJcoY9FTXVOJG8gMuzYUh3s6g4eUUFPAKGe8Pej0I0KLKmVVIzgX1-f_69SfWqYBSk-v"/>
+<!-- Floating Insight -->
+<div class="absolute bottom-6 left-6 right-6 p-6 bg-paper-base/95 backdrop-blur-md border-l-4 border-accent-warm shadow-xl max-w-xs">
+<span class="material-symbols-outlined text-accent-warm mb-2" data-icon="lightbulb">lightbulb</span>
+<p class="font-headline-md text-headline-md italic leading-tight">"Great products are synthesis, not just additions."</p>
+<p class="font-label-sm text-label-sm mt-2 text-on-surface-variant">Editorial Note #12</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Background Decoration -->
+<div class="absolute top-0 right-0 w-1/3 h-full bg-paper-darker/50 -z-0 transform skew-x-12 translate-x-1/2"></div>
+</section>
+<!-- 4-Card Grid: Everything You Need to Excel -->
+<section class="py-section-gap bg-paper-darker" id="library">
+<div class="max-w-container-max mx-auto px-margin-edge">
+<div class="mb-stack-lg border-b border-outline-variant/30 pb-stack-md">
+<h2 class="font-headline-lg text-headline-lg text-ink-deep">Everything You Need to Excel</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">A curated collection of resources for the modern product builder.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Articles -->
+<div class="bento-card p-stack-lg bg-paper-base border border-outline-variant/20 group cursor-pointer">
+<div class="w-12 h-12 bg-primary/5 flex items-center justify-center mb-stack-md rounded-sm group-hover:bg-accent-warm transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="article">article</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2">Articles</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Deep dives into strategy and execution from experienced operators.</p>
+<a class="font-label-md text-label-md text-primary flex items-center gap-2 group-hover:gap-4 transition-all" href="#">Explore <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span></a>
+</div>
+<!-- E-books -->
+<div class="bento-card p-stack-lg bg-paper-base border border-outline-variant/20 group cursor-pointer">
+<div class="w-12 h-12 bg-primary/5 flex items-center justify-center mb-stack-md rounded-sm group-hover:bg-accent-warm transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="book">book</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2">E-books</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Comprehensive guides for sustained growth and team scaling.</p>
+<a class="font-label-md text-label-md text-primary flex items-center gap-2 group-hover:gap-4 transition-all" href="#">Browse <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span></a>
+</div>
+<!-- Courses -->
+<div class="bento-card p-stack-lg bg-paper-base border border-outline-variant/20 group cursor-pointer">
+<div class="w-12 h-12 bg-primary/5 flex items-center justify-center mb-stack-md rounded-sm group-hover:bg-accent-warm transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="school">school</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2">Courses</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Master specific skills with structured, self-paced learning.</p>
+<a class="font-label-md text-label-md text-primary flex items-center gap-2 group-hover:gap-4 transition-all" href="#">Enroll <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span></a>
+</div>
+<!-- Templates -->
+<div class="bento-card p-stack-lg bg-paper-base border border-outline-variant/20 group cursor-pointer">
+<div class="w-12 h-12 bg-primary/5 flex items-center justify-center mb-stack-md rounded-sm group-hover:bg-accent-warm transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="content_copy">content_copy</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2">Templates</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Ready-to-use frameworks to streamline your team's workflow.</p>
+<a class="font-label-md text-label-md text-primary flex items-center gap-2 group-hover:gap-4 transition-all" href="#">Download <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span></a>
+</div>
+</div>
+</div>
+</section>
+<!-- What We Offer: Content Preview -->
+<section class="py-section-gap">
+<div class="max-w-container-max mx-auto px-margin-edge space-y-24">
+<!-- Category: Articles -->
+<div id="articles">
+<div class="flex justify-between items-end mb-stack-lg border-b border-outline-variant/20 pb-4">
+<h2 class="font-headline-lg text-headline-lg">Latest Articles</h2>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-accent-warm transition-colors flex items-center gap-1 uppercase tracking-widest" href="#">View All</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="group cursor-pointer">
+<div class="aspect-video overflow-hidden rounded-sm mb-4">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist workspace with a single high-end notebook, a fountain pen, and a ceramic coffee cup. Soft morning light enters through a nearby window, casting long, gentle shadows. The aesthetic is professional yet warm, emphasizing calm focus and deep work in a modern office setting. Muted color palette of greys, warm whites, and wood tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLJOqTw9TOYdvXeCVcvLmw1IFIjJ2UPxcpciU7tD-fwONKINmEXgehqTcy3dMWwkWhBUWflOxKM0FsDs5zp9SWs2w3zM6NMyoYH8AlI2XuqpGTNtTIUrk8oHMs7m9WJ4FpXvEQ_7wG0JqinrvMDRLfnk5jvzgdGaL5kTFaoLntLcuqJQAXVRLmM_eQZbomafoWj3nCRD4EAw9E0n_fWLkSaHZzOAl7KFBU274oN5OQOteFuxo5VVguaG3kM9w587K8RZ9Z2cIwCEDt"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Strategy</span>
+<h4 class="font-headline-md text-headline-md mt-2 group-hover:text-primary transition-colors">The Architecture of Collaborative Serendipity</h4>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-video overflow-hidden rounded-sm mb-4">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Abstract visualization of data and connections, rendered in a sophisticated digital painting style. Thin, glowing lines intersect against a deep ink blue background, creating a sense of organized complexity. The mood is intellectual and futuristic, reflecting advanced product management concepts and technical strategy. Use of accent colors like gold and soft blue." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjfhvKT0jxruDqIGCodt3Hlt0hEpVIPd7TdYMGJVLSRa90CXNBFThb0qYGdxclsTryjKj-62gOTqughn-D022jtlXRPli8U9gD_INxmYld40R3z-W9-PE9a8AFnNYp9RdBMmOi1fs_fPdbCdiAEYwKaPLP6x6VQciHL-WYcxQg6UxrOlS4JXEnz4djKdYqcSYiL21zooezBKjuXyMcmt93M4XULX9_Si0rJl6FBgVO7qMi4yPkXPIDFkJcUgWSSfp71hJPO6zgWzfP"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Execution</span>
+<h4 class="font-headline-md text-headline-md mt-2 group-hover:text-primary transition-colors">Market Validation Blueprints for Lean Teams</h4>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-video overflow-hidden rounded-sm mb-4">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A close-up shot of a classic architectural blueprint lying on a rustic wooden table, illuminated by warm, directional task lighting. The image suggests precision, planning, and professional craft. The textures of the paper and wood are tactile and rich, evoking a sense of traditional expertise meeting modern execution. Soft focus background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuIZxidRNnJkGj2VY8r56DJvR2Sx_Wq3Mb8JJjqMOZEzNjCswtd1ueCV3NOReP8JDKOLYBxlW6tSuR3VnYgIhsCcmovDUGbaLuyjkmfIBNffkdFGXPbYodb_638zPKQYIMnE9JlfWm7FvR3kPNcfLDtFCHong04RR6ZxY43mgOIB8HNVkd1eCqaO_uESO_qBeSEQK0vmemG9NRHwu9A8rHrcXVN2TpWnHwl0qxocEDx4pm2aDK77oubNXIn27w38LQ0WRoPCcuikEw"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Design</span>
+<h4 class="font-headline-md text-headline-md mt-2 group-hover:text-primary transition-colors">The Psychology of Minimalist User Onboarding</h4>
+</div>
+</div>
+</div>
+<!-- Category: Courses -->
+<div>
+<div class="flex justify-between items-end mb-stack-lg border-b border-outline-variant/20 pb-4">
+<h2 class="font-headline-lg text-headline-lg">Featured Learning</h2>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-accent-warm transition-colors flex items-center gap-1 uppercase tracking-widest" href="#">View All</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Course Card -->
+<div class="bg-paper-darker p-8 border border-outline-variant/10 flex flex-col justify-between h-full group hover:shadow-xl transition-all duration-300">
+<div>
+<div class="flex items-center gap-4 mb-6">
+<span class="px-2 py-1 bg-ink-deep text-white text-[10px] uppercase font-bold tracking-widest">Premium</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">8 Weeks</span>
+</div>
+<h4 class="font-headline-md text-headline-md mb-4">The Product Synthesis Masterclass</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Learn how to translate disparate data points into a cohesive product roadmap.</p>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/20 flex justify-between items-center">
+<span class="font-headline-md text-headline-md">$499</span>
+<button class="text-primary font-label-md text-label-md flex items-center gap-2 group-hover:gap-3 transition-all">Enroll Now <span class="material-symbols-outlined" data-icon="arrow_right_alt">arrow_right_alt</span></button>
+</div>
+</div>
+<!-- Course Card 2 -->
+<div class="bg-paper-darker p-8 border border-outline-variant/10 flex flex-col justify-between h-full group hover:shadow-xl transition-all duration-300">
+<div>
+<div class="flex items-center gap-4 mb-6">
+<span class="px-2 py-1 bg-accent-warm text-ink-deep text-[10px] uppercase font-bold tracking-widest">Workshop</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4 Weeks</span>
+</div>
+<h4 class="font-headline-md text-headline-md mb-4">Rapid Prototyping with AI</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Accelerate your build cycle by integrating generative tools into your workflow.</p>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/20 flex justify-between items-center">
+<span class="font-headline-md text-headline-md">$299</span>
+<button class="text-primary font-label-md text-label-md flex items-center gap-2 group-hover:gap-3 transition-all">Enroll Now <span class="material-symbols-outlined" data-icon="arrow_right_alt">arrow_right_alt</span></button>
+</div>
+</div>
+<!-- Course Card 3 -->
+<div class="bg-paper-darker p-8 border border-outline-variant/10 flex flex-col justify-between h-full group hover:shadow-xl transition-all duration-300">
+<div>
+<div class="flex items-center gap-4 mb-6">
+<span class="px-2 py-1 bg-ink-deep text-white text-[10px] uppercase font-bold tracking-widest">Self-Paced</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Lifetime Access</span>
+</div>
+<h4 class="font-headline-md text-headline-md mb-4">Unit Economics for Product Managers</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Stop guessing and start calculating. The math behind sustainable product growth.</p>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/20 flex justify-between items-center">
+<span class="font-headline-md text-headline-md">$149</span>
+<button class="text-primary font-label-md text-label-md flex items-center gap-2 group-hover:gap-3 transition-all">Enroll Now <span class="material-symbols-outlined" data-icon="arrow_right_alt">arrow_right_alt</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Initiatives Teaser: Product Lab with JT -->
+<section class="py-section-gap" id="initiatives">
+<div class="max-w-container-max mx-auto px-margin-edge">
+<div class="bg-primary text-on-primary p-12 md:p-20 relative overflow-hidden flex flex-col md:flex-row gap-gutter items-center">
+<div class="relative z-10 space-y-6 md:w-2/3">
+<span class="font-label-md text-label-md text-accent-warm uppercase tracking-[0.2em]">New Initiative</span>
+<h2 class="font-headline-xl text-headline-xl">Product Lab with JT</h2>
+<p class="font-body-lg text-body-lg text-on-primary/80 max-w-xl">
+                            Join our AI-assisted development workshop to accelerate your build cycle. We bridge the gap between "no-code" dreams and "full-stack" reality.
+                        </p>
+<button class="bg-accent-warm text-ink-deep font-label-md text-label-md px-10 py-4 rounded-sm hover:opacity-90 transition-all flex items-center gap-3">
+                            Explore Initiatives
+                            <span class="material-symbols-outlined" data-icon="rocket_launch">rocket_launch</span>
+</button>
+</div>
+<div class="hidden md:block absolute -right-20 -bottom-20 opacity-20">
+<span class="material-symbols-outlined text-[400px]" data-icon="biotech">biotech</span>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQ: Accordion -->
+<section class="py-section-gap bg-paper-darker">
+<div class="max-w-3xl mx-auto px-margin-edge">
+<div class="text-center mb-16">
+<h2 class="font-headline-lg text-headline-lg mb-4">Curated Answers</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Everything you need to know about joining the community.</p>
+</div>
+<div class="space-y-4">
+<details class="group bg-paper-base border border-outline-variant/30 overflow-hidden" open="">
+<summary class="flex justify-between items-center p-6 cursor-pointer font-headline-md text-headline-md group-open:bg-accent-warm/5 transition-colors">
+                            What types of content will I find here?
+                            <span class="material-symbols-outlined group-open:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body-md text-body-md text-on-surface-variant">
+                            We focus on deep-dive articles, comprehensive e-books, structured video courses, and high-fidelity templates for product managers, designers, and founders.
+                        </div>
+</details>
+<details class="group bg-paper-base border border-outline-variant/30 overflow-hidden">
+<summary class="flex justify-between items-center p-6 cursor-pointer font-headline-md text-headline-md group-open:bg-accent-warm/5 transition-colors">
+                            Is the content free or paid?
+                            <span class="material-symbols-outlined group-open:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body-md text-body-md text-on-surface-variant">
+                            We offer a mix. Many of our core articles and foundational templates are free to all. Our "Premium" e-books and specialized "Masterclasses" are paid resources designed for professionals seeking deep expertise.
+                        </div>
+</details>
+<details class="group bg-paper-base border border-outline-variant/30 overflow-hidden">
+<summary class="flex justify-between items-center p-6 cursor-pointer font-headline-md text-headline-md group-open:bg-accent-warm/5 transition-colors">
+                            How frequently is new content added?
+                            <span class="material-symbols-outlined group-open:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body-md text-body-md text-on-surface-variant">
+                            We publish a major editorial piece every Tuesday and update our resource library monthly. New initiatives like the "Product Lab" launch quarterly.
+                        </div>
+</details>
+<details class="group bg-paper-base border border-outline-variant/30 overflow-hidden">
+<summary class="flex justify-between items-center p-6 cursor-pointer font-headline-md text-headline-md group-open:bg-accent-warm/5 transition-colors">
+                            What is the refund policy for courses?
+                            <span class="material-symbols-outlined group-open:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body-md text-body-md text-on-surface-variant">
+                            We offer a 14-day "No-Questions-Asked" refund policy for all our digital courses if you've completed less than 20% of the material.
+                        </div>
+</details>
+<details class="group bg-paper-base border border-outline-variant/30 overflow-hidden">
+<summary class="flex justify-between items-center p-6 cursor-pointer font-headline-md text-headline-md group-open:bg-accent-warm/5 transition-colors">
+                            Can I access the library from any device?
+                            <span class="material-symbols-outlined group-open:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</summary>
+<div class="p-6 pt-0 font-body-md text-body-md text-on-surface-variant">
+                            Yes, the Product Slice HQ platform is fully responsive and optimized for desktop, tablet, and mobile viewing.
+                        </div>
+</details>
+</div>
+</div>
+</section>
+<!-- CTA Footer Section -->
+<section class="py-section-gap border-t border-outline-variant/30">
+<div class="max-w-container-max mx-auto px-margin-edge text-center space-y-stack-lg">
+<h2 class="font-headline-xl text-headline-xl">Start building with more intention.</h2>
+<div class="flex justify-center gap-stack-md">
+<button class="bg-primary text-on-primary font-label-md text-label-md px-10 py-4 rounded-sm">Get Full Access</button>
+<button class="border border-primary text-primary font-label-md text-label-md px-10 py-4 rounded-sm">Join Newsletter</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-section-gap bg-paper-darker text-ink-deep">
+<div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-gutter px-margin-edge max-w-container-max mx-auto">
+<div class="lg:col-span-2">
+<a class="font-headline-md text-headline-md text-ink-deep block mb-6" href="#">Product Slice HQ</a>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xs">
+                    Building the future of product education through deep research and editorial excellence.
+                </p>
+</div>
+<div>
+<h5 class="font-label-md text-label-md font-bold mb-6">Content</h5>
+<ul class="space-y-4">
+<li><a class="text-on-surface-variant hover:text-accent-warm transition-colors text-label-sm font-label-sm" href="#">Articles</a></li>
+<li><a class="text-on-surface-variant hover:text-accent-warm transition-colors text-label-sm font-label-sm" href="#">Library</a></li>
+<li><a class="text-on-surface-variant hover:text-accent-warm transition-colors text-label-sm font-label-sm" href="#">Initiatives</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md font-bold mb-6">Company</h5>
+<ul class="space-y-4">
+<li><a class="text-on-surface-variant hover:text-accent-warm transition-colors text-label-sm font-label-sm" href="#">About</a></li>
+<li><a class="text-on-surface-variant hover:text-accent-warm transition-colors text-label-sm font-label-sm" href="#">Contact</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md font-bold mb-6">Legal</h5>
+<ul class="space-y-4">
+<li><a class="text-on-surface-variant hover:text-accent-warm transition-colors text-label-sm font-label-sm" href="#">Privacy Policy</a></li>
+<li><a class="text-on-surface-variant hover:text-accent-warm transition-colors text-label-sm font-label-sm" href="#">Terms &amp; Conditions</a></li>
+<li><a class="text-on-surface-variant hover:text-accent-warm transition-colors text-label-sm font-label-sm" href="#">Refund Policy</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md font-bold mb-6">Social</h5>
+<div class="flex gap-4">
+<a class="w-8 h-8 rounded-full border border-outline-variant/30 flex items-center justify-center hover:bg-accent-warm transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="share">share</span>
+</a>
+</div>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-edge mt-20 pt-8 border-t border-outline-variant/20 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant">© 2024 Product Slice HQ. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-ink-deep" href="#">Cookie Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-ink-deep" href="#">Data Deletion</a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple intersection observer for reveal animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.bento-card, .group').forEach(el => {
+            el.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700');
+            observer.observe(el);
+        });
+    </script>
+</body></html>

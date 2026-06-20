@@ -17,56 +17,114 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .single()
   const profile = profileRaw as Pick<UserRow, 'full_name' | 'role'> | null
 
+  const initials = (profile?.full_name ?? user.email ?? 'U')
+    .split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
+
   return (
-    <div style={layout}>
-      <header style={headerBar}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Link href="/dashboard" style={{ fontWeight: 700, fontSize: '1.0625rem', color: '#111827', textDecoration: 'none' }}>
-            PSHQ
+    <div style={{ minHeight: '100vh', background: 'var(--color-paper-base)' }}>
+      {/* Sidebar */}
+      <aside className="dash-sidebar">
+        <div className="dash-sidebar-brand">
+          <Link href="/dashboard" style={{ textDecoration: 'none' }}>
+            <span className="text-headline-md" style={{ color: 'var(--color-ink-deep)', fontWeight: 700 }}>
+              Product Slice HQ
+            </span>
           </Link>
-          <span style={{ color: '#e5e7eb' }}>|</span>
-          <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-            {profile?.full_name ?? user.email}
-          </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <NotificationBell userId={user.id} />
+
+        <nav className="dash-sidebar-nav" aria-label="Dashboard navigation">
+          {NAV.map(({ href, label, icon }) => (
+            <Link key={href} href={href} className="dash-nav-link">
+              <span style={{ fontSize: '1.125rem' }}>{icon}</span>
+              {label}
+            </Link>
+          ))}
+
+          <div className="dash-nav-section">System</div>
+
+          <Link href="/dashboard/support" className="dash-nav-link">
+            <span style={{ fontSize: '1.125rem' }}>💬</span>
+            Support
+          </Link>
+
+          <Link href="/dashboard/settings" className="dash-nav-link">
+            <span style={{ fontSize: '1.125rem' }}>⚙️</span>
+            Settings
+          </Link>
+        </nav>
+
+        {/* Profile + sign out */}
+        <div style={{ padding: '1rem', borderTop: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)' }}>
           {(profile?.role === 'admin' || profile?.role === 'super_admin') && (
-            <Link href="/admin" style={{ fontSize: '0.8125rem', color: '#6366f1', textDecoration: 'none', fontWeight: 500 }}>
-              Admin panel →
+            <Link href="/admin" style={{
+              display: 'block',
+              marginBottom: '0.75rem',
+              fontSize: '0.8125rem',
+              color: 'var(--color-on-primary-container)',
+              textDecoration: 'none',
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 600,
+            }}>
+              Tactical Ops →
             </Link>
           )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '50%',
+              background: 'var(--color-ink-deep)',
+              color: '#ffffff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '0.75rem', fontWeight: 700, flexShrink: 0,
+              fontFamily: 'var(--font-sans)',
+            }}>
+              {initials}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-ink-deep)', margin: 0, fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {profile?.full_name ?? user.email}
+              </p>
+              <p style={{ fontSize: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-on-primary-container)', margin: 0, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
+                {profile?.role === 'super_admin' ? 'Super Admin' : profile?.role === 'admin' ? 'Admin' : 'Member'}
+              </p>
+            </div>
+          </div>
           <form action={signOutAction}>
-            <button type="submit" style={{ fontSize: '0.8125rem', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-              Sign out
+            <button type="submit" style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              fontSize: '0.875rem', color: 'var(--color-text-muted)',
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: '0.375rem 0', fontFamily: 'var(--font-sans)',
+              transition: 'color 150ms',
+            }}>
+              ↩ Sign out
             </button>
           </form>
         </div>
-      </header>
+      </aside>
 
-      <div style={body}>
-        <nav style={sidebar}>
-          {NAV.map(({ href, label }) => (
-            <Link key={href} href={href} style={navLink}>{label}</Link>
-          ))}
-        </nav>
-        <main style={main}>{children}</main>
+      {/* Main */}
+      <div className="dash-main">
+        {/* Top bar */}
+        <header className="dash-topbar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Link href="/" style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', textDecoration: 'none', fontFamily: 'var(--font-sans)' }}>
+              ← Public site
+            </Link>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <NotificationBell userId={user.id} />
+          </div>
+        </header>
+
+        <div style={{ flex: 1 }}>{children}</div>
       </div>
     </div>
   )
 }
 
 const NAV = [
-  { href: '/dashboard', label: 'Overview' },
-  { href: '/library', label: 'Browse Library' },
-  { href: '/dashboard/requests', label: 'Content Requests' },
-  { href: '/dashboard/support', label: 'Support' },
-  { href: '/dashboard/settings', label: 'Settings' },
+  { href: '/dashboard', label: 'Overview', icon: '📊' },
+  { href: '/dashboard/library', label: 'My Library', icon: '📚' },
+  { href: '/library', label: 'Browse Library', icon: '🔍' },
+  { href: '/dashboard/requests', label: 'Requests', icon: '💡' },
 ]
-
-const layout: React.CSSProperties = { minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, sans-serif', background: '#f9fafb' }
-const headerBar: React.CSSProperties = { height: '56px', background: '#fff', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', position: 'sticky', top: 0, zIndex: 50 }
-const body: React.CSSProperties = { display: 'flex', flex: 1 }
-const sidebar: React.CSSProperties = { width: '200px', background: '#fff', borderRight: '1px solid #e5e7eb', padding: '1.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.25rem', flexShrink: 0 }
-const navLink: React.CSSProperties = { display: 'block', padding: '0.5rem 1.25rem', fontSize: '0.875rem', color: '#374151', textDecoration: 'none' }
-const main: React.CSSProperties = { flex: 1, overflow: 'auto' }

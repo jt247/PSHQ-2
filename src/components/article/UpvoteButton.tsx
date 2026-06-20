@@ -24,11 +24,16 @@ export function UpvoteButton({ contentId, initialCount, initialUpvoted, isLogged
   }
 
   function handleClick() {
+    const wasUpvoted = upvoted
     startTransition(async () => {
-      // optimistic
       setUpvoted(u => !u)
-      setCount(c => upvoted ? c - 1 : c + 1)
-      await toggleUpvoteAction(contentId, upvoted)
+      setCount(c => wasUpvoted ? c - 1 : c + 1)
+      const result = await toggleUpvoteAction(contentId, wasUpvoted)
+      if (result?.error) {
+        // roll back optimistic update
+        setUpvoted(wasUpvoted)
+        setCount(c => wasUpvoted ? c + 1 : c - 1)
+      }
     })
   }
 

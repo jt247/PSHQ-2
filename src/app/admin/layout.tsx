@@ -24,7 +24,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-logo">
-          <Link href="/admin">⚡ TOC</Link>
+          <Link href="/admin">Product Slice HQ</Link>
+          <p>Tactical Ops</p>
         </div>
         <nav className="admin-nav">
           {NAV_ITEMS.map((item, i) =>

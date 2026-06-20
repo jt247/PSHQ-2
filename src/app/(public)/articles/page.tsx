@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { ContentCard } from '@/components/content/ContentCard'
+import { PublicNav } from '@/components/layout/PublicNav'
+import { PublicFooter } from '@/components/layout/PublicFooter'
 
 export default async function ArticlesPage() {
   const supabase = await createClient()
@@ -18,21 +20,30 @@ export default async function ArticlesPage() {
   }))
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-      <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: '0 0 0.5rem', color: '#111827' }}>Articles</h1>
-        <p style={{ color: '#6b7280', margin: 0 }}>
-          Insights, frameworks, and stories from the African PM community.
-        </p>
-      </header>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
+      <PublicNav activeHref="/articles" />
 
-      {items.length === 0 ? (
-        <p style={{ color: '#9ca3af' }}>No articles yet. Check back soon.</p>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
-          {items.map(item => <ContentCard key={item.id} {...item} />)}
-        </div>
-      )}
+      <main style={{ flex: 1, maxWidth: '80rem', margin: '0 auto', width: '100%', padding: '5rem var(--spacing-margin-edge)' }}>
+        <section style={{ maxWidth: '42ch', marginBottom: '3rem' }}>
+          <h1 className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', marginBottom: '0.875rem' }}>Articles</h1>
+          <p className="text-body-lg" style={{ color: 'var(--color-text-muted)' }}>
+            Insights, frameworks, and stories for the product-minded professional. Written to sharpen thinking and move practice forward.
+          </p>
+        </section>
+
+        {items.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
+            <p className="text-headline-md" style={{ color: 'var(--color-ink-deep)', marginBottom: '0.5rem' }}>No articles yet</p>
+            <p className="text-body-md" style={{ color: 'var(--color-text-muted)' }}>Check back soon.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '1.25rem' }}>
+            {items.map(item => <ContentCard key={item.id} {...item} />)}
+          </div>
+        )}
+      </main>
+
+      <PublicFooter />
     </div>
   )
 }

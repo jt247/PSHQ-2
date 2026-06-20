@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 export interface ProfileState {
   error?: string
@@ -21,14 +21,16 @@ export async function updateProfileAction(
   const last_name  = (formData.get('last_name')  as string ?? '').trim()
   const job_role   = (formData.get('job_role')   as string ?? '').trim()
   const country    = (formData.get('country')    as string ?? '').trim()
+  const bio        = (formData.get('bio')        as string ?? '').trim() || null
   const areasRaw   = formData.getAll('areas_of_interest') as string[]
   const areas_of_interest = areasRaw.slice(0, 7)
 
   const full_name = [first_name, last_name].filter(Boolean).join(' ') || null
 
-  const { error } = await supabase
+  const service = createServiceClient()
+  const { error } = await service
     .from('users')
-    .update({ first_name, last_name, full_name, job_role, country, areas_of_interest })
+    .update({ first_name, last_name, full_name, job_role, country, bio, areas_of_interest })
     .eq('id', user.id)
 
   if (error) return { error: 'Failed to save profile. Try again.' }

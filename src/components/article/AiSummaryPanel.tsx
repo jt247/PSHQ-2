@@ -59,8 +59,10 @@ export function AiSummaryPanel({ contentId, isLoggedIn, cachedSummary }: Props) 
       const res = await fetch(`/api/ai-summary/${contentId}`, { method: 'POST' })
       const json = await res.json()
 
-      if (!res.ok) {
-        setError(json.error ?? 'Failed to generate summary.')
+      if (res.status === 429) {
+        setError(json.error ?? 'AI quota reached. Try again in a minute.')
+      } else if (!res.ok) {
+        setError(json.error ?? 'Failed to generate summary. Try again.')
       } else {
         setData({ summary: json.summary, bullets: json.bullets ?? [], concepts: json.concepts ?? [] })
       }

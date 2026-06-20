@@ -92,8 +92,15 @@ Respond with ONLY valid JSON in this exact shape — no markdown fences, no extr
     const jsonText = text.startsWith('{') ? text : text.slice(text.indexOf('{'))
     parsed = JSON.parse(jsonText)
   } catch (err) {
+    const errStr = String(err)
+    if (errStr.includes('RESOURCE_EXHAUSTED') || errStr.includes('429') || errStr.includes('quota')) {
+      return NextResponse.json(
+        { error: 'AI quota reached. Try again in a minute.' },
+        { status: 429 }
+      )
+    }
     console.error('[ai-summary] Gemini error:', err)
-    return NextResponse.json({ error: 'Failed to generate summary' }, { status: 502 })
+    return NextResponse.json({ error: 'Failed to generate summary. Try again.' }, { status: 502 })
   }
 
   // Save to cache

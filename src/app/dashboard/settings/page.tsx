@@ -10,20 +10,20 @@ export default async function SettingsPage() {
 
   const { data: profileRaw } = await supabase
     .from('users')
-    .select('full_name, first_name, last_name, job_role, country, areas_of_interest, email')
+    .select('full_name, first_name, last_name, job_role, country, areas_of_interest, email, bio')
     .eq('id', user.id)
     .single()
 
-  const profile = profileRaw as Pick<UserRow, 'full_name' | 'first_name' | 'last_name' | 'job_role' | 'country' | 'areas_of_interest' | 'email'> | null
+  const profile = profileRaw as Pick<UserRow, 'full_name' | 'first_name' | 'last_name' | 'job_role' | 'country' | 'areas_of_interest' | 'email' | 'bio'> | null
 
   return (
-    <div style={{ maxWidth: '640px', margin: '0 auto', padding: '2rem 1.5rem', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', margin: 0 }}>Settings</h1>
-        <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: '0.25rem 0 0' }}>
+    <div className="dash-content" style={{ maxWidth: '640px' }}>
+      <section style={{ marginBottom: '2rem' }}>
+        <h1 className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', marginBottom: '0.375rem' }}>Settings</h1>
+        <p className="text-body-lg" style={{ color: 'var(--color-text-muted)' }}>
           Manage your profile and account preferences.
         </p>
-      </div>
+      </section>
       <ProfileSettings user={{ ...(profile ?? {}), id: user.id, email: profile?.email ?? user.email ?? '' } as import('@/types/database').UserRow} />
     </div>
   )
