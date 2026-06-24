@@ -84,9 +84,9 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         gap: '1rem', marginBottom: '1.5rem',
       }}>
         {[
-          { label: 'Total Members', value: (totalRes.count ?? 0).toLocaleString(), icon: '👥', accent: '#0E2A47' },
-          { label: 'New (30 days)', value: (newRes.count ?? 0).toLocaleString(), icon: '🌱', accent: '#10b981' },
-          { label: 'Admins', value: (adminRes.count ?? 0).toLocaleString(), icon: '⚡', accent: '#f59e0b' },
+          { label: 'Total Members', value: (totalRes.count ?? 0).toLocaleString(), accent: '#0E2A47' },
+          { label: 'New (30 days)', value: (newRes.count ?? 0).toLocaleString(), accent: '#10b981' },
+          { label: 'Admins', value: (adminRes.count ?? 0).toLocaleString(), accent: '#f59e0b' },
         ].map(k => (
           <div key={k.label} style={{
             background: '#ffffff',
@@ -95,7 +95,6 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
             borderRadius: '0.625rem',
             padding: '1rem 1.25rem',
           }}>
-            <div style={{ fontSize: '1.125rem', marginBottom: '0.375rem' }}>{k.icon}</div>
             <p style={{
               fontFamily: 'var(--font-sans)', fontSize: '1.625rem',
               fontWeight: 800, color: 'var(--color-ink-deep)', margin: '0 0 0.125rem', lineHeight: 1,

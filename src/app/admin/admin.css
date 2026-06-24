@@ -1,23 +1,22 @@
 /* ── Admin shell ──────────────────────────────────────────── */
 .admin-layout {
-  display: flex;
   min-height: 100vh;
   font-family: var(--font-sans, system-ui, sans-serif);
   font-size: 0.9375rem;
 }
 
 .admin-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
   width: 230px;
-  min-height: 100vh;
   background: var(--color-ink-deep);
   color: rgba(255,255,255,0.6);
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  height: 100vh;
   overflow-y: auto;
+  z-index: 50;
 }
 
 .admin-logo {
@@ -82,8 +81,8 @@
 .admin-signout:hover { color: #ef4444; }
 
 .admin-main {
-  flex: 1;
-  min-width: 0;
+  margin-left: 230px;
+  min-height: 100vh;
   background: var(--color-paper-base);
   padding: 2.5rem;
 }

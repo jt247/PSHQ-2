@@ -15,16 +15,16 @@ const NAV_ITEMS: (null | { href: string; label: string })[] = [
   { href: '/admin/notifications', label: 'Notifications' },
   { href: '/admin/quality',       label: 'Quality Control' },
   null,
-  { href: '/admin/initiatives',                      label: '🗂 Initiatives' },
+  { href: '/admin/initiatives',                      label: 'Initiatives' },
   { href: '/admin/initiatives/product-lab',          label: '   ↳ Product Lab' },
   { href: '/admin/initiatives/case-library',         label: '   ↳ Case Library' },
   { href: '/admin/initiatives/curriculum',           label: '   ↳ Curriculum' },
   null,
-  { href: '/admin/analytics/platform', label: '📊 Platform' },
-  { href: '/admin/analytics/product',  label: '📈 Product' },
-  { href: '/admin/analytics/growth',   label: '🌱 Growth' },
+  { href: '/admin/analytics/platform', label: 'Platform Analytics' },
+  { href: '/admin/analytics/product',  label: 'Product Analytics' },
+  { href: '/admin/analytics/growth',   label: 'Growth Analytics' },
   null,
-  { href: '/admin/team', label: '👥 Team' },
+  { href: '/admin/team', label: 'Team' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

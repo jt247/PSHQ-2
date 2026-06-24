@@ -587,64 +587,65 @@ export default async function DashboardPage() {
       )}
 
       {/* ── Courses ── */}
-      {courses.length > 0 && (
-        <section style={{ marginBottom: '1.75rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
-            <h2 style={{
-              fontFamily: 'var(--font-serif)', fontSize: '1.25rem',
-              fontWeight: 700, color: 'var(--color-ink-deep)', margin: 0,
-            }}>
-              Courses
-            </h2>
-          </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
-            gap: '1rem',
+      <section style={{ marginBottom: '1.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
+          <h2 style={{
+            fontFamily: 'var(--font-serif)', fontSize: '1.25rem',
+            fontWeight: 700, color: 'var(--color-ink-deep)', margin: 0,
           }}>
-            {courses.map(course => (
-              <div key={course.id} style={{
-                background: '#ffffff',
-                border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
-                borderRadius: '0.75rem', overflow: 'hidden',
-                opacity: 0.8,
+            Courses
+          </h2>
+        </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
+          gap: '1rem',
+        }}>
+          {(courses.length > 0 ? courses.map(c => ({ id: c.id, title: c.title, tag: c.tags?.[0] ?? null })) : COMING_SOON_COURSES).map(course => (
+            <div key={course.id} style={{
+              background: '#ffffff',
+              border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
+              borderRadius: '0.75rem', overflow: 'hidden',
+              opacity: 0.85,
+            }}>
+              <div style={{
+                width: '100%', height: '90px',
+                background: 'linear-gradient(135deg, var(--color-ink-deep) 0%, color-mix(in srgb, var(--color-ink-deep) 70%, #4f46e5) 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                position: 'relative',
               }}>
-                <div style={{
-                  width: '100%', height: '90px',
-                  background: 'linear-gradient(135deg, var(--color-ink-deep) 0%, color-mix(in srgb, var(--color-ink-deep) 70%, #4f46e5) 100%)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  position: 'relative',
-                }}>
-                  <span style={{ fontSize: '1.5rem' }}>🎓</span>
-                  <span style={{
-                    position: 'absolute', top: '0.5rem', right: '0.5rem',
-                    background: 'rgba(250,204,21,0.9)', color: 'var(--color-ink-deep)',
-                    fontSize: '0.5625rem', fontWeight: 800, letterSpacing: '0.1em',
-                    textTransform: 'uppercase', padding: '0.2rem 0.5rem', borderRadius: '0.2rem',
-                  }}>Coming Soon</span>
-                </div>
-                <div style={{ padding: '0.875rem' }}>
-                  <p style={{
-                    fontFamily: 'var(--font-sans)', fontWeight: 600,
-                    color: 'var(--color-ink-deep)', margin: '0 0 0.375rem', lineHeight: 1.35,
-                    fontSize: '0.875rem',
-                  }}>
-                    {course.title}
-                  </p>
-                  {course.tags && course.tags.length > 0 && (
-                    <span style={{
-                      fontFamily: 'var(--font-sans)', fontSize: '0.6875rem',
-                      color: 'var(--color-text-muted)',
-                    }}>
-                      {course.tags[0]}
-                    </span>
-                  )}
-                </div>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+                <span style={{
+                  position: 'absolute', top: '0.5rem', right: '0.5rem',
+                  background: 'rgba(250,204,21,0.9)', color: 'var(--color-ink-deep)',
+                  fontSize: '0.5625rem', fontWeight: 800, letterSpacing: '0.1em',
+                  textTransform: 'uppercase', padding: '0.2rem 0.5rem', borderRadius: '0.2rem',
+                }}>Coming Soon</span>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+              <div style={{ padding: '0.875rem' }}>
+                <p style={{
+                  fontFamily: 'var(--font-sans)', fontWeight: 600,
+                  color: 'var(--color-ink-deep)', margin: '0 0 0.375rem', lineHeight: 1.35,
+                  fontSize: '0.875rem',
+                }}>
+                  {course.title}
+                </p>
+                {'tag' in course && course.tag && (
+                  <span style={{
+                    fontFamily: 'var(--font-sans)', fontSize: '0.6875rem',
+                    color: 'var(--color-text-muted)',
+                  }}>
+                    {course.tag}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ── Quick actions ── */}
       <section style={{ paddingTop: '0.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -655,3 +656,9 @@ export default async function DashboardPage() {
     </div>
   )
 }
+
+const COMING_SOON_COURSES = [
+  { id: 'cs-1', title: 'Product Strategy & Roadmapping', tag: 'Strategy' },
+  { id: 'cs-2', title: 'User Research & Discovery Methods', tag: 'Research' },
+  { id: 'cs-3', title: 'Data-Driven Product Decisions', tag: 'Analytics' },
+]

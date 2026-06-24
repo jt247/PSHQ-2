@@ -59,7 +59,7 @@ export default async function AdminPage() {
     byType[c.type] = (byType[c.type] ?? 0) + 1
   }
 
-  const recentUnlocks = (recentUnlocksRes.data ?? []) as Array<{
+  const recentUnlocks = (recentUnlocksRes.data ?? []) as unknown as Array<{
     created_at: string; type: string;
     content: { title: string; type: string } | null;
   }>
@@ -115,7 +115,7 @@ export default async function AdminPage() {
             label: 'Total Members',
             value: totalUsers.toLocaleString(),
             sub: `+${newUsers30d} this month`,
-            icon: '👥',
+            icon: null,
             accent: '#0E2A47',
             highlight: true,
           },
@@ -123,7 +123,7 @@ export default async function AdminPage() {
             label: 'New (30 days)',
             value: newUsers30d.toLocaleString(),
             sub: `${growthPct}% of total`,
-            icon: '🌱',
+            icon: null,
             accent: '#10b981',
             highlight: false,
           },
@@ -131,7 +131,7 @@ export default async function AdminPage() {
             label: 'Active (7 days)',
             value: activeUsers7d.toLocaleString(),
             sub: 'signed in recently',
-            icon: '⚡',
+            icon: null,
             accent: '#f59e0b',
             highlight: false,
           },
@@ -139,7 +139,7 @@ export default async function AdminPage() {
             label: 'Published Content',
             value: totalContent.toLocaleString(),
             sub: `${Object.keys(byType).length} content types`,
-            icon: '📄',
+            icon: null,
             accent: '#6366f1',
             highlight: false,
           },
@@ -147,7 +147,7 @@ export default async function AdminPage() {
             label: 'Total Interactions',
             value: totalInteractions.toLocaleString(),
             sub: 'views + unlocks',
-            icon: '📈',
+            icon: null,
             accent: '#e11d48',
             highlight: false,
           },
@@ -169,7 +169,6 @@ export default async function AdminPage() {
                 pointerEvents: 'none',
               }} />
             )}
-            <div style={{ fontSize: '1.125rem', marginBottom: '0.625rem' }}>{kpi.icon}</div>
             <p style={{
               fontFamily: 'var(--font-sans)',
               fontSize: '1.875rem', fontWeight: 800, lineHeight: 1,
@@ -218,7 +217,7 @@ export default async function AdminPage() {
               fontWeight: 700, color: 'var(--color-ink-deep)',
               margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em',
             }}>
-              👤 Recent Signups
+              Recent Signups
             </h3>
             <Link href="/admin/users" style={{
               fontFamily: 'var(--font-sans)', fontSize: '0.75rem',
@@ -310,7 +309,7 @@ export default async function AdminPage() {
               fontWeight: 700, color: 'var(--color-ink-deep)',
               margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em',
             }}>
-              🏆 Top Content
+              Top Content
             </h3>
             <Link href="/admin/content" style={{
               fontFamily: 'var(--font-sans)', fontSize: '0.75rem',
@@ -401,7 +400,7 @@ export default async function AdminPage() {
               fontWeight: 700, color: 'var(--color-ink-deep)',
               margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em',
             }}>
-              📊 Content Breakdown
+              Content Breakdown
             </h3>
           </div>
           <div style={{ padding: '1rem 1.5rem' }}>
@@ -468,7 +467,7 @@ export default async function AdminPage() {
               fontWeight: 700, color: 'var(--color-ink-deep)',
               margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em',
             }}>
-              🔓 Recent Unlocks
+              Recent Unlocks
             </h3>
           </div>
           <div style={{ padding: '0 1.5rem' }}>
@@ -488,9 +487,12 @@ export default async function AdminPage() {
                     display: 'flex', width: '28px', height: '28px',
                     background: colors.bg, borderRadius: '0.375rem',
                     alignItems: 'center', justifyContent: 'center',
-                    fontSize: '0.75rem', flexShrink: 0,
+                    flexShrink: 0,
                   }}>
-                    🔓
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={colors.text} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                    </svg>
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{
@@ -537,11 +539,11 @@ export default async function AdminPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {[
               { href: '/admin/content/new', label: '+ New Content', primary: true },
-              { href: '/admin/users', label: '👥 Manage Users', primary: false },
-              { href: '/admin/requests', label: '📝 Content Requests', primary: false },
-              { href: '/admin/analytics/platform', label: '📊 Platform Analytics', primary: false },
-              { href: '/admin/analytics/growth', label: '🌱 Growth Analytics', primary: false },
-              { href: '/admin/support', label: '💬 Support Queue', primary: false },
+              { href: '/admin/users', label: 'Manage Users', primary: false },
+              { href: '/admin/requests', label: 'Content Requests', primary: false },
+              { href: '/admin/analytics/platform', label: 'Platform Analytics', primary: false },
+              { href: '/admin/analytics/growth', label: 'Growth Analytics', primary: false },
+              { href: '/admin/support', label: 'Support Queue', primary: false },
             ].map(item => (
               <Link key={item.href} href={item.href} style={{
                 display: 'block', padding: '0.625rem 0.875rem',
