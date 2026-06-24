@@ -77,7 +77,7 @@ export default async function DashboardPage() {
 
   const ebooks = owned.filter(c => c.type === 'ebook')
   const articles = interactions.filter(i => i.type === 'view')
-  const resources = owned.filter(c => c.type === 'template' || c.type === 'resource')
+  const resources = owned.filter(c => c.type === 'template')
   const paidItems = owned.filter(c => (c as { pricing_type?: string }).pricing_type === 'paid')
   const freeItems = owned.filter(c => (c as { pricing_type?: string }).pricing_type === 'free')
 
