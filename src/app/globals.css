@@ -364,18 +364,39 @@ a { color: inherit; text-decoration: none; }
   inset-y: 0;
   left: 0;
   width: 16rem;
-  background: var(--color-paper-darker);
-  border-right: 1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent);
+  background: var(--color-ink-deep);
+  border-right: none;
   display: flex;
   flex-direction: column;
   z-index: 50;
 }
 .dash-sidebar-brand {
-  padding: 2rem 1.5rem 1.5rem;
+  padding: 1.75rem 1.5rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.dash-sidebar-brand-text {
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.dash-sidebar-brand-sub {
+  font-family: var(--font-sans);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent-warm);
+  margin-top: 0.125rem;
 }
 .dash-sidebar-nav {
   flex: 1;
-  padding: 0 0.75rem;
+  padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
@@ -385,40 +406,32 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.625rem 1rem;
-  border-radius: 0.25rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.375rem;
   font-family: var(--font-sans);
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-text-muted);
+  color: rgba(255,255,255,0.55);
   text-decoration: none;
   transition: color 150ms, background-color 150ms;
 }
 .dash-nav-link:hover {
-  color: var(--color-ink-deep);
-  background-color: color-mix(in srgb, var(--color-paper-base) 60%, transparent);
+  color: #ffffff;
+  background-color: rgba(255,255,255,0.07);
 }
-.dash-nav-link.active {
-  color: var(--color-ink-deep);
-  font-weight: 700;
-  position: relative;
-}
-.dash-nav-link.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 1rem;
-  right: 1rem;
-  height: 2px;
-  background: var(--color-accent-warm);
+.dash-nav-link-active {
+  color: #ffffff !important;
+  background-color: rgba(250,204,21,0.12) !important;
+  border-left: 2px solid var(--color-accent-warm);
+  padding-left: calc(0.875rem - 2px) !important;
 }
 .dash-nav-section {
-  padding: 1.5rem 1rem 0.25rem;
-  font-size: 0.625rem;
-  font-weight: 600;
+  padding: 1.25rem 0.875rem 0.375rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-text-muted) 60%, transparent);
+  color: rgba(255,255,255,0.28);
   font-family: var(--font-sans);
 }
 .dash-main {
