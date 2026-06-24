@@ -71,3 +71,58 @@ export async function updateTicketAction(
   revalidatePath(`/admin/support/${ticketId}`)
   revalidatePath('/admin/support')
 }
+
+// ── Admin-created ticket / contact inquiry ────────────────────
+
+export interface CreateTicketState { error?: string; success?: boolean; id?: string }
+
+export async function createTicketAction(
+  _prev: CreateTicketState,
+  formData: FormData,
+): Promise<CreateTicketState> {
+  try {
+    const { supabase, adminId } = await requireAdmin()
+    const service = createServiceClient()
+
+    const name        = (formData.get('name')        as string ?? '').trim()
+    const email       = (formData.get('email')       as string ?? '').trim()
+    const subject     = (formData.get('subject')     as string ?? '').trim()
+    const description = (formData.get('description') as string ?? '').trim()
+    const priority    = (formData.get('priority')    as string ?? 'medium') as TicketPriority
+
+    if (!email || !subject || !description) return { error: 'Email, subject, and description are required.' }
+
+    // Ticket number: count + 1
+    const { count } = await service.from('support_tickets').select('id', { count: 'exact', head: true })
+    const ticket_number = (count ?? 0) + 1
+
+    const { data, error } = await service.from('support_tickets').insert({
+      ticket_number,
+      subject,
+      description,
+      email,
+      priority,
+      status: 'open',
+      assigned_to: adminId,
+      // user_id intentionally null — this is an admin-created contact inquiry
+    }).select('id').single()
+
+    if (error || !data) return { error: 'Failed to create ticket.' }
+
+    if (name) {
+      await service.from('ticket_replies').insert({
+        ticket_id: data.id,
+        user_id: adminId,
+        body: `Contact name: ${name}`,
+        is_internal: true,
+      })
+    }
+
+    await logAdminAction({ admin_id: adminId, action_type: 'ticket_create_admin', target_table: 'support_tickets', target_id: data.id, metadata: { subject, email } })
+
+    revalidatePath('/admin/support')
+    return { success: true, id: data.id }
+  } catch (e: unknown) {
+    return { error: e instanceof Error ? e.message : 'Failed' }
+  }
+}

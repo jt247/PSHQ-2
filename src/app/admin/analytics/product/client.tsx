@@ -3,6 +3,20 @@
 import Link from 'next/link'
 import { PieStyleBar } from '@/components/analytics/Charts'
 
+type ContentPerformanceRow = {
+  id: string
+  title: string
+  type: string
+  status: string
+  views: number
+  unlocks: number
+  comments: number
+  upvotes: number
+  ratingCount: number
+  avgRating: number | null
+  engagementRate: number
+}
+
 interface Props {
   data: {
     days: number
@@ -27,6 +41,7 @@ interface Props {
       mostDiscussed: Array<{ title: string; type: string; comment_count: number; upvote_count: number; discussion_score: number }>
       topSelarClicks: Array<{ title: string; type: string; count: number }>
     }
+    contentPerformance: ContentPerformanceRow[]
   }
 }
 
@@ -34,7 +49,7 @@ const DAY_OPTIONS = [7, 14, 30, 90] as const
 const pct = (n: number) => `${n}%`
 
 export function ProductClient({ data }: Props) {
-  const { days, community, engagement, content } = data
+  const { days, community, engagement, content, contentPerformance } = data
   const typeRows = content.typeBreakdown.map(t => ({ label: t.type, value: t.count }))
 
   return (
@@ -106,6 +121,57 @@ export function ProductClient({ data }: Props) {
         </div>
       </Section>
 
+      {/* Content Performance Table */}
+      <Section title="Content performance table">
+        <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0 0 1rem' }}>
+          All-time stats per piece of content. Engagement rate = (comments + upvotes + unlocks) / views.
+        </p>
+        {contentPerformance.length === 0 ? (
+          <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No content data yet.</p>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={th}>Title</th>
+                  <th style={{ ...th, textAlign: 'center' }}>Type</th>
+                  <th style={{ ...th, textAlign: 'center' }}>Status</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Views</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Unlocks</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Comments</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Upvotes</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Rating</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Eng. rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contentPerformance.map((row, i) => (
+                  <tr key={row.id} style={{ background: i % 2 === 0 ? '#fff' : '#f9fafb' }}>
+                    <td style={{ ...td, maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{row.title}</td>
+                    <td style={{ ...td, textAlign: 'center' }}>
+                      <span style={typeBadge(row.type)}>{row.type}</span>
+                    </td>
+                    <td style={{ ...td, textAlign: 'center' }}>
+                      <span style={statusBadge(row.status)}>{row.status}</span>
+                    </td>
+                    <td style={{ ...td, textAlign: 'right' }}>{row.views.toLocaleString()}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>{row.unlocks.toLocaleString()}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>{row.comments.toLocaleString()}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>{row.upvotes.toLocaleString()}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>
+                      {row.avgRating !== null ? `${row.avgRating} (${row.ratingCount})` : '—'}
+                    </td>
+                    <td style={{ ...td, textAlign: 'right', color: row.engagementRate >= 10 ? '#059669' : row.engagementRate >= 5 ? '#d97706' : '#9ca3af' }}>
+                      {row.engagementRate}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Section>
+
       {/* Selar Interest Signals */}
       <Section title="Selar interest signals">
         <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0 0 0.875rem' }}>
@@ -164,10 +230,27 @@ function ContentRankList({ items, metric }: { items: Array<{ title: string; type
   )
 }
 
+const TYPE_COLORS: Record<string, string> = { article: '#dbeafe', ebook: '#fce7f3', template: '#dcfce7', course: '#fef3c7' }
+const TYPE_TEXT: Record<string, string> = { article: '#1e40af', ebook: '#be185d', template: '#15803d', course: '#b45309' }
+const typeBadge = (type: string): React.CSSProperties => ({
+  display: 'inline-block', padding: '0.1rem 0.4rem', borderRadius: '9999px',
+  fontSize: '0.7rem', fontWeight: 600,
+  background: TYPE_COLORS[type] ?? '#f3f4f6',
+  color: TYPE_TEXT[type] ?? '#374151',
+})
+const statusBadge = (status: string): React.CSSProperties => ({
+  display: 'inline-block', padding: '0.1rem 0.4rem', borderRadius: '9999px',
+  fontSize: '0.7rem', fontWeight: 600,
+  background: status === 'published' ? '#dcfce7' : '#f3f4f6',
+  color: status === 'published' ? '#15803d' : '#6b7280',
+})
 const pill = (active: boolean): React.CSSProperties => ({
   padding: '0.25rem 0.625rem', borderRadius: '6px', fontSize: '0.8125rem', fontWeight: 500,
   textDecoration: 'none', background: active ? '#111827' : '#f3f4f6', color: active ? '#fff' : '#374151',
 })
+const tableStyle: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }
+const th: React.CSSProperties = { padding: '0.5rem 0.75rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' }
+const td: React.CSSProperties = { padding: '0.5rem 0.75rem', color: '#374151', borderBottom: '1px solid #f3f4f6' }
 const page: React.CSSProperties = { maxWidth: '1100px', margin: '0 auto', padding: '2rem 1.5rem', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', gap: '1.25rem' }
 const h1: React.CSSProperties = { fontSize: '1.5rem', fontWeight: 700, color: '#111827', margin: 0 }
 const sub: React.CSSProperties = { color: '#6b7280', fontSize: '0.875rem', margin: '0.25rem 0 0' }

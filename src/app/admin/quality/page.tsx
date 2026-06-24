@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import type { UserRow } from '@/types/database'
 import { QualityRow } from './client'
 
@@ -10,11 +10,11 @@ async function requireAdmin() {
   const { data: p } = await supabase.from('users').select('role').eq('id', user.id).single()
   const role = (p as Pick<UserRow, 'role'> | null)?.role
   if (role !== 'admin' && role !== 'super_admin') redirect('/dashboard')
-  return supabase
 }
 
 export default async function AdminQualityPage() {
-  const supabase = await requireAdmin()
+  await requireAdmin()
+  const supabase = createServiceClient()
 
   const { data: ratings } = await supabase
     .from('ratings')

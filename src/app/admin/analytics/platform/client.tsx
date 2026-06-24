@@ -19,13 +19,15 @@ interface Props {
       returningPct: number
     }
     funnel: Array<{ label: string; value: number }>
+    posthogKey: string | null
+    posthogHost: string
   }
 }
 
 const DAY_OPTIONS = [7, 14, 30, 90] as const
 
 export function PlatformClient({ data }: Props) {
-  const { days, dailyViews, dailySignups, interactionTypes, topViewed, topUnlocked, metrics, funnel } = data
+  const { days, dailyViews, dailySignups, interactionTypes, topViewed, topUnlocked, metrics, funnel, posthogKey, posthogHost } = data
 
   const interactionRows = Object.entries(interactionTypes)
     .sort((a, b) => b[1] - a[1])
@@ -46,6 +48,24 @@ export function PlatformClient({ data }: Props) {
           ))}
         </div>
       </div>
+
+      {/* PostHog embed */}
+      {posthogKey ? (
+        <div style={card}>
+          <h3 style={cardTitle}>PostHog — Traffic &amp; Session Analytics</h3>
+          <p style={cardNote}>Live session data, page views, device breakdown, and UTM attribution from PostHog.</p>
+          <iframe
+            src={`${posthogHost}/embedded/dashboard?token=${posthogKey}`}
+            style={{ width: '100%', height: '480px', border: 'none', borderRadius: '6px', background: '#f9fafb' }}
+            title="PostHog dashboard"
+            sandbox="allow-scripts allow-same-origin"
+          />
+        </div>
+      ) : (
+        <div style={{ padding: '1rem 1.25rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', fontSize: '0.8125rem', color: '#92400e' }}>
+          <strong>PostHog not configured:</strong> Set <code>NEXT_PUBLIC_POSTHOG_KEY</code> in your environment variables to enable the PostHog traffic analytics embed. Traffic, sessions, device breakdown, and UTM data will appear here once connected.
+        </div>
+      )}
 
       {/* Overview stats */}
       <div style={grid4}>
@@ -99,16 +119,8 @@ export function PlatformClient({ data }: Props) {
         <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: 0, lineHeight: 1.6 }}>
           <strong style={{ color: '#374151' }}>Returning rate: {metrics.returningPct}%</strong> of logged-in users who interacted at least once
           came back in this {days}-day window.
-          For session-based retention curves (1d/7d/30d), connect a PostHog project and use the Retention
-          insight — PostHog tracks anonymous sessions across visits more reliably than Supabase interactions alone.
+          For session-based retention curves (1d/7d/30d), use the PostHog Retention insight above — PostHog tracks anonymous sessions across visits more reliably than Supabase interactions alone.
         </p>
-      </div>
-
-      {/* PostHog note */}
-      <div style={{ padding: '1rem 1.25rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', fontSize: '0.8125rem', color: '#92400e' }}>
-        <strong>PostHog:</strong> Traffic, session duration, pages/session, device breakdown, and UTM source data
-        are available in your PostHog project. This dashboard surfaces Supabase-native engagement metrics.
-        Connect the PostHog Insights embed or iframe for full traffic analytics once NEXT_PUBLIC_POSTHOG_KEY is configured.
       </div>
     </div>
   )

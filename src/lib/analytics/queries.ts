@@ -310,3 +310,75 @@ export async function getSelarClicksBreakdown(limit = 5) {
   }
   return Array.from(counts.values()).sort((a, b) => b.count - a.count).slice(0, limit)
 }
+
+/** Full content performance table: views, clicks, unlocks, comments, upvotes, ratings */
+export async function getContentPerformanceTable() {
+  const supabase = await createClient()
+
+  // Pull all published content with stored counters
+  const { data: content } = await supabase
+    .from('content')
+    .select('id, title, type, status, view_count, upvote_count, comment_count, published_at, pricing_type')
+    .in('status', ['published', 'draft'])
+    .order('view_count', { ascending: false })
+    .limit(50)
+
+  const contentList = (content ?? []) as Array<{
+    id: string; title: string; type: string; status: string;
+    view_count: number; upvote_count: number; comment_count: number;
+    published_at: string | null; pricing_type: string;
+  }>
+
+  if (contentList.length === 0) return []
+
+  const ids = contentList.map(c => c.id)
+
+  // Ratings per content
+  const { data: ratingsRaw } = await supabase
+    .from('ratings')
+    .select('content_id, score')
+    .in('content_id', ids)
+
+  const ratingMap = new Map<string, { sum: number; count: number }>()
+  for (const r of ((ratingsRaw ?? []) as Array<{ content_id: string; score: number }>)) {
+    const e = ratingMap.get(r.content_id) ?? { sum: 0, count: 0 }
+    e.sum += r.score
+    e.count++
+    ratingMap.set(r.content_id, e)
+  }
+
+  // Unlock interactions per content
+  const { data: unlockRaw } = await supabase
+    .from('content_interactions')
+    .select('content_id')
+    .eq('type', 'unlock')
+    .in('content_id', ids)
+
+  const unlockMap = new Map<string, number>()
+  for (const r of ((unlockRaw ?? []) as Array<{ content_id: string }>)) {
+    unlockMap.set(r.content_id, (unlockMap.get(r.content_id) ?? 0) + 1)
+  }
+
+  return contentList.map(c => {
+    const rating = ratingMap.get(c.id)
+    const avgRating = rating && rating.count > 0 ? Math.round((rating.sum / rating.count) * 10) / 10 : null
+    const unlocks = unlockMap.get(c.id) ?? 0
+    const engagementRate = c.view_count > 0
+      ? Math.round(((c.comment_count + c.upvote_count + unlocks) / c.view_count) * 100)
+      : 0
+
+    return {
+      id: c.id,
+      title: c.title,
+      type: c.type,
+      status: c.status,
+      views: c.view_count,
+      unlocks,
+      comments: c.comment_count,
+      upvotes: c.upvote_count,
+      ratingCount: rating?.count ?? 0,
+      avgRating,
+      engagementRate,
+    }
+  })
+}

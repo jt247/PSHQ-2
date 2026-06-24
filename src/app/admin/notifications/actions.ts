@@ -17,9 +17,9 @@ async function requireAdmin() {
 }
 
 interface AudienceFilters {
-  job_role?: string
-  country?: string
-  interest?: string
+  job_roles?: string[]
+  countries?: string[]
+  interests?: string[]
   signup_from?: string
   signup_to?: string
 }
@@ -28,9 +28,13 @@ async function getMatchingUsers(filters: AudienceFilters): Promise<Array<{ id: s
   const service = createServiceClient()
   let query = service.from('users').select('id, email')
 
-  if (filters.job_role) query = query.eq('job_role', filters.job_role)
-  if (filters.country)  query = query.eq('country', filters.country)
-  if (filters.interest) query = query.contains('areas_of_interest', [filters.interest])
+  if (filters.job_roles?.length)  query = query.in('job_role', filters.job_roles)
+  if (filters.countries?.length)  query = query.in('country', filters.countries)
+  if (filters.interests?.length) {
+    for (const interest of filters.interests) {
+      query = query.contains('areas_of_interest', [interest])
+    }
+  }
   if (filters.signup_from) query = query.gte('created_at', filters.signup_from)
   if (filters.signup_to)   query = query.lte('created_at', filters.signup_to)
 
@@ -48,25 +52,49 @@ export async function broadcastNotificationAction(
     const { supabase, adminId } = await requireAdmin()
 
     const title   = (formData.get('title')   as string ?? '').trim()
-    const body    = (formData.get('body')    as string ?? '').trim()
+    const message = (formData.get('message') as string ?? '').trim()
     const channel = (formData.get('channel') as string ?? 'in_app') as 'in_app' | 'email' | 'both'
     const type    = 'system' as NotificationType
 
-    if (!title || !body) return { error: 'Title and message are required.' }
+    if (!title || !message) return { error: 'Title and message are required.' }
+
+    // Multi-value selects send comma-separated or multiple entries
+    const jobRoles  = formData.getAll('job_roles').map(v => String(v)).filter(Boolean)
+    const countries = formData.getAll('countries').map(v => String(v)).filter(Boolean)
+    const interests = formData.getAll('interests').map(v => String(v)).filter(Boolean)
+
+    // Date range from preset or custom
+    const dayRange     = formData.get('day_range') as string
+    const customFrom   = formData.get('signup_after') as string
+    const customTo     = formData.get('signup_before') as string
+
+    let signup_from: string | undefined
+    let signup_to: string | undefined
+
+    if (dayRange && dayRange !== 'all') {
+      const hours = parseInt(dayRange, 10)
+      if (!isNaN(hours)) {
+        signup_from = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
+      }
+    } else if (dayRange === 'custom') {
+      if (customFrom) signup_from = new Date(customFrom).toISOString()
+      if (customTo)   signup_to   = new Date(customTo).toISOString()
+    }
 
     const filters: AudienceFilters = {
-      job_role:    (formData.get('filter_job_role') as string) || undefined,
-      country:     (formData.get('filter_country')  as string) || undefined,
-      interest:    (formData.get('filter_interest') as string) || undefined,
-      signup_from: (formData.get('filter_from')     as string) || undefined,
-      signup_to:   (formData.get('filter_to')       as string) || undefined,
+      job_roles:   jobRoles.length   ? jobRoles   : undefined,
+      countries:   countries.length  ? countries  : undefined,
+      interests:   interests.length  ? interests  : undefined,
+      signup_from,
+      signup_to,
     }
+
     const users = await getMatchingUsers(filters)
     if (users.length === 0) return { error: 'No users match those filters.' }
 
     const { data: notif, error: nErr } = await supabase
       .from('notifications')
-      .insert({ title, body, type, channel, audience_filters: filters as never, created_by: adminId, sent_at: new Date().toISOString() })
+      .insert({ title, body: message, type, channel, audience_filters: filters as never, created_by: adminId, sent_at: new Date().toISOString() })
       .select('id')
       .single()
 
@@ -87,7 +115,7 @@ export async function broadcastNotificationAction(
           from: 'PSHQ <noreply@productslicehq.com>',
           to: emailList.slice(i, i + 50),
           subject: title,
-          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto"><h2>${title}</h2><p style="line-height:1.6">${body.replace(/\n/g, '<br>')}</p></div>`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto"><h2>${title}</h2><p style="line-height:1.6">${message.replace(/\n/g, '<br>')}</p></div>`,
         }).catch(() => null)
       }
     }

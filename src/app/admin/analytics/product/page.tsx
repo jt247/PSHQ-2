@@ -4,7 +4,7 @@ import type { UserRow } from '@/types/database'
 import {
   getUserStats, getSelarClicks, getInteractionsByType, getTopContent,
   getContentByType, getEngagementDepth, getReturningMemberRate,
-  getMostDiscussed, getAiSummaryRate, getSelarClicksBreakdown, daysAgo, type Days,
+  getMostDiscussed, getAiSummaryRate, getSelarClicksBreakdown, getContentPerformanceTable, daysAgo, type Days,
 } from '@/lib/analytics/queries'
 import { ProductClient } from './client'
 
@@ -40,6 +40,7 @@ export default async function ProductAnalyticsPage({ searchParams }: PageProps) 
     mostDiscussed,
     aiSummaryRate,
     selarClicksBreakdown,
+    contentPerformance,
   ] = await Promise.all([
     getUserStats(days),
     getSelarClicks(days),
@@ -52,6 +53,7 @@ export default async function ProductAnalyticsPage({ searchParams }: PageProps) 
     getMostDiscussed(5),
     getAiSummaryRate(days),
     getSelarClicksBreakdown(5),
+    getContentPerformanceTable(),
   ])
 
   const activationRate = userStats.total > 0
@@ -91,6 +93,7 @@ export default async function ProductAnalyticsPage({ searchParams }: PageProps) 
           mostDiscussed,
           topSelarClicks: selarClicksBreakdown,
         },
+        contentPerformance,
       }}
     />
   )

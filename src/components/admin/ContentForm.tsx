@@ -19,9 +19,18 @@ interface ContentFormProps {
     tags?: string[]
     pricing_type?: 'free' | 'paid'
     selar_url?: string | null
+    status?: 'draft' | 'published' | 'archived'
   }
   createAction?: (formData: FormData) => Promise<void>
 }
+
+const CONTENT_TAGS = [
+  'Strategy', 'Roadmapping', 'Prioritization', 'Discovery', 'User Research',
+  'Analytics', 'Metrics', 'OKRs', 'Growth', 'Go-to-Market', 'Pricing',
+  'Stakeholder Management', 'Leadership', 'Career', 'Product Design', 'Engineering',
+  'Data', 'AI/ML', 'Fintech', 'Healthtech', 'Edtech', 'Agritech', 'B2B', 'B2C',
+  'Startup', 'Enterprise', 'Case Study', 'Framework', 'Africa', 'Community',
+]
 
 function slugify(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -35,15 +44,23 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
   const [pricingType, setPricing] = useState(defaultValues.pricing_type ?? 'free')
   const [coverUrl, setCoverUrl]   = useState(defaultValues.cover_image_url ?? '')
   const [fileUrl, setFileUrl]     = useState(defaultValues.file_url ?? '')
+  const [selectedTags, setSelectedTags] = useState<string[]>(defaultValues.tags ?? [])
   const [uploadingThumb, setUploadingThumb] = useState(false)
   const [uploadingFile, setUploadingFile]   = useState(false)
   const [error, setError]         = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [pendingIntent, setPendingIntent] = useState<'draft' | 'publish' | null>(null)
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value
     setTitle(v)
     if (!slugEdited) setSlug(slugify(v))
+  }
+
+  function toggleTag(tag: string) {
+    setSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    )
   }
 
   async function handleFileUpload(
@@ -70,31 +87,38 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
     }
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError(null)
-    const fd = new FormData(e.currentTarget)
-    // Inject file URLs (state-managed, not standard inputs)
-    fd.set('cover_image_url', coverUrl)
-    fd.set('file_url', fileUrl)
+  function handleSubmit(intent: 'draft' | 'publish') {
+    return (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      setError(null)
+      setPendingIntent(intent)
+      const fd = new FormData(e.currentTarget)
+      fd.set('cover_image_url', coverUrl)
+      fd.set('file_url', fileUrl)
+      fd.set('tags', selectedTags.join(','))
+      fd.set('intent', intent)
 
-    startTransition(async () => {
-      try {
-        if (mode === 'create' && createAction) {
-          await createAction(fd)
-        } else if (mode === 'edit' && id) {
-          await updateContentAction(id, fd)
+      startTransition(async () => {
+        try {
+          if (mode === 'create' && createAction) {
+            await createAction(fd)
+          } else if (mode === 'edit' && id) {
+            await updateContentAction(id, fd)
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Something went wrong')
+        } finally {
+          setPendingIntent(null)
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Something went wrong')
-      }
-    })
+      })
+    }
   }
 
-  const needsFile = type === 'ebook' || type === 'template' || type === 'course'
+  const needsFile = type === 'ebook' || type === 'template'
+  const isCourse  = type === 'course'
 
   return (
-    <form onSubmit={handleSubmit} className="content-form">
+    <form onSubmit={handleSubmit('draft')} className="content-form">
       {error && <p className="form-error" role="alert">{error}</p>}
 
       {/* Title + Slug */}
@@ -151,7 +175,7 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
             defaultValue={defaultValues.selar_url ?? ''}
             placeholder="https://selar.co/..."
           />
-          <span className="hint">This is the Selar page where members go to get this resource. No pricing is set here.</span>
+          <span className="hint">The Selar page where members purchase this resource.</span>
         </div>
       )}
 
@@ -169,10 +193,38 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
         </div>
       )}
 
-      {/* Tags */}
+      {/* Tags — multi-select pill grid */}
       <div className="form-field">
-        <label htmlFor="tags">Tags <span className="hint">(comma-separated)</span></label>
-        <input id="tags" name="tags" type="text" defaultValue={defaultValues.tags?.join(', ') ?? ''} placeholder="e.g. strategy, product management" />
+        <label>Tags</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginTop: '0.375rem' }}>
+          {CONTENT_TAGS.map(tag => {
+            const selected = selectedTags.includes(tag)
+            return (
+              <button
+                key={tag} type="button"
+                onClick={() => toggleTag(tag)}
+                style={{
+                  padding: '0.25rem 0.625rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.75rem',
+                  fontWeight: selected ? 600 : 400,
+                  border: `1px solid ${selected ? '#0E2A47' : '#d1d5db'}`,
+                  background: selected ? '#0E2A47' : '#f9fafb',
+                  color: selected ? '#fff' : '#374151',
+                  cursor: 'pointer',
+                  transition: 'all 120ms',
+                }}
+              >
+                {tag}
+              </button>
+            )
+          })}
+        </div>
+        {selectedTags.length > 0 && (
+          <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.375rem' }}>
+            Selected: {selectedTags.join(', ')}
+          </p>
+        )}
       </div>
 
       {/* Thumbnail upload */}
@@ -184,26 +236,62 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
           onChange={e => handleFileUpload(e, 'thumbnails', setCoverUrl, setUploadingThumb)}
         />
         {uploadingThumb && <span className="uploading-label">Uploading…</span>}
-        {coverUrl && <input type="hidden" name="cover_image_url" value={coverUrl} />}
       </div>
 
-      {/* File upload — ebook / template / course */}
+      {/* File upload — ebook / template */}
       {needsFile && (
         <div className="form-field">
-          <label>Content File (PDF, ZIP, etc.)</label>
+          <label>Content file (PDF, ZIP, etc.)</label>
           {fileUrl && <p className="file-link"><a href={fileUrl} target="_blank" rel="noreferrer">Current file ↗</a></p>}
           <input
             type="file" disabled={uploadingFile}
             onChange={e => handleFileUpload(e, 'content-files', setFileUrl, setUploadingFile)}
           />
           {uploadingFile && <span className="uploading-label">Uploading…</span>}
-          {fileUrl && <input type="hidden" name="file_url" value={fileUrl} />}
         </div>
       )}
 
-      <div className="form-actions">
-        <button type="submit" disabled={isPending || uploadingThumb || uploadingFile} className="btn-primary">
-          {isPending ? 'Saving…' : mode === 'create' ? 'Create (save as draft)' : 'Save changes'}
+      {/* YouTube URL — courses only */}
+      {isCourse && (
+        <div className="form-field">
+          <label htmlFor="course_url">YouTube video / playlist URL *</label>
+          <input
+            id="course_url" name="file_url" type="url"
+            value={fileUrl}
+            onChange={e => setFileUrl(e.target.value)}
+            placeholder="https://www.youtube.com/watch?v=... or playlist link"
+            required={isCourse}
+          />
+          <span className="hint">Use an unlisted YouTube link. Members will watch it inline in the platform.</span>
+        </div>
+      )}
+
+      {/* Hidden fields */}
+      <input type="hidden" name="cover_image_url" value={coverUrl} />
+      {!isCourse && !needsFile && <input type="hidden" name="file_url" value={fileUrl} />}
+
+      <div className="form-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <button
+          type="submit"
+          disabled={isPending || uploadingThumb || uploadingFile}
+          className="btn-secondary"
+          style={{ order: 0 }}
+        >
+          {isPending && pendingIntent === 'draft' ? 'Saving…' : 'Save as draft'}
+        </button>
+        <button
+          type="button"
+          disabled={isPending || uploadingThumb || uploadingFile}
+          className="btn-primary"
+          onClick={e => {
+            const form = (e.target as HTMLElement).closest('form') as HTMLFormElement
+            if (form) {
+              const syntheticEvent = { currentTarget: form, preventDefault: () => {} } as unknown as React.FormEvent<HTMLFormElement>
+              handleSubmit('publish')(syntheticEvent)
+            }
+          }}
+        >
+          {isPending && pendingIntent === 'publish' ? 'Publishing…' : mode === 'create' ? 'Create & publish' : 'Save & publish'}
         </button>
       </div>
     </form>

@@ -23,11 +23,15 @@ export async function createContentAction(formData: FormData) {
 
   const pricingType = formData.get('pricing_type') as string
 
+  const intent = formData.get('intent') as string
+  const status = intent === 'publish' ? 'published' : 'draft'
+
   const payload = {
     title:           formData.get('title') as string,
     slug:            formData.get('slug') as string,
     type:            formData.get('type') as string,
-    status:          'draft' as const,
+    status:          status as 'draft' | 'published',
+    published_at:    status === 'published' ? new Date().toISOString() : null,
     summary:         (formData.get('summary') as string) || null,
     body:            (formData.get('body') as string) || null,
     cover_image_url: (formData.get('cover_image_url') as string) || null,
