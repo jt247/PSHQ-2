@@ -17,6 +17,11 @@ export default async function HomePage() {
     cover_image_url: string | null; tags: string[] | null;
   }> = []
 
+  let featuredTemplates: Array<{
+    id: string; title: string; slug: string; summary: string | null;
+    cover_image_url: string | null; tags: string[] | null;
+  }> = []
+
   let topCourses: Array<{
     id: string; title: string; slug: string; summary: string | null;
     cover_image_url: string | null; tags: string[] | null;
@@ -44,6 +49,17 @@ export default async function HomePage() {
       .order('published_at', { ascending: false })
       .limit(3)
     featuredEbooks = data ?? []
+  } catch { /* ignore */ }
+
+  try {
+    const { data } = await supabase
+      .from('content')
+      .select('id, title, slug, summary, cover_image_url, tags')
+      .eq('status', 'published')
+      .eq('type', 'template')
+      .order('published_at', { ascending: false })
+      .limit(3)
+    featuredTemplates = data ?? []
   } catch { /* ignore */ }
 
   try {
@@ -296,6 +312,49 @@ export default async function HomePage() {
                         </p>
                       )}
                       <span className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', marginTop: 'auto' }}>Download free →</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Featured Templates ──────────────────────────────────── */}
+        {featuredTemplates.length > 0 && (
+          <section style={{ padding: '5rem var(--spacing-margin-edge)', background: 'var(--color-paper-base)' }}>
+            <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <p className="text-label-md" style={{ textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-secondary)', marginBottom: '0.75rem' }}>Templates</p>
+                  <h2 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>Ready-to-use frameworks.</h2>
+                </div>
+                <Link href="/library?type=template" className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', textDecoration: 'none' }}>All templates →</Link>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
+                {featuredTemplates.map(template => (
+                  <Link key={template.id} href={`/content/${template.slug}`} style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', background: 'var(--color-paper-darker)', transition: 'transform 200ms, box-shadow 200ms' }} className="article-feature-card">
+                    {template.cover_image_url ? (
+                      <img src={template.cover_image_url} alt={template.title} style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100px', background: 'color-mix(in srgb, var(--color-ink-deep) 6%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-deep)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ opacity: 0.2 }}>
+                          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+                        </svg>
+                      </div>
+                    )}
+                    <div style={{ padding: '1.25rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.625rem', flexWrap: 'wrap' }}>
+                        <span className="badge" style={{ background: 'color-mix(in srgb, var(--color-ink-deep) 10%, transparent)', color: 'var(--color-ink-deep)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Template</span>
+                        <span className="badge" style={{ background: '#dcfce7', color: '#15803d' }}>Free</span>
+                      </div>
+                      <h3 className="text-body-lg" style={{ margin: '0 0 0.5rem', fontWeight: 600, lineHeight: 1.4, color: 'var(--color-ink-deep)' }}>{template.title}</h3>
+                      {template.summary && (
+                        <p className="text-body-sm" style={{ margin: '0 0 1rem', color: 'var(--color-text-muted)', lineHeight: 1.6, flex: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>
+                          {template.summary}
+                        </p>
+                      )}
+                      <span className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', marginTop: 'auto' }}>Use template →</span>
                     </div>
                   </Link>
                 ))}
