@@ -3,6 +3,27 @@ import { createClient } from '@/lib/supabase/server'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 
+const INITIATIVES = [
+  {
+    slug: 'product-lab',
+    title: 'Product Lab with JT',
+    short_description: 'A hands-on cohort for product practitioners who want to build real intuition — through live sessions, peer critique, and direct access to JT.',
+    status: 'live',
+  },
+  {
+    slug: 'case-library',
+    title: 'Product Case Library',
+    short_description: 'A growing archive of real product teardowns — how teams across Africa and beyond built, iterated, and scaled their products.',
+    status: 'live',
+  },
+  {
+    slug: 'curriculum',
+    title: 'Open PM Curriculum',
+    short_description: 'A freely available, structured learning path covering product fundamentals, analytics, strategy, and leadership.',
+    status: 'coming_soon',
+  },
+]
+
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -393,7 +414,57 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── CTA ─────────────────────────────────────────────────── */}
+        {/* ── Initiatives ─────────────────────────────────────────── */}
+        <section style={{ padding: '5rem var(--spacing-margin-edge)', background: 'var(--color-paper-base)' }}>
+          <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <p className="text-label-md" style={{ textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-secondary)', marginBottom: '0.75rem' }}>
+                  Initiatives
+                </p>
+                <h2 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>
+                  Programs built for builders.
+                </h2>
+              </div>
+              <Link href="/initiatives" className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', textDecoration: 'none' }}>
+                All initiatives →
+              </Link>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '1.25rem' }}>
+              {INITIATIVES.map(initiative => (
+                <Link key={initiative.slug} href={`/initiatives/${initiative.slug}`} style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', background: 'var(--color-paper-darker)', transition: 'transform 200ms, box-shadow 200ms' }} className="article-feature-card">
+                  {/* Accent bar */}
+                  <div style={{ height: '4px', background: 'var(--color-ink-deep)' }} />
+                  <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
+                      <span style={{
+                        fontFamily: 'var(--font-sans)', fontSize: '0.5625rem', fontWeight: 700,
+                        letterSpacing: '0.12em', textTransform: 'uppercase',
+                        padding: '0.2rem 0.5rem', borderRadius: '0.2rem',
+                        background: initiative.status === 'live' ? '#dcfce7' : 'color-mix(in srgb, var(--color-tertiary) 12%, transparent)',
+                        color: initiative.status === 'live' ? '#15803d' : 'var(--color-text-muted)',
+                      }}>
+                        {initiative.status === 'live' ? 'Live' : 'Coming Soon'}
+                      </span>
+                    </div>
+                    <h3 className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: '0 0 0.75rem', fontSize: '1.0625rem', lineHeight: 1.4 }}>
+                      {initiative.title}
+                    </h3>
+                    <p className="text-body-md" style={{ color: 'var(--color-text-muted)', margin: '0 0 1.25rem', lineHeight: 1.65, flex: 1 }}>
+                      {initiative.short_description}
+                    </p>
+                    <span className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', marginTop: 'auto' }}>
+                      Learn more →
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+                {/* ── CTA ─────────────────────────────────────────────────── */}
         {!user && (
           <section style={{ padding: '5rem var(--spacing-margin-edge)', background: 'var(--color-ink-deep)' }}>
             <div style={{ maxWidth: '80rem', margin: '0 auto', textAlign: 'center' }}>
@@ -561,10 +632,10 @@ function ProductMockup() {
         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#FACC15', flexShrink: 0, marginTop: '3px' }} />
         <div>
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b7280', margin: '0 0 0.25rem' }}>
-            Community
+            Global Community
           </p>
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.0625rem', fontWeight: 700, color: '#0E2A47', margin: 0 }}>
-            Built for African PMs
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.0625rem', fontWeight: 700, color: '#0E2A47', margin: 0, lineHeight: 1.3 }}>
+            Born in Africa.<br/>Built for the world.
           </p>
         </div>
       </div>
