@@ -47,12 +47,14 @@ export function ContentTableClient({ content }: { content: ContentRow[] }) {
   const [search, setSearch]             = useState('')
   const [isPending, startTransition]    = useTransition()
 
-  const filtered = content.filter(c => {
-    if (statusFilter !== 'all' && c.status !== statusFilter) return false
-    if (typeFilter !== 'all' && c.type !== typeFilter) return false
-    if (search && !c.title.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  const filtered = content
+    .filter(c => {
+      if (statusFilter !== 'all' && c.status !== statusFilter) return false
+      if (typeFilter !== 'all' && c.type !== typeFilter) return false
+      if (search && !c.title.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    })
+    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
 
   function act(fn: () => Promise<void>) {
     startTransition(fn)
