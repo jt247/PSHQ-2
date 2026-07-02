@@ -78,6 +78,7 @@ export default async function HomePage() {
       .select('id, title, slug, summary, cover_image_url, tags')
       .eq('status', 'published')
       .eq('type', 'template')
+      .eq('featured', true)
       .order('published_at', { ascending: false })
       .limit(3)
     featuredTemplates = data ?? []

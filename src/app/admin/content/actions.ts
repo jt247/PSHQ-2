@@ -122,6 +122,25 @@ export async function unpublishContentAction(id: string) {
   revalidatePath('/admin/content')
 }
 
+// ─── Featured (home page spotlight) ──────────────────────────────────────────
+
+export async function toggleFeaturedAction(id: string, featured: boolean) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/sign-in')
+
+  const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single()
+  requireAdmin(profile?.role ?? null)
+
+  const { error } = await supabase.from('content').update({ featured }).eq('id', id)
+  if (error) throw new Error(error.message)
+
+  await logAdminAction({ admin_id: user.id, action_type: featured ? 'content_feature' : 'content_unfeature', target_table: 'content', target_id: id })
+
+  revalidatePath('/admin/content')
+  revalidatePath('/')
+}
+
 // ─── Archive (soft delete — never hard delete) ────────────────────────────────
 
 export async function archiveContentAction(id: string) {

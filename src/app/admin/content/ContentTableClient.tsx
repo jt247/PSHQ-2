@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { publishContentAction, unpublishContentAction, archiveContentAction } from './actions'
+import { publishContentAction, unpublishContentAction, archiveContentAction, toggleFeaturedAction } from './actions'
 
 type ContentStatus = 'draft' | 'published' | 'archived'
 
@@ -21,6 +21,7 @@ interface ContentRow {
   tags: string[]
   published_at: string | null
   created_at: string
+  featured: boolean
 }
 
 const STATUS_FILTERS: Array<'all' | ContentStatus> = ['all', 'published', 'draft', 'archived']
@@ -100,6 +101,7 @@ export function ContentTableClient({ content }: { content: ContentRow[] }) {
               <th title="Views">Views</th>
               <th title="Upvotes">↑</th>
               <th title="Comments">💬</th>
+              <th title="Featured on home page">Home</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -129,6 +131,16 @@ export function ContentTableClient({ content }: { content: ContentRow[] }) {
                 <td className="td-num">{row.view_count.toLocaleString()}</td>
                 <td className="td-num">{row.upvote_count}</td>
                 <td className="td-num">{row.comment_count}</td>
+                <td className="td-num">
+                  <button
+                    disabled={isPending}
+                    title={row.featured ? 'Remove from home page' : 'Feature on home page'}
+                    onClick={() => act(() => toggleFeaturedAction(row.id, !row.featured))}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', opacity: isPending ? 0.5 : 1 }}
+                  >
+                    {row.featured ? '⭐' : '☆'}
+                  </button>
+                </td>
                 <td className="td-actions">
                   <Link href={`/admin/content/${row.id}/edit`} className="action-btn">Edit</Link>
                   {row.status === 'draft' && (
