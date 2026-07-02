@@ -138,9 +138,18 @@ export function ContentTableClient({ content }: { content: ContentRow[] }) {
                     disabled={isPending}
                     title={row.featured ? 'Remove from home page' : 'Feature on home page'}
                     onClick={() => act(() => toggleFeaturedAction(row.id, !row.featured))}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', opacity: isPending ? 0.5 : 1 }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: isPending ? 'not-allowed' : 'pointer',
+                      fontSize: '1.2rem',
+                      opacity: isPending ? 0.4 : 1,
+                      color: row.featured ? '#f59e0b' : '#9ca3af',
+                      lineHeight: 1,
+                      padding: '2px 4px',
+                    }}
                   >
-                    {row.featured ? '⭐' : '☆'}
+                    {row.featured ? '★' : '☆'}
                   </button>
                 </td>
                 <td className="td-actions">

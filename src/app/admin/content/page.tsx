@@ -13,11 +13,13 @@ export default async function AdminContentPage() {
   const profile = profileRaw as UserRow | null
   if (!profile || !['admin', 'super_admin'].includes(profile.role)) redirect('/dashboard')
 
-  // Fetch all content with selar_click counts from the content_stats view
-  const { data: content, error } = await supabase
-    .from('content_stats')
-    .select('*')
-    .order('created_at', { ascending: false })
+  // Fetch stats view + featured flags from content table in parallel
+  const [{ data: content, error }, { data: featuredRows }] = await Promise.all([
+    supabase.from('content_stats').select('*').order('created_at', { ascending: false }),
+    supabase.from('content').select('id, featured'),
+  ])
+
+  const featuredMap = new Map((featuredRows ?? []).map(r => [r.id, r.featured as boolean]))
 
   if (error) {
     // Fallback to plain content table if view not yet migrated
@@ -26,7 +28,7 @@ export default async function AdminContentPage() {
       .select('*')
       .order('created_at', { ascending: false })
     if (fallbackError) throw new Error(fallbackError.message)
-    const withDefaults = (fallback ?? []).map(c => ({ ...c, selar_clicks: 0 }))
+    const withDefaults = (fallback ?? []).map(c => ({ ...c, selar_clicks: 0, featured: (c as Record<string, unknown>).featured as boolean ?? false }))
     return (
       <div className="admin-page">
         <div className="admin-page-header">
@@ -41,7 +43,11 @@ export default async function AdminContentPage() {
     )
   }
 
-  const withDefaults = (content ?? []).map(c => ({ ...c, selar_clicks: (c as Record<string, unknown>).selar_clicks ?? 0 }))
+  const withDefaults = (content ?? []).map(c => ({
+    ...c,
+    selar_clicks: (c as Record<string, unknown>).selar_clicks ?? 0,
+    featured: featuredMap.get(c.id) ?? false,
+  }))
 
   return (
     <div className="admin-page">

@@ -64,5 +64,6 @@ SELECT
     0
   ) AS unlock_count,
   c.published_at,
-  c.created_at
+  c.created_at,
+  c.featured
 FROM public.content c;
