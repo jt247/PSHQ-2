@@ -8,21 +8,20 @@
 -- 1. Drop content_stats view first (depends on purchases table)
 DROP VIEW IF EXISTS public.content_stats;
 
--- 2. Drop purchases RLS policies
-DROP POLICY IF EXISTS "purchases: super_admin only" ON public.purchases;
+-- 2–6. Drop purchases table, policies, triggers, indexes, and enum
+-- Wrapped in a DO block so it's safe even if the table was already removed.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'purchases') THEN
+    DROP POLICY IF EXISTS "purchases: super_admin only" ON public.purchases;
+    DROP TRIGGER IF EXISTS touch_purchases_updated_at ON public.purchases;
+    DROP INDEX IF EXISTS public.purchases_user_id_idx;
+    DROP INDEX IF EXISTS public.purchases_paystack_reference_idx;
+    DROP INDEX IF EXISTS public.purchases_status_idx;
+    DROP TABLE IF EXISTS public.purchases;
+  END IF;
+END $$;
 
--- 3. Drop purchases trigger
-DROP TRIGGER IF EXISTS touch_purchases_updated_at ON public.purchases;
-
--- 4. Drop purchases indexes
-DROP INDEX IF EXISTS public.purchases_user_id_idx;
-DROP INDEX IF EXISTS public.purchases_paystack_reference_idx;
-DROP INDEX IF EXISTS public.purchases_status_idx;
-
--- 5. Drop purchases table
-DROP TABLE IF EXISTS public.purchases;
-
--- 6. Drop purchase_status enum
 DROP TYPE IF EXISTS public.purchase_status;
 
 -- 7. Remove payment columns from content
