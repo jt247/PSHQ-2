@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-import { gemini } from '@/lib/gemini/client'
+import { generateText, AI_MODEL_NAME } from '@/lib/ai/client'
 import { rateLimit } from '@/lib/ratelimit'
 
 interface Params { params: Promise<{ contentId: string }> }
@@ -80,9 +80,6 @@ export async function POST(_req: NextRequest, { params }: Params) {
     })
   }
 
-  // Call Gemini
-  const model = gemini.getModel('gemini-2.0-flash')
-
   const prompt = `You are an expert product management educator. Summarise the following article for a product manager audience.
 
 Title: ${content.title}
@@ -99,13 +96,12 @@ Respond with ONLY valid JSON in this exact shape — no markdown fences, no extr
 
   let parsed: { summary: string; bullets: string[]; concepts: string[] }
   try {
-    const result = await model.generateContent(prompt)
-    const text = result.response.text().trim()
-    const jsonText = text.startsWith('{') ? text : text.slice(text.indexOf('{'))
+    const text = await generateText(prompt)
+    const jsonText = text.startsWith('{') ? text : text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)
     parsed = JSON.parse(jsonText)
   } catch (err) {
-    const errStr = String(err)
-    if (errStr.includes('RESOURCE_EXHAUSTED') || errStr.includes('429') || errStr.includes('quota')) {
+    const status = (err as Error & { status?: number }).status
+    if (status === 429) {
       return NextResponse.json(
         { error: 'AI quota reached. Try again in a minute.' },
         { status: 429 }
@@ -122,7 +118,7 @@ Respond with ONLY valid JSON in this exact shape — no markdown fences, no extr
     summary_text: parsed.summary,
     bullet_points: parsed.bullets as unknown as never,
     key_concepts: parsed.concepts as unknown as never,
-    model_used: 'gemini-2.0-flash',
+    model_used: AI_MODEL_NAME,
     requested_by: user.id,
   })
 
