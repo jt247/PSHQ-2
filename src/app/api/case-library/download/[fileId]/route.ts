@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { rateLimit, clientIp } from '@/lib/ratelimit'
 
 const r2 = new S3Client({
   region: 'auto',
@@ -15,18 +16,28 @@ const r2 = new S3Client({
 const BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME!
 const ACCOUNT_ID = process.env.CLOUDFLARE_R2_ACCOUNT_ID!
 
+// Object keys are always <folder>/<uuid><ext> as written by uploadFileToR2.
+const KEY_RE = /^[a-z-]+\/[0-9a-f-]{36}(\.[A-Za-z0-9]+)?$/
+
 function extractKey(fileUrl: string): string | null {
-  const prefix = `https://${ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET}/`
-  if (fileUrl.startsWith(prefix)) return fileUrl.slice(prefix.length)
   if (fileUrl.startsWith('placeholder://')) return null
-  return fileUrl
+  const prefix = `https://${ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET}/`
+  const key = fileUrl.startsWith(prefix) ? fileUrl.slice(prefix.length) : fileUrl
+  return KEY_RE.test(key) ? key : null
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ fileId: string }> }
 ) {
   const { fileId } = await params
+
+  // Anonymous downloads allowed, but capped: 20 per IP per minute.
+  const allowed = await rateLimit('case-download', clientIp(req.headers), 20, 60)
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many downloads. Try again shortly.' }, { status: 429 })
+  }
+
   const service = createServiceClient()
 
   const { data: file, error } = await service

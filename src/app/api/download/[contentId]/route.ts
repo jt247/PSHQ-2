@@ -15,12 +15,14 @@ const r2 = new S3Client({
 const BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME!
 const ACCOUNT_ID = process.env.CLOUDFLARE_R2_ACCOUNT_ID!
 
-function extractKey(fileUrl: string): string {
+// Object keys are always <folder>/<uuid><ext> as written by uploadFileToR2.
+const KEY_RE = /^[a-z-]+\/[0-9a-f-]{36}(\.[A-Za-z0-9]+)?$/
+
+function extractKey(fileUrl: string): string | null {
   // Strip the R2 endpoint prefix to get the object key
   const prefix = `https://${ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET}/`
-  if (fileUrl.startsWith(prefix)) return fileUrl.slice(prefix.length)
-  // Fallback: treat as key directly
-  return fileUrl
+  const key = fileUrl.startsWith(prefix) ? fileUrl.slice(prefix.length) : fileUrl
+  return KEY_RE.test(key) ? key : null
 }
 
 export async function GET(
@@ -69,6 +71,9 @@ export async function GET(
 
   // Generate a presigned URL valid for 1 hour
   const key = extractKey(fileUrl)
+  if (!key) {
+    return NextResponse.json({ error: 'Invalid file reference' }, { status: 404 })
+  }
   const signedUrl = await getSignedUrl(
     r2,
     new GetObjectCommand({ Bucket: BUCKET, Key: key }),

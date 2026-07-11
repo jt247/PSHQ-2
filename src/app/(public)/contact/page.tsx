@@ -56,6 +56,11 @@ export default function ContactPage() {
             </div>
 
             <form action={formAction} className="auth-form">
+              {/* Honeypot — hidden from real users, bots fill it and get rejected */}
+              <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', height: 0, overflow: 'hidden' }}>
+                <label htmlFor="website">Website</label>
+                <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+              </div>
               <div className="auth-field">
                 <label htmlFor="name">Your name</label>
                 <input id="name" name="name" required placeholder="Ada Lovelace" />

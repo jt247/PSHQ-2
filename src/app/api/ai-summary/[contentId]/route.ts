@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { gemini } from '@/lib/gemini/client'
+import { rateLimit } from '@/lib/ratelimit'
 
 interface Params { params: Promise<{ contentId: string }> }
 
@@ -37,6 +39,16 @@ export async function POST(_req: NextRequest, { params }: Params) {
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Rate limit paid Gemini generations: 5 per user per 5 minutes.
+  // Cached summaries are served by the check below and stay free.
+  const allowed = await rateLimit('ai-summary', user.id, 5, 300)
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many summary requests. Try again in a few minutes.' },
+      { status: 429 }
+    )
+  }
 
   // Fetch the article
   const { data: content, error } = await supabase
@@ -99,7 +111,7 @@ Respond with ONLY valid JSON in this exact shape — no markdown fences, no extr
         { status: 429 }
       )
     }
-    console.error('[ai-summary] Gemini error:', err)
+    Sentry.captureException(err)
     return NextResponse.json({ error: 'Failed to generate summary. Try again.' }, { status: 502 })
   }
 

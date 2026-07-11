@@ -1,6 +1,8 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/server'
+import { rateLimit, clientIp } from '@/lib/ratelimit'
 
 export interface ContactState {
   error?: string
@@ -12,10 +14,22 @@ export async function createServiceContactAction(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
-  const name        = (formData.get('name')        as string ?? '').trim()
-  const email       = (formData.get('email')       as string ?? '').trim()
-  const subject     = (formData.get('subject')     as string ?? '').trim()
-  const description = (formData.get('description') as string ?? '').trim()
+  // Honeypot: real users never see this field. A filled value means a bot —
+  // return success so the bot learns nothing, but write nothing.
+  if ((formData.get('website') as string ?? '').trim()) {
+    return { success: true, ticketNumber: 0 }
+  }
+
+  const ip = clientIp(await headers())
+  const allowed = await rateLimit('contact', ip, 3, 600) // 3 messages per 10 min per IP
+  if (!allowed) {
+    return { error: 'Too many messages. Please wait a few minutes and try again.' }
+  }
+
+  const name        = (formData.get('name')        as string ?? '').trim().slice(0, 100)
+  const email       = (formData.get('email')       as string ?? '').trim().slice(0, 254)
+  const subject     = (formData.get('subject')     as string ?? '').trim().slice(0, 200)
+  const description = (formData.get('description') as string ?? '').trim().slice(0, 5000)
 
   if (!name || !email || !subject || !description) {
     return { error: 'All fields are required.' }

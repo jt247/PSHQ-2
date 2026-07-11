@@ -17,13 +17,13 @@ export async function updateProfileAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated.' }
 
-  const first_name = (formData.get('first_name') as string ?? '').trim()
-  const last_name  = (formData.get('last_name')  as string ?? '').trim()
-  const job_role   = (formData.get('job_role')   as string ?? '').trim()
-  const country    = (formData.get('country')    as string ?? '').trim()
-  const bio        = (formData.get('bio')        as string ?? '').trim() || null
+  const first_name = (formData.get('first_name') as string ?? '').trim().slice(0, 100)
+  const last_name  = (formData.get('last_name')  as string ?? '').trim().slice(0, 100)
+  const job_role   = (formData.get('job_role')   as string ?? '').trim().slice(0, 150)
+  const country    = (formData.get('country')    as string ?? '').trim().slice(0, 100)
+  const bio        = (formData.get('bio')        as string ?? '').trim().slice(0, 2000) || null
   const areasRaw   = formData.getAll('areas_of_interest') as string[]
-  const areas_of_interest = areasRaw.slice(0, 7)
+  const areas_of_interest = areasRaw.slice(0, 7).map(a => a.slice(0, 100))
 
   const full_name = [first_name, last_name].filter(Boolean).join(' ') || null
 
