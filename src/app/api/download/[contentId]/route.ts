@@ -15,13 +15,17 @@ const r2 = new S3Client({
 const BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME!
 const ACCOUNT_ID = process.env.CLOUDFLARE_R2_ACCOUNT_ID!
 
-// Object keys are always <folder>/<uuid><ext> as written by uploadFileToR2.
-const KEY_RE = /^[a-z-]+\/[0-9a-f-]{36}(\.[A-Za-z0-9]+)?$/
+// Object keys are <folder>/<filename>. Filenames come from either the upload
+// route (randomUUID + ext) or admin scripts (human-readable slug + ext) —
+// both are legitimate, so this only blocks path traversal and enforces the
+// folder/filename shape rather than requiring UUID naming.
+const KEY_RE = /^[a-z0-9-]+\/[A-Za-z0-9._-]+$/
 
 function extractKey(fileUrl: string): string | null {
   // Strip the R2 endpoint prefix to get the object key
   const prefix = `https://${ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET}/`
   const key = fileUrl.startsWith(prefix) ? fileUrl.slice(prefix.length) : fileUrl
+  if (key.includes('..') || key.includes('//')) return null
   return KEY_RE.test(key) ? key : null
 }
 
