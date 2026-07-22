@@ -59,6 +59,7 @@ export async function toggleUpvoteAction(contentId: string, currentlyUpvoted: bo
   }
 
   revalidatePath(`/articles`)
+  revalidatePath(`/library`)
   return { ok: true }
 }
 

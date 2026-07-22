@@ -39,8 +39,16 @@ export default function ContactPage() {
 
   return (
     <div className="auth-page">
-      <header className="auth-header">
-        <Link href="/" className="auth-brand">Product Slice HQ</Link>
+      <header className="auth-header" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center' }}>
+        <Link
+          href="/"
+          className="text-label-sm"
+          style={{ color: 'var(--color-text-muted)', textDecoration: 'none', justifySelf: 'start' }}
+        >
+          ← Back
+        </Link>
+        <Link href="/" className="auth-brand" style={{ justifySelf: 'center' }}>Product Slice HQ</Link>
+        <span />
       </header>
 
       <main className="auth-main">

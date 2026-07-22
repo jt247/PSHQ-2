@@ -8,21 +8,17 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/sign-in')
 
-  const [profileRes, interactionsRes, trendingRes, ownedRes, recommendedRes, coursesRes, trendingEbooksRes, trendingTemplatesRes] = await Promise.all([
+  const [profileRes, interactionsRes, trendingRes, recommendedRes, coursesRes, trendingEbooksRes, trendingTemplatesRes] = await Promise.all([
     supabase.from('users').select('full_name, areas_of_interest').eq('id', user.id).single(),
     supabase.from('content_interactions')
-      .select('id, type, content:content_id(type, pricing_type)')
-      .eq('user_id', user.id),
+      .select('id, type, content:content_id(id, title, slug, type, cover_image_url, pricing_type)')
+      .eq('user_id', user.id)
+      .in('type', ['view', 'download']),
     supabase.from('content')
       .select('id, title, slug, type, view_count, published_at')
       .eq('status', 'published')
       .eq('type', 'article')
       .order('view_count', { ascending: false })
-      .limit(6),
-    supabase.from('content_interactions')
-      .select('content:content_id(id, title, slug, type, cover_image_url, pricing_type)')
-      .eq('user_id', user.id)
-      .in('type', ['unlock'])
       .limit(6),
     supabase.from('content')
       .select('id, title, slug, summary, cover_image_url, tags, published_at')
@@ -53,8 +49,18 @@ export default async function DashboardPage() {
   const profile = profileRes.data as Pick<UserRow, 'full_name' | 'areas_of_interest'> | null
   const interactions = (interactionsRes.data ?? []) as Array<{ id: string; type: string; content: Partial<ContentRow> | null }>
   const trending = (trendingRes.data ?? []) as Array<Pick<ContentRow, 'id' | 'title' | 'slug' | 'type' | 'view_count'>>
-  const ownedRaw = (ownedRes.data ?? []) as Array<{ content: Partial<ContentRow> | null }>
-  const owned = ownedRaw.map(r => r.content).filter(Boolean) as Array<Partial<ContentRow>>
+
+  // Distinct content the user has engaged with (viewed or downloaded),
+  // deduplicated by content id. There is no 'unlock' interaction type
+  // written anywhere in the app — everything free is available to any
+  // signed-in user — so "unlocked" here means "content you've actually
+  // opened," matching what /dashboard/library already shows correctly.
+  const engagedById = new Map<string, Partial<ContentRow>>()
+  for (const i of interactions) {
+    if (i.content?.id && !engagedById.has(i.content.id)) engagedById.set(i.content.id, i.content)
+  }
+  const owned = Array.from(engagedById.values())
+
   const recommended = (recommendedRes.data ?? []) as Array<{
     id: string; title: string; slug: string; summary: string | null;
     cover_image_url: string | null; tags: string[] | null; published_at: string | null;
@@ -76,7 +82,7 @@ export default async function DashboardPage() {
   const interests = (profile?.areas_of_interest as string[] | null) ?? []
 
   const ebooks = owned.filter(c => c.type === 'ebook')
-  const articles = interactions.filter(i => i.type === 'view')
+  const articles = owned.filter(c => c.type === 'article')
   const resources = owned.filter(c => c.type === 'template')
   const paidItems = owned.filter(c => (c as { pricing_type?: string }).pricing_type === 'paid')
   const freeItems = owned.filter(c => (c as { pricing_type?: string }).pricing_type === 'free')

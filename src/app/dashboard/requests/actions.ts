@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import * as Sentry from '@sentry/nextjs'
 import { createClient } from '@/lib/supabase/server'
 
 export interface RequestState { error?: string; success?: boolean }
@@ -20,7 +21,10 @@ export async function createRequestAction(_prev: RequestState, formData: FormDat
     .from('content_requests')
     .insert({ user_id: user.id, title, description, content_type_requested })
 
-  if (error) return { error: 'Failed to submit request.' }
+  if (error) {
+    Sentry.captureException(error)
+    return { error: 'Failed to submit request.' }
+  }
 
   revalidatePath('/dashboard/requests')
   return { success: true }

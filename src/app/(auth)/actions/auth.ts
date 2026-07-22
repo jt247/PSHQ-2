@@ -221,7 +221,7 @@ export async function onboardingAction(
 ): Promise<OnboardingState> {
   const jobRole  = formData.get('job_role')  as string
   const country  = formData.get('country')   as string
-  const areasRaw = formData.getAll('areas_of_interest') as string[]
+  const areasRaw = (formData.getAll('areas_of_interest') as string[]).slice(0, 7)
 
   if (!jobRole || !country) {
     return { error: 'Job role and country are required.' }

@@ -39,13 +39,6 @@ export default function NewTicketPage() {
           />
         </div>
 
-        <div style={field}>
-          <label style={label}>
-            Related content <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional — paste content ID)</span>
-          </label>
-          <input name="content_id" placeholder="UUID of the content item" style={input} />
-        </div>
-
         {state.error && <p style={{ color: '#b91c1c', fontSize: '0.875rem', margin: 0 }}>{state.error}</p>}
 
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>

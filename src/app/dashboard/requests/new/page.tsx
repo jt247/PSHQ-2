@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createRequestAction, type RequestState } from '../actions'
 
-const CONTENT_TYPES = ['Article', 'Ebook', 'Template', 'Course', 'Video', 'Webinar', 'Case Study', 'Other']
+// Must match the content_type_requested CHECK constraint in the database
+// (content_requests table) — these are the only content types this
+// platform actually publishes.
+const CONTENT_TYPES = ['Article', 'Ebook', 'Template', 'Course']
 const initState: RequestState = {}
 
 export default function NewRequestPage() {

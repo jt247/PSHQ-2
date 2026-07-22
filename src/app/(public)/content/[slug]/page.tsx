@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { SelarButton } from '@/components/content/SelarButton'
+import { UpvoteButton } from '@/components/article/UpvoteButton'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -42,6 +43,16 @@ export default async function ContentDetailPage({ params }: Props) {
       metadata: {},
     })
   } catch { /* non-fatal */ }
+
+  const { data: upvoteRow } = user
+    ? await supabase
+        .from('content_upvotes')
+        .select('id')
+        .eq('content_id', rawItem.id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+    : { data: null }
+  const hasUpvoted = !!upvoteRow
 
   // Free content: any signed-in user has access
   const hasAccess = user != null && pricingType === 'free'
@@ -125,9 +136,17 @@ export default async function ContentDetailPage({ params }: Props) {
               </div>
             )}
 
-            {publishedDate && (
-              <p className="text-label-sm" style={{ color: 'var(--color-text-muted)' }}>Published {publishedDate}</p>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              {publishedDate && (
+                <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', margin: 0 }}>Published {publishedDate}</p>
+              )}
+              <UpvoteButton
+                contentId={rawItem.id as string}
+                initialCount={item.upvote_count as number ?? 0}
+                initialUpvoted={hasUpvoted}
+                isLoggedIn={!!user}
+              />
+            </div>
           </div>
 
           {/* Right — CTA card */}

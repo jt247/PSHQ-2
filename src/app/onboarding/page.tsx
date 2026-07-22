@@ -1,24 +1,24 @@
 'use client'
 
 import Link from 'next/link'
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { onboardingAction, type OnboardingState } from '@/app/(auth)/actions/auth'
+import { AREAS } from '@/app/dashboard/constants'
 
 const initial: OnboardingState = { error: null }
-
-const AREAS = [
-  'Product Strategy',
-  'User Research',
-  'Product Analytics',
-  'Growth',
-  'Design',
-  'Engineering',
-  'Leadership',
-  'Career Development',
-]
+const MAX_AREAS = 7
 
 export default function OnboardingPage() {
   const [state, action, pending] = useActionState(onboardingAction, initial)
+  const [selected, setSelected] = useState<string[]>([])
+
+  function toggleArea(area: string) {
+    setSelected(prev =>
+      prev.includes(area)
+        ? prev.filter(a => a !== area)
+        : prev.length < MAX_AREAS ? [...prev, area] : prev
+    )
+  }
 
   return (
     <div className="auth-page">
@@ -66,27 +66,37 @@ export default function OnboardingPage() {
 
               <fieldset className="auth-field" style={{ border: 'none', padding: 0, margin: 0 }}>
                 <legend className="text-body-sm" style={{ fontWeight: 500, color: 'var(--color-ink-deep)', marginBottom: '0.75rem', display: 'block' }}>
-                  Areas of interest <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>(select all that apply)</span>
+                  Areas of interest{' '}
+                  <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>({selected.length}/{MAX_AREAS} selected)</span>
                 </legend>
+                {selected.map(a => (
+                  <input key={a} type="hidden" name="areas_of_interest" value={a} />
+                ))}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  {AREAS.map(area => (
-                    <label key={area} style={{
-                      display: 'flex', alignItems: 'center', gap: '0.375rem',
-                      cursor: 'pointer',
-                    }}>
-                      <input type="checkbox" name="areas_of_interest" value={area} style={{ accentColor: 'var(--color-ink-deep)' }} />
-                      <span className="text-label-sm" style={{
-                        padding: '0.25rem 0.75rem',
-                        background: 'var(--color-paper-darker)',
-                        border: '1px solid color-mix(in srgb, var(--color-tertiary) 12%, transparent)',
-                        borderRadius: '0.125rem',
-                        color: 'var(--color-ink-deep)',
-                        cursor: 'pointer',
-                      }}>
+                  {AREAS.map(area => {
+                    const isSelected = selected.includes(area)
+                    const isDisabled = !isSelected && selected.length >= MAX_AREAS
+                    return (
+                      <button
+                        key={area}
+                        type="button"
+                        onClick={() => toggleArea(area)}
+                        disabled={isDisabled}
+                        className="text-label-sm"
+                        style={{
+                          padding: '0.25rem 0.75rem',
+                          background: isSelected ? 'var(--color-ink-deep)' : 'var(--color-paper-darker)',
+                          border: '1px solid color-mix(in srgb, var(--color-tertiary) 12%, transparent)',
+                          borderRadius: '0.125rem',
+                          color: isSelected ? '#ffffff' : 'var(--color-ink-deep)',
+                          cursor: isDisabled ? 'not-allowed' : 'pointer',
+                          opacity: isDisabled ? 0.5 : 1,
+                        }}
+                      >
                         {area}
-                      </span>
-                    </label>
-                  ))}
+                      </button>
+                    )
+                  })}
                 </div>
               </fieldset>
 

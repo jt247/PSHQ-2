@@ -1,12 +1,15 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import * as Sentry from '@sentry/nextjs'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { uploadFileToR2 } from '@/lib/r2/upload'
 
 // ── Create ticket (authenticated user) ───────────────────────
 
 export interface TicketState { error?: string; success?: boolean; ticketId?: string }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export async function createTicketAction(_prev: TicketState, formData: FormData): Promise<TicketState> {
   const supabase = await createClient()
@@ -19,6 +22,9 @@ export async function createTicketAction(_prev: TicketState, formData: FormData)
 
   if (!subject) return { error: 'Subject is required.' }
   if (!description) return { error: 'Message is required.' }
+  // content_id has no manual UI entry point today, but stays validated in
+  // case it's ever passed contextually (e.g. a "report this" link).
+  if (content_id && !UUID_RE.test(content_id)) return { error: 'Invalid related content reference.' }
 
   const { data, error } = await supabase
     .from('support_tickets')
@@ -26,7 +32,10 @@ export async function createTicketAction(_prev: TicketState, formData: FormData)
     .select('id')
     .single()
 
-  if (error || !data) return { error: 'Failed to create ticket.' }
+  if (error || !data) {
+    if (error) Sentry.captureException(error)
+    return { error: 'Failed to create ticket.' }
+  }
 
   revalidatePath('/dashboard/support')
   return { success: true, ticketId: data.id }
