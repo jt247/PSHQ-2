@@ -107,7 +107,7 @@ export default async function PlatformAnalyticsPage({ searchParams }: PageProps)
       { label: 'First unlock', value: unlocks },
       { label: 'Selar link clicks', value: selarClicks },
     ],
-    posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY ?? null,
+    posthogKey: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN ?? null,
     posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://app.posthog.com',
   }
 

@@ -1,8 +1,8 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
-// Content Security Policy. Report-Only first — flip to enforcing once the
-// report logs are clean in production (swap the header name below).
+// Content Security Policy. Was Report-Only during the initial security
+// pass; flipped to enforcing ahead of paid-traffic launch.
 const csp = [
   "default-src 'self'",
   // Next.js inline runtime + PostHog snippet need unsafe-inline; Next dev needs unsafe-eval
@@ -23,7 +23,7 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-  { key: 'Content-Security-Policy-Report-Only', value: csp },
+  { key: 'Content-Security-Policy', value: csp },
 ]
 
 const nextConfig: NextConfig = {
@@ -40,8 +40,12 @@ export default withSentryConfig(nextConfig, {
 
   project: "javascript-nextjs",
 
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+  // Always silent — without SENTRY_AUTH_TOKEN set in Vercel, the plugin
+  // skips source map upload and would otherwise print a loud warning on
+  // every build that reads like a build error. Error capture itself still
+  // works fine without this token; it only affects de-minified stack
+  // traces in the Sentry dashboard.
+  silent: true,
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/

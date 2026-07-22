@@ -1,5 +1,5 @@
 import { redirect, notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { TicketDetailClient, type Ticket } from './client'
 
 interface PageProps {
@@ -12,19 +12,24 @@ export default async function TicketDetailPage({ params }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/sign-in')
 
+  // RLS-bound: only the ticket owner or an admin can read this row at all.
   const { data: ticket } = await supabase
     .from('support_tickets')
-    .select(`
-      id, ticket_number, subject, description, status, priority, created_at, user_id,
-      ticket_replies(
-        id, body, image_url, is_internal, created_at,
-        user:users(full_name, email, role)
-      )
-    `)
+    .select('id, ticket_number, subject, description, status, priority, created_at, user_id')
     .eq('id', id)
     .single()
 
   if (!ticket) notFound()
+
+  // Service client: replies can be authored by an admin replying to a
+  // user's own ticket, and the users table is locked to self/admin reads,
+  // so this join needs to bypass RLS. Safe here — the ticket itself was
+  // already gated above, and this only ever fetches replies for that id.
+  const { data: repliesRaw } = await createServiceClient()
+    .from('ticket_replies')
+    .select('id, body, image_url, is_internal, created_at, user:users(full_name, email, role)')
+    .eq('ticket_id', id)
+    .order('created_at', { ascending: true })
 
   // Only owner can view their ticket (admin sees via admin panel)
   const isOwner = (ticket as { user_id: string | null }).user_id === user.id
@@ -41,7 +46,7 @@ export default async function TicketDetailPage({ params }: PageProps) {
   const isAdmin = role === 'admin' || role === 'super_admin'
 
   const raw = ticket as Record<string, unknown>
-  const replies = ((raw.ticket_replies as unknown[]) ?? []).filter((r: unknown) => {
+  const replies = ((repliesRaw as unknown[]) ?? []).filter((r: unknown) => {
     if (isAdmin) return true
     return !(r as { is_internal: boolean }).is_internal
   })

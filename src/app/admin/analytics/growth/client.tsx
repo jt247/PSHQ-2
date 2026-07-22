@@ -91,7 +91,7 @@ export function GrowthClient({ data }: Props) {
         <div style={{ marginTop: '0.75rem', padding: '0.75rem 1rem', background: '#f9fafb', borderRadius: '6px', fontSize: '0.8125rem', color: '#6b7280' }}>
           <strong style={{ color: '#374151' }}>Signup source (UTM/referrer):</strong> Not yet tracked at the Supabase level.
           Use PostHog's Acquisition insight to see direct vs referral vs social breakdowns
-          once NEXT_PUBLIC_POSTHOG_KEY is configured.
+          once NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN is configured.
         </div>
       </Section>
 

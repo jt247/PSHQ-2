@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Libre_Caslon_Text, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { PostHogPageView } from "@/components/analytics/PostHogPageView";
 
 const libreCaslon = Libre_Caslon_Text({
   weight: ["400", "700"],
@@ -28,7 +29,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${libreCaslon.variable} ${plusJakarta.variable}`}>
-      <body>{children}</body>
+      <body>
+        <PostHogPageView />
+        {children}
+      </body>
     </html>
   );
 }

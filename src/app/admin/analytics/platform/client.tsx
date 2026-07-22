@@ -63,7 +63,7 @@ export function PlatformClient({ data }: Props) {
         </div>
       ) : (
         <div style={{ padding: '1rem 1.25rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', fontSize: '0.8125rem', color: '#92400e' }}>
-          <strong>PostHog not configured:</strong> Set <code>NEXT_PUBLIC_POSTHOG_KEY</code> in your environment variables to enable the PostHog traffic analytics embed. Traffic, sessions, device breakdown, and UTM data will appear here once connected.
+          <strong>PostHog not configured:</strong> Set <code>NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN</code> in your environment variables to enable the PostHog traffic analytics embed. Traffic, sessions, device breakdown, and UTM data will appear here once connected.
         </div>
       )}
 

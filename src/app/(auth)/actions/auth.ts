@@ -1,7 +1,9 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { rateLimit, clientIp } from '@/lib/ratelimit'
 import type { UserRow } from '@/types/database'
 
 // ─── Sign Up ────────────────────────────────────────────────────────────────
@@ -27,6 +29,13 @@ export async function signUpAction(
 
   if (password.length < 8) {
     return { error: 'Password must be at least 8 characters.', success: false }
+  }
+
+  // Cap account creation per IP: 5 per hour. Ad traffic is exactly when
+  // automated mass-signup gets attempted.
+  const signUpAllowed = await rateLimit('sign-up', clientIp(await headers()), 5, 3600)
+  if (!signUpAllowed) {
+    return { error: 'Too many sign-up attempts. Please try again in an hour.', success: false }
   }
 
   // Validate invite token if present
@@ -88,6 +97,13 @@ export async function signInAction(
 
   if (!email || !password) {
     return { error: 'Email and password are required.' }
+  }
+
+  // Cap login attempts per IP: 10 per 5 minutes. Generous for a real user
+  // fumbling their password, tight enough to blunt credential stuffing.
+  const signInAllowed = await rateLimit('sign-in', clientIp(await headers()), 10, 300)
+  if (!signInAllowed) {
+    return { error: 'Too many sign-in attempts. Please wait a few minutes and try again.' }
   }
 
   const supabase = await createClient()
@@ -157,6 +173,13 @@ export async function forgotPasswordAction(
 
   if (!email) {
     return { error: 'Email is required.', success: false }
+  }
+
+  // Cap reset requests per IP: 3 per 10 minutes — same shape as the contact
+  // form's limit, prevents using this as a free email-bombing vector.
+  const resetAllowed = await rateLimit('forgot-password', clientIp(await headers()), 3, 600)
+  if (!resetAllowed) {
+    return { error: 'Too many reset attempts. Please try again in a few minutes.', success: false }
   }
 
   const supabase = await createClient()

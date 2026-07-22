@@ -66,8 +66,11 @@ export default async function ArticlePage({ params }: Props) {
           .maybeSingle()
       : Promise.resolve({ data: null }),
 
-    // Comments with author names
-    supabase
+    // Comments with author names. Uses the service client because the
+    // users table is locked to self/admin reads — this join needs to see
+    // other commenters' display names, which is safe here since only
+    // full_name/email are selected and the page never exposes raw email.
+    createServiceClient()
       .from('content_comments')
       .select('id, body, is_deleted, created_at, user:users(full_name, email)')
       .eq('content_id', rawItem.id)
