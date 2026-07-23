@@ -4,12 +4,17 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { CurriculumGrid } from '@/components/curriculum/CurriculumGrid'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { FaqAccordion } from '@/components/seo/FaqAccordion'
+import { courseSchema, educationalOrgSchema, faqPageSchema } from '@/lib/seo/schema'
+import { CURRICULUM_FAQ } from '@/lib/seo/faq-content'
 import './curriculum.css'
 
 export const metadata: Metadata = {
-  title: 'Open PM Curriculum — Product Slice HQ',
+  title: 'Free Product Management Curriculum 2026',
   description:
-    'Six structured learning paths for product practitioners — General PM, AI PM, Growth PM, Technical PM, Strategic PM, and The PM Architect. A guide, not a course.',
+    'Six structured, free learning paths for product practitioners — General PM, AI PM, Growth PM, Technical PM, Strategic PM, and The PM Architect. A guide, not a course.',
+  alternates: { canonical: '/initiatives/open-pm-curriculum' },
 }
 
 interface Pathway {
@@ -46,6 +51,15 @@ export default async function OpenPMCurriculumPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
+      <JsonLd data={educationalOrgSchema()} />
+      {pathways.map(p => (
+        <JsonLd key={p.id} data={courseSchema({
+          name: p.title,
+          description: p.description,
+          path: `/initiatives/open-pm-curriculum#${p.slug}`,
+        })} />
+      ))}
+      <JsonLd data={faqPageSchema(CURRICULUM_FAQ)} />
       <PublicNav activeHref="/initiatives" />
 
       <main style={{ flex: 1 }}>
@@ -129,6 +143,16 @@ export default async function OpenPMCurriculumPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ── FAQ ── */}
+        <section style={{ padding: '5rem var(--spacing-margin-edge)' }}>
+          <div style={{ maxWidth: '44rem', margin: '0 auto' }}>
+            <h2 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', marginBottom: '2rem', textAlign: 'center' }}>
+              Common questions
+            </h2>
+            <FaqAccordion items={CURRICULUM_FAQ} />
           </div>
         </section>
 

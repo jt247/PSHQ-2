@@ -40,6 +40,8 @@ export function ContentCard(props: ContentCardProps) {
       src={cover_image_url}
       alt={title}
       loading="lazy"
+      width={400}
+      height={160}
       style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
     />
   ) : (

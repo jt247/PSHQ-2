@@ -1,7 +1,18 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { ContentCard } from '@/components/content/ContentCard'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+
+// Canonical always points to the unfiltered base URL — type/pricing filter
+// states are the same underlying content, just re-sorted, so they should
+// never be treated as separate pages for indexing purposes.
+export const metadata: Metadata = {
+  title: 'Free PM Resources, Ebooks & Templates',
+  description:
+    'Browse free product management ebooks, templates, and articles. Practical resources for product managers, designers, and founders — no paywall, no signup wall for browsing.',
+  alternates: { canonical: '/library' },
+}
 
 interface SearchParams { type?: string; pricing?: string }
 interface Props { searchParams: Promise<SearchParams> }

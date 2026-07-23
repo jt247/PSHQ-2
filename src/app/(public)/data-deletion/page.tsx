@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import { LegalPage } from '@/components/layout/LegalPage'
+
+export const metadata: Metadata = {
+  title: 'Data Deletion Policy',
+  description: 'How to request deletion of your account and data from Product Slice HQ.',
+  alternates: { canonical: '/data-deletion' },
+}
 
 export default function DataDeletionPage() {
   return (

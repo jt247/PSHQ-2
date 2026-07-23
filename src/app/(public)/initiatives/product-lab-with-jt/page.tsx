@@ -3,12 +3,15 @@ import type { Metadata } from 'next'
 import { createServiceClient } from '@/lib/supabase/server'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { eventSchema, courseSchema } from '@/lib/seo/schema'
 import './product-lab.css'
 
 export const metadata: Metadata = {
-  title: 'Product Lab with JT — Product Slice HQ',
+  title: 'Product Lab with JT — Build Real Products with AI',
   description:
     'A hands-on cohort for product managers, product leaders, aspiring founders, and existing startup founders who want to go from idea to a live, working product, fast, using AI-assisted tools.',
+  alternates: { canonical: '/initiatives/product-lab-with-jt' },
 }
 
 interface Edition {
@@ -63,6 +66,26 @@ export default async function ProductLabPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
+      {edition2 && (
+        <JsonLd data={eventSchema({
+          name: `Product Lab with JT — Edition ${edition2.edition_number}: ${edition2.title}`,
+          description: edition2.focus_description,
+          path: '/initiatives/product-lab-with-jt',
+          // No confirmed start date exists in the data model yet — see
+          // SEO-FINDINGS note. Omitting startDate keeps this valid JSON-LD,
+          // but it won't qualify for Google's Event rich result until one
+          // is added.
+          startDate: null,
+          eventStatus: edition2.status === 'open' ? 'EventScheduled' : 'EventScheduled',
+        })} />
+      )}
+      {edition3 && (
+        <JsonLd data={courseSchema({
+          name: `Product Lab with JT — Edition ${edition3.edition_number}: ${edition3.title}`,
+          description: edition3.focus_description,
+          path: '/initiatives/product-lab-with-jt',
+        })} />
+      )}
       <PublicNav activeHref="/initiatives" />
 
       <main style={{ flex: 1 }}>

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
@@ -5,8 +6,47 @@ import { UpvoteButton } from '@/components/article/UpvoteButton'
 import { AiSummaryPanel } from '@/components/article/AiSummaryPanel'
 import { CommentsSection } from '@/components/article/CommentsSection'
 import { RatingWidget } from '@/components/article/RatingWidget'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { articleSchema, breadcrumbSchema } from '@/lib/seo/schema'
+import { AUTHOR, DEFAULT_OG_IMAGE } from '@/lib/seo/constants'
 
 interface Props { params: Promise<{ slug: string }> }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('content')
+    .select('title, summary, cover_image_url')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .eq('type', 'article')
+    .single()
+
+  if (!data) return {}
+
+  const description = data.summary ?? undefined
+  const image = data.cover_image_url ?? DEFAULT_OG_IMAGE
+
+  return {
+    title: data.title,
+    description,
+    alternates: { canonical: `/articles/${slug}` },
+    openGraph: {
+      type: 'article',
+      title: data.title,
+      description,
+      url: `/articles/${slug}`,
+      images: [{ url: image }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: data.title,
+      description,
+      images: [image],
+    },
+  }
+}
 
 function renderBody(text: string) {
   return text.split(/\n\n+/).map((block, i) => {
@@ -130,9 +170,26 @@ export default async function ArticlePage({ params }: Props) {
   const publishedDate = rawItem.published_at
     ? new Date(rawItem.published_at as string).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' })
     : null
+  const updatedDate = rawItem.updated_at
+    ? new Date(rawItem.updated_at as string).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' })
+    : null
+  const showUpdatedDate = updatedDate && updatedDate !== publishedDate
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-paper-base)' }}>
+      <JsonLd data={articleSchema({
+        headline: rawItem.title as string,
+        description: rawItem.summary as string | null,
+        image: rawItem.cover_image_url as string | null,
+        path: `/articles/${slug}`,
+        datePublished: rawItem.published_at as string | null,
+        dateModified: rawItem.updated_at as string | null,
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Articles', path: '/articles' },
+        { name: rawItem.title as string, path: `/articles/${slug}` },
+      ])} />
       {/* Sticky nav */}
       <nav style={{
         position: 'sticky', top: 0, zIndex: 40,
@@ -157,7 +214,9 @@ export default async function ArticlePage({ params }: Props) {
               <img
                 src={rawItem.cover_image_url as string}
                 alt={rawItem.title as string}
-                style={{ width: '100%', borderRadius: '0.25rem', marginBottom: '2rem', maxHeight: '420px', objectFit: 'cover' }}
+                width={1200}
+                height={420}
+                style={{ width: '100%', borderRadius: '0.25rem', marginBottom: '2rem', height: '420px', objectFit: 'cover' }}
               />
             )}
 
@@ -193,7 +252,9 @@ export default async function ArticlePage({ params }: Props) {
               paddingBottom: '1.25rem',
               borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
             }}>
+              <span>By {AUTHOR.name}</span>
               {publishedDate && <span>{publishedDate}</span>}
+              {showUpdatedDate && <span>Updated {updatedDate}</span>}
               <span>{(item.view_count as number ?? 0).toLocaleString()} views</span>
               <UpvoteButton
                 contentId={rawItem.id}

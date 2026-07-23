@@ -1,8 +1,12 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { SelarButton } from '@/components/content/SelarButton'
 import { UpvoteButton } from '@/components/article/UpvoteButton'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { digitalDocumentSchema, breadcrumbSchema } from '@/lib/seo/schema'
+import { AUTHOR, DEFAULT_OG_IMAGE } from '@/lib/seo/constants'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -10,6 +14,33 @@ const TYPE_LABELS: Record<string, string> = {
   ebook: 'Ebook',
   template: 'Template',
   course: 'Course',
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('content')
+    .select('title, summary, cover_image_url, type')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .not('type', 'eq', 'article')
+    .single()
+
+  if (!data) return {}
+
+  const suffix = data.type === 'ebook' ? ' — Free Download' : ''
+  const title = `${data.title}${suffix}`
+  const description = data.summary ?? undefined
+  const image = data.cover_image_url ?? DEFAULT_OG_IMAGE
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/content/${slug}` },
+    openGraph: { type: 'article', title, description, url: `/content/${slug}`, images: [{ url: image }] },
+    twitter: { card: 'summary_large_image', title, description, images: [image] },
+  }
 }
 
 export default async function ContentDetailPage({ params }: Props) {
@@ -64,6 +95,18 @@ export default async function ContentDetailPage({ params }: Props) {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-paper-base)' }}>
+      <JsonLd data={digitalDocumentSchema({
+        name: rawItem.title as string,
+        description: rawItem.summary as string | null,
+        image: rawItem.cover_image_url as string | null,
+        path: `/content/${slug}`,
+        datePublished: rawItem.published_at as string | null,
+      })} />
+      <JsonLd data={breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Library', path: '/library' },
+        { name: rawItem.title as string, path: `/content/${slug}` },
+      ])} />
       <nav style={{
         position: 'sticky', top: 0, zIndex: 40,
         background: 'color-mix(in srgb, var(--color-paper-base) 92%, transparent)',
@@ -89,7 +132,9 @@ export default async function ContentDetailPage({ params }: Props) {
               <img
                 src={rawItem.cover_image_url as string}
                 alt={rawItem.title as string}
-                style={{ width: '100%', borderRadius: '0.25rem', marginBottom: '2rem', maxHeight: '320px', objectFit: 'cover' }}
+                width={1200}
+                height={320}
+                style={{ width: '100%', borderRadius: '0.25rem', marginBottom: '2rem', height: '320px', objectFit: 'cover' }}
               />
             )}
 
@@ -137,6 +182,7 @@ export default async function ContentDetailPage({ params }: Props) {
             )}
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', margin: 0 }}>By {AUTHOR.name}</p>
               {publishedDate && (
                 <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', margin: 0 }}>Published {publishedDate}</p>
               )}

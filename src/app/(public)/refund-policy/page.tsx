@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import { LegalPage } from '@/components/layout/LegalPage'
+
+export const metadata: Metadata = {
+  title: 'Refund Policy',
+  description: 'How refunds work for paid resources and initiatives linked from Product Slice HQ.',
+  alternates: { canonical: '/refund-policy' },
+}
 
 export default function RefundPolicyPage() {
   return (

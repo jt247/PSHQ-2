@@ -1,7 +1,15 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { ContentCard } from '@/components/content/ContentCard'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+
+export const metadata: Metadata = {
+  title: 'Product Management Articles',
+  description:
+    'Articles on product management, product design, product marketing, and AI-assisted product development. Practical frameworks from a Top 1% ADPList mentor.',
+  alternates: { canonical: '/articles' },
+}
 
 export default async function ArticlesPage() {
   const supabase = await createClient()

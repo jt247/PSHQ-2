@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import { LegalPage } from '@/components/layout/LegalPage'
+
+export const metadata: Metadata = {
+  title: 'Terms & Conditions',
+  description: 'The terms governing your use of the Product Slice HQ platform.',
+  alternates: { canonical: '/terms' },
+}
 
 export default function TermsPage() {
   return (

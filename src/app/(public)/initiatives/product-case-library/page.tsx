@@ -7,9 +7,10 @@ import { CaseLibraryGrid } from '@/components/case-library/CaseLibraryGrid'
 import './case-library.css'
 
 export const metadata: Metadata = {
-  title: 'Product Case Library — Product Slice HQ',
+  title: 'Product Case Library — Real Product Teardowns',
   description:
     'A growing archive of product deep dives, teardowns, and case studies — built for people who learn best from studying real product decisions.',
+  alternates: { canonical: '/initiatives/product-case-library' },
 }
 
 interface CaseFile {

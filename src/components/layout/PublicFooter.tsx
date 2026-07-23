@@ -1,5 +1,13 @@
 import Link from 'next/link'
 
+const SOCIALS = [
+  { href: 'https://instagram.com/jtofproduct', label: 'Instagram' },
+  { href: 'https://x.com/jtofproduct', label: 'X' },
+  { href: 'https://tiktok.com/@jtofproduct', label: 'TikTok' },
+  { href: 'https://threads.net/@jtofproduct', label: 'Threads' },
+  { href: 'https://facebook.com/jtofproduct', label: 'Facebook' },
+]
+
 export function PublicFooter() {
   return (
     <footer className="pub-footer">
@@ -20,6 +28,7 @@ export function PublicFooter() {
               { href: '/articles', label: 'Articles' },
               { href: '/library', label: 'Library' },
               { href: '/initiatives', label: 'Initiatives' },
+              { href: '/about', label: 'About' },
               { href: '/contact', label: 'Contact' },
             ].map(({ href, label }) => (
               <Link key={href} href={href} style={{ fontSize: '0.9375rem', color: 'var(--color-primary-fixed-dim)', opacity: 0.8, transition: 'opacity 150ms', textDecoration: 'none' }}>
@@ -43,6 +52,19 @@ export function PublicFooter() {
               <Link key={href} href={href} style={{ fontSize: '0.9375rem', color: 'var(--color-primary-fixed-dim)', opacity: 0.8, transition: 'opacity 150ms', textDecoration: 'none' }}>
                 {label}
               </Link>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-label-md" style={{ color: 'var(--color-primary-fixed-dim)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            Follow
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+            {SOCIALS.map(({ href, label }) => (
+              <a key={href} href={href} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.9375rem', color: 'var(--color-primary-fixed-dim)', opacity: 0.8, transition: 'opacity 150ms', textDecoration: 'none' }}>
+                {label}
+              </a>
             ))}
           </div>
         </div>

@@ -1,8 +1,16 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/server'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import './initiatives.css'
+
+export const metadata: Metadata = {
+  title: 'Initiatives — Live Cohorts & Community Programs',
+  description:
+    'Product Lab with JT, the Open PM Curriculum, and the Product Case Library — live cohorts and free programs for product managers and founders building with AI.',
+  alternates: { canonical: '/initiatives' },
+}
 
 interface LatestEdition {
   status: 'completed' | 'open' | 'coming_soon'

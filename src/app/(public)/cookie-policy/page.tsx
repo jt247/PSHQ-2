@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 import { LegalPage } from '@/components/layout/LegalPage'
+
+export const metadata: Metadata = {
+  title: 'Cookie Policy',
+  description: 'How Product Slice HQ uses cookies and similar technologies.',
+  alternates: { canonical: '/cookie-policy' },
+}
 
 export default function CookiePolicyPage() {
   return (
