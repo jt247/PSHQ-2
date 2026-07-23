@@ -180,7 +180,7 @@ export function UsersClient({ users, count, totalPages, page, roleFilter, query,
       </header>
 
       {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
         {[
           { label: 'Total Members', value: stats.total.toLocaleString(), accent: '#0E2A47' },
           { label: 'New (30 days)', value: stats.newThisMonth.toLocaleString(), accent: '#10b981' },

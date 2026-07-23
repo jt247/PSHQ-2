@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { PshqLogoIcon } from '@/components/layout/PshqLogo'
+import { MobileNavToggle } from '@/components/layout/MobileNavToggle'
 
 interface PublicNavProps {
   activeHref?: string
@@ -62,6 +63,7 @@ export async function PublicNav({ activeHref }: PublicNavProps) {
               </Link>
             </>
           )}
+          <MobileNavToggle openBodyClass="pub-nav-open" color="var(--color-ink-deep)" />
         </div>
       </div>
 

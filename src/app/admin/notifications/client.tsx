@@ -105,7 +105,7 @@ export function NotificationsClient({ pastNotifications }: { pastNotifications: 
             </select>
           </Field>
           {dayRange === 'custom' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <Field label="Signed up after">
                 <input type="date" name="signup_after" style={inputStyle} />
               </Field>

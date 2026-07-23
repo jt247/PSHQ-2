@@ -65,7 +65,7 @@ export function GrowthClient({ data }: Props) {
 
       {/* Acquisition */}
       <Section title="Acquisition">
-        <div style={grid2}>
+        <div className="grid-collapse-1" style={grid2}>
           <div>
             <h4 style={sub2}>Signups over time</h4>
             <TinyBarChart data={dailySignups} color="#6366f1" />
@@ -147,7 +147,7 @@ export function GrowthClient({ data }: Props) {
           <strong>Thresholds are adjustable</strong> in <code>src/app/admin/analytics/growth/page.tsx</code>{' '}
           (currently: power ≥ {segments.powerThreshold} interactions, casual ≥ {segments.casualThreshold}).
         </p>
-        <div style={grid2}>
+        <div className="grid-collapse-1" style={grid2}>
           <PieStyleBar data={segmentRows} />
           <div style={grid3}>
             <StatCard label="Total users" value={segments.total.toLocaleString()} />

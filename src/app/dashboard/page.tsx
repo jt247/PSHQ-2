@@ -94,7 +94,7 @@ export default async function DashboardPage() {
     <div className="dash-content">
 
       {/* ── Welcome banner ── */}
-      <section style={{
+      <section className="flex-wrap-mobile" style={{
         background: 'var(--color-ink-deep)',
         borderRadius: '0.875rem',
         padding: '2rem 2.5rem',
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* ── Stats row ── */}
-      <section style={{
+      <section className="grid-collapse-2" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '0.75rem',
@@ -195,7 +195,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* ── Two column: Trending + My Library ── */}
-      <div style={{
+      <div className="grid-collapse-1" style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr',
         gap: '1.25rem', marginBottom: '1.75rem',
       }}>
@@ -388,7 +388,7 @@ export default async function DashboardPage() {
               className="content-card"
               >
                 {article.cover_image_url ? (
-                  <img
+                  <img loading="lazy"
                     src={article.cover_image_url} alt={article.title}
                     style={{ width: '100%', height: '150px', objectFit: 'cover' }}
                   />
@@ -444,7 +444,7 @@ export default async function DashboardPage() {
 
       {/* ── E-books + Templates bento ── */}
       {(trendingEbooks.length > 0 || trendingTemplates.length > 0) && (
-        <div style={{
+        <div className="grid-collapse-1" style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr',
           gap: '1.25rem', marginBottom: '1.75rem',
         }}>
@@ -482,7 +482,7 @@ export default async function DashboardPage() {
                     transition: 'background 150ms',
                   }}>
                     {ebook.cover_image_url ? (
-                      <img src={ebook.cover_image_url} alt={ebook.title} style={{
+                      <img loading="lazy" src={ebook.cover_image_url} alt={ebook.title} style={{
                         width: '44px', height: '60px', objectFit: 'cover',
                         borderRadius: '0.25rem', flexShrink: 0,
                         boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
@@ -553,7 +553,7 @@ export default async function DashboardPage() {
                     textDecoration: 'none',
                   }}>
                     {template.cover_image_url ? (
-                      <img src={template.cover_image_url} alt={template.title} style={{
+                      <img loading="lazy" src={template.cover_image_url} alt={template.title} style={{
                         width: '52px', height: '52px', objectFit: 'cover',
                         borderRadius: '0.375rem', flexShrink: 0,
                       }} />

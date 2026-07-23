@@ -279,7 +279,7 @@ export default async function HomePage() {
                 {featuredArticles.map(article => (
                   <Link key={article.id} href={`/articles/${article.slug}`} style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', background: 'var(--color-paper-darker)', transition: 'transform 200ms, box-shadow 200ms' }} className="article-feature-card">
                     {article.cover_image_url && (
-                      <img src={article.cover_image_url} alt={article.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+                      <img loading="lazy" src={article.cover_image_url} alt={article.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
                     )}
                     <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
                       {article.tags && article.tags.length > 0 && (
@@ -321,7 +321,7 @@ export default async function HomePage() {
                 {featuredEbooks.map(ebook => (
                   <Link key={ebook.id} href={`/content/${ebook.slug}`} style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', background: 'var(--color-paper-base)', transition: 'transform 200ms, box-shadow 200ms' }} className="article-feature-card">
                     {ebook.cover_image_url && (
-                      <img src={ebook.cover_image_url} alt={ebook.title} style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
+                      <img loading="lazy" src={ebook.cover_image_url} alt={ebook.title} style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
                     )}
                     <div style={{ padding: '1.25rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
                       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.625rem', flexWrap: 'wrap' }}>
@@ -358,7 +358,7 @@ export default async function HomePage() {
                 {featuredTemplates.map(template => (
                   <Link key={template.id} href={`/content/${template.slug}`} style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', background: 'var(--color-paper-darker)', transition: 'transform 200ms, box-shadow 200ms' }} className="article-feature-card">
                     {template.cover_image_url ? (
-                      <img src={template.cover_image_url} alt={template.title} style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
+                      <img loading="lazy" src={template.cover_image_url} alt={template.title} style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
                     ) : (
                       <div style={{ width: '100%', height: '100px', background: 'color-mix(in srgb, var(--color-ink-deep) 6%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-deep)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ opacity: 0.2 }}>

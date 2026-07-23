@@ -3,7 +3,7 @@ import Link from 'next/link'
 export function PublicFooter() {
   return (
     <footer className="pub-footer">
-      <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '3rem' }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '3rem' }}>
         <div>
           <p className="text-headline-md" style={{ color: '#ffffff', marginBottom: '0.75rem' }}>Product Slice HQ</p>
           <p style={{ fontSize: '0.9375rem', lineHeight: 1.7, color: 'var(--color-primary-fixed-dim)', maxWidth: '26ch' }}>

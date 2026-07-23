@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { MobileNavToggle } from '@/components/layout/MobileNavToggle'
 import { signOutAction } from '@/app/(auth)/actions/auth'
 import './admin.css'
 
@@ -79,6 +80,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </form>
         </div>
       </aside>
+      <header className="admin-mobile-topbar">
+        <MobileNavToggle openBodyClass="admin-nav-open" color="var(--color-ink-deep)" />
+        <span className="admin-mobile-topbar-label">Tactical Ops</span>
+      </header>
       <main className="admin-main">{children}</main>
     </div>
   )

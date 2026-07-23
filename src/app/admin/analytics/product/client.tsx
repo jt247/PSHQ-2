@@ -68,7 +68,7 @@ export function ProductClient({ data }: Props) {
 
       {/* Community Health */}
       <Section title="Community health">
-        <div style={grid3Col}>
+        <div className="grid-collapse-2" style={grid3Col}>
           <StatCard label="Total members" value={community.totalMembers.toLocaleString()} />
           <StatCard label="Active members (7d)" value={community.activeMembers7d.toLocaleString()} />
           <StatCard label={`New members (${days}d)`} value={community.newMembers.toLocaleString()} />
@@ -90,7 +90,7 @@ export function ProductClient({ data }: Props) {
 
       {/* Content Performance */}
       <Section title="Content performance">
-        <div style={grid2}>
+        <div className="grid-collapse-1" style={grid2}>
           <div>
             <h4 style={sub2}>Most viewed</h4>
             <ContentRankList items={content.topViewed} metric="views" />

@@ -151,7 +151,7 @@ function LibraryRow({
       alignItems: 'center',
     }}>
       {item.cover_image_url && (
-        <img src={item.cover_image_url} alt="" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '0.25rem', flexShrink: 0 }} />
+        <img loading="lazy" src={item.cover_image_url} alt="" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '0.25rem', flexShrink: 0 }} />
       )}
       <div style={{ minWidth: 0 }}>
         <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>

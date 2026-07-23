@@ -68,7 +68,7 @@ export function PlatformClient({ data }: Props) {
       )}
 
       {/* Overview stats */}
-      <div style={grid4}>
+      <div className="grid-collapse-2" style={grid4}>
         <StatCard label="Total visits" value={metrics.totalViews.toLocaleString()} />
         <StatCard label="Unique visitors" value={metrics.uniqueVisitors.toLocaleString()} note="(session estimate)" />
         <StatCard label="New signups" value={metrics.newUsers.toLocaleString()} />
@@ -76,7 +76,7 @@ export function PlatformClient({ data }: Props) {
       </div>
 
       {/* Charts */}
-      <div style={grid2}>
+      <div className="grid-collapse-1" style={grid2}>
         <div style={card}>
           <h3 style={cardTitle}>Daily views</h3>
           <TinyLineChart data={dailyViews} color="#6366f1" />
@@ -88,7 +88,7 @@ export function PlatformClient({ data }: Props) {
       </div>
 
       {/* Funnel + Interaction breakdown */}
-      <div style={grid2}>
+      <div className="grid-collapse-1" style={grid2}>
         <div style={card}>
           <h3 style={cardTitle}>Conversion funnel</h3>
           <p style={cardNote}>Visit → Signup → Unlock → Purchase</p>
@@ -102,7 +102,7 @@ export function PlatformClient({ data }: Props) {
       </div>
 
       {/* Top content */}
-      <div style={grid2}>
+      <div className="grid-collapse-1" style={grid2}>
         <div style={card}>
           <h3 style={cardTitle}>Most visited content</h3>
           <ContentList items={topViewed} />

@@ -106,7 +106,7 @@ export default async function AdminPage() {
       </header>
 
       {/* ── KPI row ── */}
-      <div style={{
+      <div className="grid-collapse-2" style={{
         display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)',
         gap: '1rem', marginBottom: '1.75rem',
       }}>
@@ -197,7 +197,7 @@ export default async function AdminPage() {
       </div>
 
       {/* ── Main grid: Recent Users + Top Content ── */}
-      <div style={{
+      <div className="grid-collapse-1" style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr',
         gap: '1.25rem', marginBottom: '1.75rem',
       }}>
@@ -381,7 +381,7 @@ export default async function AdminPage() {
       </div>
 
       {/* ── Bottom row: Content breakdown + Recent unlocks + Quick nav ── */}
-      <div style={{
+      <div className="grid-collapse-1" style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
         gap: '1.25rem',
       }}>

@@ -81,7 +81,7 @@ export default async function ContentDetailPage({ params }: Props) {
       </nav>
 
       <main style={{ maxWidth: '64rem', margin: '0 auto', padding: '3rem var(--spacing-margin-edge) 6rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 280px', gap: '3rem', alignItems: 'start' }}>
+        <div className="content-detail-grid" style={{ display: 'grid', gap: '3rem', alignItems: 'start' }}>
 
           {/* Left — content info */}
           <div>
@@ -149,14 +149,15 @@ export default async function ContentDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Right — CTA card */}
-          <div style={{
+          {/* Right — CTA card. Sticky only applies at the desktop breakpoint
+              (see .content-detail-cta in globals.css) — once the grid
+              collapses to one column on mobile this sits below the content
+              as a normal block instead of sticking mid-scroll. */}
+          <div className="content-detail-cta" style={{
             background: '#ffffff',
             border: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
             borderRadius: '0.5rem',
             padding: '1.5rem',
-            position: 'sticky',
-            top: '5rem',
           }}>
             {pricingType === 'paid' ? (
               /* Paid — link out to Selar, no unlock state */

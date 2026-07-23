@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { NotificationBell } from '@/components/dashboard/NotificationBell'
 import { PshqLogoIcon } from '@/components/layout/PshqLogo'
+import { MobileNavToggle } from '@/components/layout/MobileNavToggle'
 import { signOutAction } from '@/app/(auth)/actions/auth'
 import type { UserRow } from '@/types/database'
 
@@ -170,13 +171,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Main */}
       <div className="dash-main">
         <header className="dash-topbar">
-          <Link href="/" style={{
-            display: 'flex', alignItems: 'center', gap: '0.375rem',
-            fontSize: '0.8125rem', color: 'var(--color-text-muted)',
-            textDecoration: 'none', fontFamily: 'var(--font-sans)', transition: 'color 150ms',
-          }}>
-            ← Back to site
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <MobileNavToggle openBodyClass="dash-nav-open" color="var(--color-ink-deep)" />
+            <Link href="/" style={{
+              display: 'flex', alignItems: 'center', gap: '0.375rem',
+              fontSize: '0.8125rem', color: 'var(--color-text-muted)',
+              textDecoration: 'none', fontFamily: 'var(--font-sans)', transition: 'color 150ms',
+            }}>
+              ← Back to site
+            </Link>
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <NotificationBell userId={user.id} />
           </div>

@@ -81,7 +81,7 @@ export function TicketDetailClient({ ticket, isOwner }: { ticket: Ticket; isOwne
               <p style={{ margin: 0, whiteSpace: 'pre-wrap', color: '#374151', lineHeight: 1.6 }}>{r.body}</p>
               {r.image_url && (
                 <a href={r.image_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: '0.5rem' }}>
-                  <img src={r.image_url} alt="attachment" style={{ maxWidth: '200px', borderRadius: '6px', border: '1px solid #e5e7eb' }} />
+                  <img loading="lazy" src={r.image_url} alt="attachment" style={{ maxWidth: '200px', borderRadius: '6px', border: '1px solid #e5e7eb' }} />
                 </a>
               )}
             </div>
