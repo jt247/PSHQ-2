@@ -133,8 +133,8 @@ export default async function ContentDetailPage({ params }: Props) {
                 src={rawItem.cover_image_url as string}
                 alt={rawItem.title as string}
                 width={1200}
-                height={320}
-                style={{ width: '100%', borderRadius: '0.25rem', marginBottom: '2rem', height: '320px', objectFit: 'cover' }}
+                height={240}
+                style={{ width: '100%', borderRadius: '0.25rem', marginBottom: '1.5rem', height: '240px', objectFit: 'cover' }}
               />
             )}
 
