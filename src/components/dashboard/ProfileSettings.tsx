@@ -2,7 +2,7 @@
 
 import { useState, useActionState } from 'react'
 import { updateProfileAction, sendPasswordResetAction, type ProfileState } from '@/app/dashboard/actions'
-import { AREAS } from '@/app/dashboard/constants'
+import { AreaPicker } from '@/components/dashboard/AreaPicker'
 import type { UserRow } from '@/types/database'
 
 const initState: ProfileState = {}
@@ -15,16 +15,7 @@ const COUNTRIES = [
 
 export function ProfileSettings({ user }: { user: UserRow }) {
   const [state, formAction, isPending] = useActionState(updateProfileAction, initState)
-  const [selected, setSelected] = useState<string[]>(user.areas_of_interest ?? [])
   const [resetMsg, setResetMsg] = useState<string | null>(null)
-
-  function toggleArea(area: string) {
-    setSelected(prev =>
-      prev.includes(area)
-        ? prev.filter(a => a !== area)
-        : prev.length < 7 ? [...prev, area] : prev
-    )
-  }
 
   async function handleReset() {
     setResetMsg('Sending…')
@@ -76,27 +67,8 @@ export function ProfileSettings({ user }: { user: UserRow }) {
         </div>
 
         <div className="settings-field">
-          <label>
-            Areas of interest{' '}
-            <span className="settings-hint">({selected.length}/7 selected)</span>
-          </label>
-          {/* Hidden inputs carry the selected values */}
-          {selected.map(a => (
-            <input key={a} type="hidden" name="areas_of_interest" value={a} />
-          ))}
-          <div className="tags-grid">
-            {AREAS.map(area => (
-              <button
-                key={area}
-                type="button"
-                onClick={() => toggleArea(area)}
-                className={`tag-chip ${selected.includes(area) ? 'selected' : ''}`}
-                disabled={!selected.includes(area) && selected.length >= 7}
-              >
-                {area}
-              </button>
-            ))}
-          </div>
+          <label>Areas of interest</label>
+          <AreaPicker initial={user.areas_of_interest ?? []} />
         </div>
 
         <div className="settings-actions">

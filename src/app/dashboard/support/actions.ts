@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import * as Sentry from '@sentry/nextjs'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { uploadFileToR2 } from '@/lib/r2/upload'
+import { describeDbError } from '@/lib/db-errors'
 
 // ── Create ticket (authenticated user) ───────────────────────
 
@@ -33,8 +34,15 @@ export async function createTicketAction(_prev: TicketState, formData: FormData)
     .single()
 
   if (error || !data) {
-    if (error) Sentry.captureException(error)
-    return { error: 'Failed to create ticket.' }
+    if (error) {
+      console.error('[support_tickets.insert] failed', {
+        code: error.code, message: error.message, details: error.details, hint: error.hint,
+        userId: user.id,
+      })
+      Sentry.captureException(error, { extra: { userId: user.id, where: 'createTicketAction' } })
+      return { error: describeDbError(error, 'Failed to create ticket.') }
+    }
+    return { error: 'Failed to create ticket. Please try again.' }
   }
 
   revalidatePath('/dashboard/support')

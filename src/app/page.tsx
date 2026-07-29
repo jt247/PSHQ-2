@@ -411,11 +411,28 @@ export default async function HomePage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
                 {topCourses.map(course => (
                   <div key={course.id} style={{ display: 'flex', flexDirection: 'column', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', background: 'var(--color-paper-base)', opacity: 0.85, cursor: 'default' }} aria-disabled="true">
-                    <div style={{ width: '100%', height: '100px', background: 'color-mix(in srgb, var(--color-ink-deep) 8%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-deep)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ opacity: 0.25 }}>
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-                      </svg>
-                      <span style={{ position: 'absolute', top: '0.625rem', right: '0.625rem', background: 'rgba(250,204,21,0.9)', color: 'var(--color-ink-deep)', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0.25rem 0.625rem', borderRadius: '0.25rem' }}>Coming Soon</span>
+                    {/* Courses carry real cover images. This block used to
+                        render a grey box with a faint icon and ignore
+                        cover_image_url entirely, which read as a broken
+                        image rather than a deliberate placeholder. The icon
+                        is kept only as the fallback when a course genuinely
+                        has no cover set. */}
+                    <div style={{ width: '100%', height: '160px', background: 'color-mix(in srgb, var(--color-ink-deep) 8%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                      {course.cover_image_url ? (
+                        <img
+                          src={course.cover_image_url}
+                          alt={course.title}
+                          loading="lazy"
+                          width={400}
+                          height={160}
+                          style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
+                        />
+                      ) : (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-deep)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ opacity: 0.25 }}>
+                          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                      )}
+                      <span style={{ position: 'absolute', top: '0.625rem', right: '0.625rem', background: 'rgba(250,204,21,0.95)', color: 'var(--color-ink-deep)', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0.25rem 0.625rem', borderRadius: '0.25rem' }}>Coming Soon</span>
                     </div>
                     <div style={{ padding: '1.25rem', flex: 1 }}>
                       <span className="badge" style={{ background: 'color-mix(in srgb, var(--color-ink-deep) 10%, transparent)', color: 'var(--color-ink-deep)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.625rem', display: 'inline-block' }}>Course</span>

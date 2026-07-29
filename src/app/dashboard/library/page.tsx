@@ -7,20 +7,17 @@ export default async function MyLibraryPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/sign-in')
 
-  // Articles the user has viewed
-  const { data: viewedRaw } = await supabase
-    .from('content_interactions')
-    .select('content_id, created_at, content:content(id, title, slug, type, summary, cover_image_url, tags, published_at)')
-    .eq('user_id', user.id)
-    .eq('type', 'view')
-    .order('created_at', { ascending: false })
-
-  // Purchased / unlocked non-article content
-  const { data: unlockedRaw } = await supabase
+  // Everything the user has actually opened or downloaded. There is no
+  // 'unlock' interaction type — nothing in the app has ever written one —
+  // so querying it left this page permanently empty of ebooks and
+  // templates. 'view' and 'download' are the only types written, and they
+  // are the same set /dashboard uses for its counters, so the two screens
+  // now agree by construction.
+  const { data: engagedRaw } = await supabase
     .from('content_interactions')
     .select('content_id, created_at, content:content(id, title, slug, type, summary, cover_image_url, tags, file_url, published_at)')
     .eq('user_id', user.id)
-    .in('type', ['unlock'])
+    .in('type', ['view', 'download'])
     .order('created_at', { ascending: false })
 
   type ContentRef = {
@@ -35,26 +32,20 @@ export default async function MyLibraryPage() {
     published_at: string | null
   }
 
-  // Deduplicate viewed articles by content_id
+  // Deduplicate by content id, newest interaction first. Rows whose content
+  // was deleted or unpublished join to null and are skipped.
   const seenIds = new Set<string>()
-  const viewedArticles: ContentRef[] = []
-  for (const row of (viewedRaw ?? [])) {
+  const engaged: ContentRef[] = []
+  for (const row of (engagedRaw ?? [])) {
     const c = row.content as unknown as ContentRef | null
-    if (c && c.type === 'article' && !seenIds.has(c.id)) {
+    if (c && c.id && !seenIds.has(c.id)) {
       seenIds.add(c.id)
-      viewedArticles.push(c)
+      engaged.push(c)
     }
   }
 
-  const seenPaidIds = new Set<string>()
-  const unlockedItems: ContentRef[] = []
-  for (const row of (unlockedRaw ?? [])) {
-    const c = row.content as unknown as ContentRef | null
-    if (c && !seenPaidIds.has(c.id)) {
-      seenPaidIds.add(c.id)
-      unlockedItems.push(c)
-    }
-  }
+  const viewedArticles = engaged.filter(c => c.type === 'article')
+  const unlockedItems = engaged.filter(c => c.type !== 'article')
 
   const TYPE_LABELS: Record<string, string> = { ebook: 'Ebook', template: 'Template', course: 'Course', article: 'Article' }
 

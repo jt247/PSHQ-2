@@ -165,6 +165,29 @@ export default async function ContentDetailPage({ params }: Props) {
               </p>
             )}
 
+            {/* Byline and upvote sit directly under the summary in a bordered
+                row, matching the article template. They previously rendered
+                below the tags as the last element on the page, which put the
+                upvote under the fold with nothing separating it — it read as
+                missing entirely. */}
+            <div className="text-label-sm" style={{
+              display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap',
+              color: 'var(--color-text-muted)',
+              padding: '0.875rem 0',
+              margin: '0 0 1rem',
+              borderTop: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
+              borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
+            }}>
+              <span>By {AUTHOR.name}</span>
+              {publishedDate && <span>Published {publishedDate}</span>}
+              <UpvoteButton
+                contentId={rawItem.id as string}
+                initialCount={item.upvote_count as number ?? 0}
+                initialUpvoted={hasUpvoted}
+                isLoggedIn={!!user}
+              />
+            </div>
+
             {rawItem.tags && Array.isArray(rawItem.tags) && (rawItem.tags as string[]).length > 0 && (
               <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
                 {(rawItem.tags as string[]).map(tag => (
@@ -180,19 +203,6 @@ export default async function ContentDetailPage({ params }: Props) {
                 ))}
               </div>
             )}
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', margin: 0 }}>By {AUTHOR.name}</p>
-              {publishedDate && (
-                <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', margin: 0 }}>Published {publishedDate}</p>
-              )}
-              <UpvoteButton
-                contentId={rawItem.id as string}
-                initialCount={item.upvote_count as number ?? 0}
-                initialUpvoted={hasUpvoted}
-                isLoggedIn={!!user}
-              />
-            </div>
           </div>
 
           {/* Right — CTA card. Sticky only applies at the desktop breakpoint

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { rateLimit, clientIp } from '@/lib/ratelimit'
+import { sanitizeAreas } from '@/app/dashboard/constants'
 import type { UserRow } from '@/types/database'
 
 // ─── Sign Up ────────────────────────────────────────────────────────────────
@@ -244,7 +245,7 @@ export async function onboardingAction(
 ): Promise<OnboardingState> {
   const jobRole  = formData.get('job_role')  as string
   const country  = formData.get('country')   as string
-  const areasRaw = (formData.getAll('areas_of_interest') as string[]).slice(0, 7)
+  const areasRaw = sanitizeAreas(formData.getAll('areas_of_interest') as string[])
 
   if (!jobRole || !country) {
     return { error: 'Job role and country are required.' }

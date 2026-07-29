@@ -48,8 +48,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// Article bodies are authored as plain text with markdown-style headings.
+// A body that arrives as HTML instead (pasted from an editor, or an imported
+// draft) would render its tags as literal text on the page, because JSX
+// escapes them. Reduce it to text rather than trusting it into
+// dangerouslySetInnerHTML, which would hand an admin-authored field a script
+// injection path.
+function htmlToText(text: string): string {
+  if (!/<\/?[a-z][\s\S]*>/i.test(text)) return text
+  return text
+    .replace(/<\s*br\s*\/?>/gi, '\n')
+    .replace(/<\/\s*(p|div|h[1-6]|li|ul|ol|blockquote)\s*>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#3[49];/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 function renderBody(text: string) {
-  return text.split(/\n\n+/).map((block, i) => {
+  return htmlToText(text).split(/\n\n+/).map((block, i) => {
     const t = block.trim()
     if (!t) return null
     if (t.startsWith('#### ')) return (
@@ -138,16 +160,22 @@ export default async function ArticlePage({ params }: Props) {
       : Promise.resolve({ data: null }),
   ])
 
-  // Record view (fire-and-forget)
-  if (user) {
+  // Record view. This must be awaited: an unawaited insert is routinely
+  // killed when the serverless function returns its response, which is why
+  // article views were almost never persisted while ebook and template
+  // views (which already await) recorded fine. That gap is what made the
+  // dashboard and admin analytics under-report reading activity.
+  // Anonymous views are recorded with a null user_id, matching how
+  // /content/[slug] already behaves.
+  try {
     const svc = createServiceClient()
-    svc.from('content_interactions').insert({
+    await svc.from('content_interactions').insert({
       content_id: rawItem.id,
-      user_id: user.id,
+      user_id: user?.id ?? null,
       type: 'view',
       metadata: {},
-    } as never).then(() => null, () => null)
-  }
+    } as never)
+  } catch { /* non-fatal — never block the article render on telemetry */ }
 
   const hasUpvoted = !!upvoteResult.data
   const comments = ((commentResult.data ?? []) as unknown[]) as Array<{

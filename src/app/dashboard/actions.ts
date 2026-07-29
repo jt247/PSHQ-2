@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { sanitizeAreas } from '@/app/dashboard/constants'
 
 export interface ProfileState {
   error?: string
@@ -23,7 +24,7 @@ export async function updateProfileAction(
   const country    = (formData.get('country')    as string ?? '').trim().slice(0, 100)
   const bio        = (formData.get('bio')        as string ?? '').trim().slice(0, 2000) || null
   const areasRaw   = formData.getAll('areas_of_interest') as string[]
-  const areas_of_interest = areasRaw.slice(0, 7).map(a => a.slice(0, 100))
+  const areas_of_interest = sanitizeAreas(areasRaw)
 
   const full_name = [first_name, last_name].filter(Boolean).join(' ') || null
 
