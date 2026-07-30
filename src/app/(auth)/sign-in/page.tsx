@@ -34,7 +34,22 @@ function SignInForm() {
           <input id="password" name="password" type="password" required autoComplete="current-password" placeholder="••••••••" />
         </div>
 
-        {state.error && <p className="auth-error" role="alert">{state.error}</p>}
+        {state.error && (
+          <p className="auth-error" role="alert">
+            {state.error}
+            {/* Supabase returns the same generic message whether the email
+                doesn't exist or the password is wrong — intentional, so the
+                error itself can't be used to discover which emails are
+                registered. This nudge doesn't break that: it never says
+                which case applies, just offers the next step either way. */}
+            {state.error === 'Invalid login credentials' && (
+              <>
+                {' '}New here?{' '}
+                <Link href="/sign-up" style={{ textDecoration: 'underline' }}>Create an account →</Link>
+              </>
+            )}
+          </p>
+        )}
 
         <button type="submit" disabled={pending} className="auth-submit">
           {pending ? 'Signing in…' : 'Sign In'}
