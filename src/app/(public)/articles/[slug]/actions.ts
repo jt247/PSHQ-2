@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 // ── Comments ─────────────────────────────────────────────────
 
@@ -23,13 +23,20 @@ export async function postCommentAction(
   if (!body || body.length < 2) return { error: 'Comment is too short.' }
   if (body.length > 2000) return { error: 'Comment is too long (max 2000 chars).' }
 
-  const { error } = await supabase.from('content_comments').insert({
+  // Written via the service client, not the RLS-bound one above. The
+  // sync_comment_count trigger's internal `update content set
+  // comment_count = comment_count + 1` runs as whichever role executed the
+  // triggering INSERT. The only UPDATE policy on content is admin-only, so
+  // when a normal signed-in user performed the insert, that internal update
+  // matched zero rows under RLS — no error, just silently a no-op — and
+  // comment_count never moved. Identity is still verified above via the
+  // RLS-bound client; only the write goes through the service client.
+  const { error } = await createServiceClient().from('content_comments').insert({
     content_id: contentId,
     user_id: user.id,
     body,
   })
   if (error) {
-
     return { error: 'Failed to post comment. Try again.' }
   }
 
@@ -44,15 +51,26 @@ export async function toggleUpvoteAction(contentId: string, currentlyUpvoted: bo
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Sign in to upvote.' }
 
+  // Confirmed live: a real user's upvote persisted (the content_upvotes row
+  // was there on reload) but the displayed count reverted, because
+  // content.upvote_count itself never moved. sync_upvote_count's internal
+  // `update content set upvote_count = upvote_count + 1` runs as the role
+  // that performed the triggering insert/delete. content's only UPDATE
+  // policy is admin-only, so that internal update matched zero rows under
+  // RLS for a normal user — no error, just silently a no-op. The service
+  // client makes the whole statement (and the trigger it fires) bypass RLS.
+  // auth.getUser() above still verifies identity; user.id is never taken
+  // from client input.
+  const service = createServiceClient()
   if (currentlyUpvoted) {
-    const { error } = await supabase
+    const { error } = await service
       .from('content_upvotes')
       .delete()
       .eq('content_id', contentId)
       .eq('user_id', user.id)
     if (error) return { error: 'Failed to remove upvote.' }
   } else {
-    const { error } = await supabase
+    const { error } = await service
       .from('content_upvotes')
       .insert({ content_id: contentId, user_id: user.id })
     if (error) return { error: 'Failed to upvote.' }
