@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import * as Sentry from '@sentry/nextjs'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-import { uploadFileToR2 } from '@/lib/r2/upload'
+import { uploadPublicImage } from '@/lib/supabase/storage'
 import { describeDbError } from '@/lib/db-errors'
 
 // ── Create ticket (authenticated user) ───────────────────────
@@ -74,17 +74,22 @@ export async function postUserReplyAction(
   const body = (formData.get('body') as string ?? '').trim()
   if (!body) return { error: 'Message is required.' }
 
-  // Optional image upload
+  // Optional image upload. These go to the public Supabase image bucket, not
+  // R2: R2 is private and serves gated downloads through signed requests, so
+  // an attachment stored there uploaded fine and then rendered as a broken
+  // image forever.
   let image_url: string | null = null
   const file = formData.get('image') as File | null
   if (file && file.size > 0) {
     if (file.size > 5 * 1024 * 1024) return { error: 'Image must be under 5 MB.' }
     if (!['image/jpeg', 'image/png'].includes(file.type)) return { error: 'Only JPEG and PNG images allowed.' }
     try {
-      const { url } = await uploadFileToR2(file, 'thumbnails')
+      const { url } = await uploadPublicImage(file, 'support')
       image_url = url
-    } catch {
-      return { error: 'Image upload failed.' }
+    } catch (e) {
+      console.error('[ticket_replies] image upload failed', e)
+      Sentry.captureException(e, { extra: { userId: user.id, ticketId, where: 'postUserReplyAction' } })
+      return { error: 'Image upload failed. Try a smaller JPEG or PNG.' }
     }
   }
 
@@ -92,7 +97,14 @@ export async function postUserReplyAction(
     .from('ticket_replies')
     .insert({ ticket_id: ticketId, user_id: user.id, body, image_url, is_internal: false })
 
-  if (error) return { error: 'Failed to post reply.' }
+  if (error) {
+    console.error('[ticket_replies.insert] failed', {
+      code: error.code, message: error.message, details: error.details, hint: error.hint,
+      userId: user.id, ticketId,
+    })
+    Sentry.captureException(error, { extra: { userId: user.id, ticketId, where: 'postUserReplyAction' } })
+    return { error: describeDbError(error, 'Failed to post reply.') }
+  }
 
   revalidatePath(`/dashboard/support/${ticketId}`)
   return { success: true }

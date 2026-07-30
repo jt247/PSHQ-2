@@ -27,6 +27,19 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      // Server Actions default to a 1MB request body. The support ticket
+      // reply form accepts images up to 5MB, so any attachment over 1MB was
+      // rejected by the framework before the action ever ran — the request
+      // failed outright and the user was thrown to the application error
+      // page. Phone photos are routinely 2MB to 5MB, so this hit almost
+      // every real attachment. Kept slightly above the 5MB app-level check
+      // so that check is what rejects oversized files, with a readable
+      // message, rather than the transport layer.
+      bodySizeLimit: '6mb',
+    },
+  },
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },

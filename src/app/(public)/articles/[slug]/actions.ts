@@ -58,8 +58,18 @@ export async function toggleUpvoteAction(contentId: string, currentlyUpvoted: bo
     if (error) return { error: 'Failed to upvote.' }
   }
 
-  revalidatePath(`/articles`)
-  revalidatePath(`/library`)
+  // The detail pages themselves were never revalidated — only the index
+  // routes were — so navigating back to an ebook or article served the
+  // cached payload from before the vote and the upvote looked like it had
+  // been lost. A dynamic segment requires the bracket form plus the 'page'
+  // type; both the plain and route-group forms are issued because these
+  // routes live under the (public) group.
+  revalidatePath('/articles')
+  revalidatePath('/library')
+  revalidatePath('/articles/[slug]', 'page')
+  revalidatePath('/content/[slug]', 'page')
+  revalidatePath('/(public)/articles/[slug]', 'page')
+  revalidatePath('/(public)/content/[slug]', 'page')
   return { ok: true }
 }
 
