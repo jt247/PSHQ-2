@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { ContentCard } from '@/components/content/ContentCard'
+import { LibrarySearch } from '@/components/content/LibrarySearch'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 
@@ -14,7 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/library' },
 }
 
-interface SearchParams { type?: string; pricing?: string }
+interface SearchParams { type?: string; pricing?: string; search?: string }
 interface Props { searchParams: Promise<SearchParams> }
 
 const TYPE_OPTIONS = ['all', 'article', 'ebook', 'template', 'course'] as const
@@ -22,7 +24,7 @@ const PRICING_OPTIONS = ['all', 'free', 'paid'] as const
 const TYPE_LABELS: Record<string, string> = { all: 'All', article: 'Articles', ebook: 'E-books', template: 'Templates', course: 'Courses' }
 
 export default async function LibraryPage({ searchParams }: Props) {
-  const { type = 'all', pricing = 'all' } = await searchParams
+  const { type = 'all', pricing = 'all', search = '' } = await searchParams
   const supabase = await createClient()
 
   let query = supabase
@@ -41,7 +43,13 @@ export default async function LibraryPage({ searchParams }: Props) {
     is_coming_soon: (item as Record<string, unknown>).is_coming_soon as boolean ?? false,
   }))
 
-  const filtered = pricing === 'all' ? items : items.filter(i => i.pricing_type === pricing)
+  const byPricing = pricing === 'all' ? items : items.filter(i => i.pricing_type === pricing)
+
+  const searchTerm = search.trim().toLowerCase()
+  const filtered = !searchTerm ? byPricing : byPricing.filter(i => {
+    const haystack = [i.title, i.summary ?? '', ...(i.tags ?? [])].join(' ').toLowerCase()
+    return haystack.includes(searchTerm)
+  })
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
@@ -56,6 +64,13 @@ export default async function LibraryPage({ searchParams }: Props) {
           </p>
         </section>
 
+        {/* Search */}
+        <section style={{ marginBottom: '1.5rem' }}>
+          <Suspense fallback={<div style={{ maxWidth: '28rem', height: '44px', borderRadius: '0.25rem', background: 'var(--color-paper-darker)' }} />}>
+            <LibrarySearch initialValue={search} />
+          </Suspense>
+        </section>
+
         {/* Filters */}
         <section style={{ borderTop: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)', borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)', padding: '1.25rem 0', marginBottom: '3rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {/* Type filters */}
@@ -65,7 +80,7 @@ export default async function LibraryPage({ searchParams }: Props) {
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {TYPE_OPTIONS.map(t => (
-                <a key={t} href={`/library?type=${t}&pricing=${pricing}`} className="text-label-sm" style={{
+                <a key={t} href={`/library?type=${t}&pricing=${pricing}${search ? `&search=${encodeURIComponent(search)}` : ''}`} className="text-label-sm" style={{
                   padding: '0.375rem 1rem',
                   borderRadius: '0.125rem',
                   background: type === t ? 'var(--color-ink-deep)' : 'var(--color-paper-darker)',
@@ -84,7 +99,7 @@ export default async function LibraryPage({ searchParams }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {PRICING_OPTIONS.map(p => (
-                <a key={p} href={`/library?type=${type}&pricing=${p}`} className="text-label-sm" style={{
+                <a key={p} href={`/library?type=${type}&pricing=${p}${search ? `&search=${encodeURIComponent(search)}` : ''}`} className="text-label-sm" style={{
                   padding: '0.375rem 1rem',
                   borderRadius: '0.125rem',
                   background: pricing === p ? 'var(--color-ink-deep)' : 'transparent',
@@ -108,7 +123,9 @@ export default async function LibraryPage({ searchParams }: Props) {
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
             <p className="text-headline-md" style={{ color: 'var(--color-ink-deep)', marginBottom: '0.5rem' }}>No resources found</p>
-            <p className="text-body-md" style={{ color: 'var(--color-text-muted)' }}>Try a different filter</p>
+            <p className="text-body-md" style={{ color: 'var(--color-text-muted)' }}>
+              {searchTerm ? `Nothing matches "${search}". Try a different keyword or filter.` : 'Try a different filter'}
+            </p>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '1.25rem' }}>
