@@ -16,22 +16,25 @@ export const metadata: Metadata = {
   alternates: { canonical: '/library' },
 }
 
-interface SearchParams { type?: string; pricing?: string; search?: string }
+interface SearchParams { type?: string; pricing?: string; search?: string; sort?: string }
 interface Props { searchParams: Promise<SearchParams> }
 
 const TYPE_OPTIONS = ['all', 'article', 'ebook', 'template', 'course'] as const
 const PRICING_OPTIONS = ['all', 'free', 'paid'] as const
+const SORT_OPTIONS = ['newest', 'oldest'] as const
 const TYPE_LABELS: Record<string, string> = { all: 'All', article: 'Articles', ebook: 'E-books', template: 'Templates', course: 'Courses' }
+const SORT_LABELS: Record<string, string> = { newest: 'Newest first', oldest: 'Oldest first' }
 
 export default async function LibraryPage({ searchParams }: Props) {
-  const { type = 'all', pricing = 'all', search = '' } = await searchParams
+  const { type = 'all', pricing = 'all', search = '', sort = 'newest' } = await searchParams
+  const sortOrder = sort === 'oldest' ? 'oldest' : 'newest'
   const supabase = await createClient()
 
   let query = supabase
     .from('content')
     .select('id,title,slug,type,summary,cover_image_url,tags,pricing_type,selar_url,view_count,upvote_count,comment_count,published_at,is_coming_soon')
     .eq('status', 'published')
-    .order('published_at', { ascending: false })
+    .order('published_at', { ascending: sortOrder === 'oldest' })
 
   if (type && type !== 'all') query = query.eq('type', type)
 
@@ -50,6 +53,20 @@ export default async function LibraryPage({ searchParams }: Props) {
     const haystack = [i.title, i.summary ?? '', ...(i.tags ?? [])].join(' ').toLowerCase()
     return haystack.includes(searchTerm)
   })
+
+  // Every filter link needs to preserve the other three params — this was
+  // already a source of one real bug (switching type/pricing used to
+  // silently drop an active search term). One builder for all of them
+  // instead of hand-concatenating the string four times.
+  function buildUrl(overrides: Partial<{ type: string; pricing: string; sort: string }>) {
+    const params = new URLSearchParams()
+    params.set('type', overrides.type ?? type)
+    params.set('pricing', overrides.pricing ?? pricing)
+    const nextSort = overrides.sort ?? sortOrder
+    if (nextSort !== 'newest') params.set('sort', nextSort)
+    if (search) params.set('search', search)
+    return `/library?${params.toString()}`
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
@@ -80,7 +97,7 @@ export default async function LibraryPage({ searchParams }: Props) {
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {TYPE_OPTIONS.map(t => (
-                <a key={t} href={`/library?type=${t}&pricing=${pricing}${search ? `&search=${encodeURIComponent(search)}` : ''}`} className="text-label-sm" style={{
+                <a key={t} href={buildUrl({ type: t })} className="text-label-sm" style={{
                   padding: '0.375rem 1rem',
                   borderRadius: '0.125rem',
                   background: type === t ? 'var(--color-ink-deep)' : 'var(--color-paper-darker)',
@@ -99,7 +116,7 @@ export default async function LibraryPage({ searchParams }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {PRICING_OPTIONS.map(p => (
-                <a key={p} href={`/library?type=${type}&pricing=${p}${search ? `&search=${encodeURIComponent(search)}` : ''}`} className="text-label-sm" style={{
+                <a key={p} href={buildUrl({ pricing: p })} className="text-label-sm" style={{
                   padding: '0.375rem 1rem',
                   borderRadius: '0.125rem',
                   background: pricing === p ? 'var(--color-ink-deep)' : 'transparent',
@@ -113,9 +130,26 @@ export default async function LibraryPage({ searchParams }: Props) {
                 </a>
               ))}
             </div>
-            <span className="text-label-sm" style={{ color: 'var(--color-text-muted)' }}>
-              {filtered.length} {filtered.length === 1 ? 'resource' : 'resources'}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <span className="text-label-sm" style={{ color: 'var(--color-text-muted)' }}>
+                {filtered.length} {filtered.length === 1 ? 'resource' : 'resources'}
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {SORT_OPTIONS.map(s => (
+                  <a key={s} href={buildUrl({ sort: s })} className="text-label-sm" style={{
+                    padding: '0.375rem 0.75rem',
+                    borderRadius: '0.125rem',
+                    background: sortOrder === s ? 'var(--color-ink-deep)' : 'transparent',
+                    color: sortOrder === s ? '#ffffff' : 'var(--color-text-muted)',
+                    border: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
+                    textDecoration: 'none',
+                    transition: 'all 150ms',
+                  }}>
+                    {SORT_LABELS[s]}
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
