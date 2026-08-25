@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { renderSpreadsheetAsHtml } from '@/lib/spreadsheet-viewer'
+import { isViewableInline } from '@/lib/viewable'
 
 const r2 = new S3Client({
   region: 'auto',
@@ -45,7 +47,7 @@ export async function GET(
 
   const { data: content, error } = await supabase
     .from('content')
-    .select('id, file_url, pricing_type, status')
+    .select('id, title, file_url, pricing_type, status')
     .eq('id', contentId)
     .eq('status', 'published')
     .single()
@@ -63,12 +65,13 @@ export async function GET(
     return NextResponse.json({ error: 'No file available' }, { status: 404 })
   }
 
-  // Only PDFs have an inline viewer — the reader page already redirects
-  // away from non-PDF content, but this route is reachable directly by
-  // content id, so it needs the same guard rather than trusting the caller.
-  if (!fileUrl.toLowerCase().endsWith('.pdf')) {
+  // PDFs stream as-is (the browser renders them natively). Spreadsheets get
+  // parsed and rendered as read-only HTML tables — see spreadsheet-viewer.ts
+  // for why that beats converting to PDF or embedding a third-party viewer.
+  if (!isViewableInline(fileUrl)) {
     return NextResponse.json({ error: 'This file type cannot be viewed inline. Use the download link instead.' }, { status: 415 })
   }
+  const isSpreadsheet = fileUrl.toLowerCase().endsWith('.xlsx') || fileUrl.toLowerCase().endsWith('.xls')
 
   const key = extractKey(fileUrl)
   if (!key) {
@@ -92,6 +95,16 @@ export async function GET(
 
   const object = await r2.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }))
   const bytes = await object.Body!.transformToByteArray()
+
+  if (isSpreadsheet) {
+    const html = renderSpreadsheetAsHtml(bytes, content.title as string)
+    return new NextResponse(html, {
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'private, max-age=0, must-revalidate',
+      },
+    })
+  }
 
   return new NextResponse(Buffer.from(bytes), {
     headers: {

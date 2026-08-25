@@ -8,6 +8,7 @@ import { UpvoteButton } from '@/components/article/UpvoteButton'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { digitalDocumentSchema, breadcrumbSchema } from '@/lib/seo/schema'
 import { AUTHOR, DEFAULT_OG_IMAGE, absoluteUrl } from '@/lib/seo/constants'
+import { isViewableInline } from '@/lib/viewable'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -62,11 +63,10 @@ export default async function ContentDetailPage({ params }: Props) {
   const pricingType = item.pricing_type as string ?? 'free'
   const selarUrl = item.selar_url as string | null
   const fileUrl = item.file_url as string | null
-  // Only PDFs render inline in a browser — 3 of the 6 templates on the
-  // platform are .xlsx, which an iframe just shows as a blank/broken viewer
-  // for. Read is offered only where it can actually work; everything else
+  // Read is offered only where /api/view can actually render something —
+  // PDFs natively, spreadsheets as a rendered HTML table. Everything else
   // still gets Download + Share.
-  const isPdf = fileUrl?.toLowerCase().endsWith('.pdf') ?? false
+  const isReadable = isViewableInline(fileUrl)
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -261,7 +261,7 @@ export default async function ContentDetailPage({ params }: Props) {
                   ✓ Free to access
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-                  {isPdf && (
+                  {isReadable && (
                     <Link
                       href={`/content/${slug}/read`}
                       className="btn-primary"
@@ -272,7 +272,7 @@ export default async function ContentDetailPage({ params }: Props) {
                   )}
                   <a
                     href={`/api/download/${rawItem.id}`}
-                    className={isPdf ? 'btn-outline' : 'btn-primary'}
+                    className={isReadable ? 'btn-outline' : 'btn-primary'}
                     style={{ display: 'block', textAlign: 'center' }}
                   >
                     Download

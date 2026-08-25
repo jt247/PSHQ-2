@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ShareButton } from '@/components/content/ShareButton'
 import { absoluteUrl } from '@/lib/seo/constants'
+import { isViewableInline } from '@/lib/viewable'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -36,14 +37,11 @@ export default async function ReadContentPage({ params }: Props) {
   if (error || !item) notFound()
 
   // Same access rule as the detail page and the API routes: free content,
-  // signed in, file present. Anything else (paid, no file yet) has no
-  // reader to send them to — the detail page never links here in that case,
-  // but a typed-in URL is guarded the same way. Non-PDF files (some
-  // templates are .xlsx) have no inline viewer at all — an iframe would
-  // just render blank — so those redirect back to the detail page too,
-  // which only ever offers Download + Share for them.
-  const isPdf = item.file_url?.toLowerCase().endsWith('.pdf') ?? false
-  if (item.pricing_type !== 'free' || !item.file_url || !isPdf) redirect(`/content/${slug}`)
+  // signed in, file present, and a type /api/view can actually render
+  // (PDF natively, xlsx/xls as a rendered table). Anything else has no
+  // reader to send them to — the detail page never links here in that
+  // case, but a typed-in URL is guarded the same way.
+  if (item.pricing_type !== 'free' || !isViewableInline(item.file_url)) redirect(`/content/${slug}`)
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-darker)' }}>
