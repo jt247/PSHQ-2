@@ -262,6 +262,10 @@ a { color: inherit; text-decoration: none; }
      mobile so the drawer can actually cover the screen. */
   .pub-nav { backdrop-filter: none; }
 
+  /* Mobile header is logo + nav toggle only — the site name next to the
+     logo was crowding the narrow header alongside the toggle and CTA. */
+  .pub-nav-brand span { display: none; }
+
   /* Public header: links become a right-side slide-in drawer */
   .pub-nav-links {
     position: fixed;
@@ -900,6 +904,14 @@ a { color: inherit; text-decoration: none; }
   }
   body.dash-nav-open .dash-sidebar {
     transform: translateX(0) !important;
+  }
+
+  /* Same "logo + nav only" treatment as the public header — the drawer is
+     narrow enough on mobile that the brand text and "Member Hub" subtitle
+     next to the logo felt cramped rather than adding information. */
+  .dash-sidebar-brand-text,
+  .dash-sidebar-brand-sub {
+    display: none;
   }
 }
 
