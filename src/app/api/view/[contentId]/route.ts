@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 const r2 = new S3Client({
@@ -15,20 +14,22 @@ const r2 = new S3Client({
 const BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME!
 const ACCOUNT_ID = process.env.CLOUDFLARE_R2_ACCOUNT_ID!
 
-// Object keys are <folder>/<filename>. Filenames come from either the upload
-// route (randomUUID + ext) or admin scripts (human-readable slug + ext) —
-// both are legitimate, so this only blocks path traversal and enforces the
-// folder/filename shape rather than requiring UUID naming.
+// Same key shape as /api/download — kept in sync with that route.
 const KEY_RE = /^[a-z0-9-]+\/[A-Za-z0-9._-]+$/
 
 function extractKey(fileUrl: string): string | null {
-  // Strip the R2 endpoint prefix to get the object key
   const prefix = `https://${ACCOUNT_ID}.r2.cloudflarestorage.com/${BUCKET}/`
   const key = fileUrl.startsWith(prefix) ? fileUrl.slice(prefix.length) : fileUrl
   if (key.includes('..') || key.includes('//')) return null
   return KEY_RE.test(key) ? key : null
 }
 
+// Serves the file inline through our own origin instead of redirecting to a
+// signed R2 URL. Two reasons: an iframe pointed at a cross-origin R2 URL
+// would be blocked by our CSP (frame-src isn't set, so it falls back to
+// default-src 'self'), and this way the client never sees a signed URL for
+// the "read" path at all — only /api/download hands one out, and only for
+// an explicit save-to-disk.
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ contentId: string }> }
@@ -44,7 +45,7 @@ export async function GET(
 
   const { data: content, error } = await supabase
     .from('content')
-    .select('id, slug, title, file_url, pricing_type, status')
+    .select('id, file_url, pricing_type, status')
     .eq('id', contentId)
     .eq('status', 'published')
     .single()
@@ -62,38 +63,41 @@ export async function GET(
     return NextResponse.json({ error: 'No file available' }, { status: 404 })
   }
 
-  // Log the download interaction (non-fatal)
+  // Only PDFs have an inline viewer — the reader page already redirects
+  // away from non-PDF content, but this route is reachable directly by
+  // content id, so it needs the same guard rather than trusting the caller.
+  if (!fileUrl.toLowerCase().endsWith('.pdf')) {
+    return NextResponse.json({ error: 'This file type cannot be viewed inline. Use the download link instead.' }, { status: 415 })
+  }
+
+  const key = extractKey(fileUrl)
+  if (!key) {
+    return NextResponse.json({ error: 'Invalid file reference' }, { status: 404 })
+  }
+
+  // Log the view (non-fatal). Written via the service client — the
+  // sync_view_count trigger's internal update on `content` is blocked by
+  // RLS when the triggering insert runs as a normal authenticated user, so
+  // going through the RLS-bound client here would silently never move
+  // view_count. Same fix as the upvote/comment insert paths.
   try {
     const service = createServiceClient()
     await service.from('content_interactions').insert({
       content_id: contentId,
       user_id: user.id,
-      type: 'download',
+      type: 'view',
       metadata: {},
     })
   } catch { /* non-fatal */ }
 
-  // Generate a presigned URL valid for 1 hour. ResponseContentDisposition
-  // forces a real save-to-disk on this path — without it, R2 returns
-  // whatever disposition the object was uploaded with (typically none),
-  // which most browsers then open inline instead of downloading. That made
-  // "download" and "view" indistinguishable; this override, plus /api/view
-  // serving the read path separately, is what actually splits the two.
-  const key = extractKey(fileUrl)
-  if (!key) {
-    return NextResponse.json({ error: 'Invalid file reference' }, { status: 404 })
-  }
-  const ext = key.match(/\.[^./]+$/)?.[0] ?? '.pdf'
-  const filename = `${(content.slug as string) || 'download'}${ext}`
-  const signedUrl = await getSignedUrl(
-    r2,
-    new GetObjectCommand({
-      Bucket: BUCKET,
-      Key: key,
-      ResponseContentDisposition: `attachment; filename="${filename}"`,
-    }),
-    { expiresIn: 3600 }
-  )
+  const object = await r2.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }))
+  const bytes = await object.Body!.transformToByteArray()
 
-  return NextResponse.redirect(signedUrl)
+  return new NextResponse(Buffer.from(bytes), {
+    headers: {
+      'Content-Type': object.ContentType ?? 'application/pdf',
+      'Content-Disposition': 'inline',
+      'Cache-Control': 'private, max-age=0, must-revalidate',
+    },
+  })
 }

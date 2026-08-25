@@ -11,6 +11,12 @@ const csp = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https://fonts.gstatic.com",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://eu.i.posthog.com https://eu-assets.i.posthog.com https://*.sentry.io https://*.r2.cloudflarestorage.com https://*.r2.dev",
+  // Chrome's built-in PDF viewer spawns a blob: worker to render the file.
+  // Without worker-src set, that falls back to script-src, which doesn't
+  // allow blob: — the worker gets silently blocked (visible in devtools,
+  // invisible to a real user since the viewer still renders, just without
+  // whatever that worker was doing). Only affects /content/[slug]/read.
+  "worker-src 'self' blob:",
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",
@@ -25,6 +31,20 @@ const securityHeaders = [
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
   { key: 'Content-Security-Policy', value: csp },
 ]
+
+// /api/view serves a PDF meant to be embedded in our own reader page's
+// iframe. The site-wide X-Frame-Options: DENY and frame-ancestors 'none'
+// above exist to stop OTHER sites from framing us, but they make no
+// exception for framing ourselves — so without this override, our own
+// iframe got blocked by our own headers (confirmed locally:
+// net::ERR_BLOCKED_BY_RESPONSE). Only same-origin framing is allowed here,
+// and only for this one route; every other route keeps the strict default.
+const viewFrameCsp = csp.replace("frame-ancestors 'none'", "frame-ancestors 'self'")
+const viewHeaders = securityHeaders.map(h =>
+  h.key === 'X-Frame-Options' ? { key: h.key, value: 'SAMEORIGIN' } :
+  h.key === 'Content-Security-Policy' ? { key: h.key, value: viewFrameCsp } :
+  h
+)
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -41,7 +61,10 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: '/(.*)', headers: securityHeaders }]
+    return [
+      { source: '/(.*)', headers: securityHeaders },
+      { source: '/api/view/:contentId*', headers: viewHeaders },
+    ]
   },
 };
 

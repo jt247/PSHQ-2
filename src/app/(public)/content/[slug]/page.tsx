@@ -3,10 +3,11 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { SelarButton } from '@/components/content/SelarButton'
+import { ShareButton } from '@/components/content/ShareButton'
 import { UpvoteButton } from '@/components/article/UpvoteButton'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { digitalDocumentSchema, breadcrumbSchema } from '@/lib/seo/schema'
-import { AUTHOR, DEFAULT_OG_IMAGE } from '@/lib/seo/constants'
+import { AUTHOR, DEFAULT_OG_IMAGE, absoluteUrl } from '@/lib/seo/constants'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -61,6 +62,11 @@ export default async function ContentDetailPage({ params }: Props) {
   const pricingType = item.pricing_type as string ?? 'free'
   const selarUrl = item.selar_url as string | null
   const fileUrl = item.file_url as string | null
+  // Only PDFs render inline in a browser — 3 of the 6 templates on the
+  // platform are .xlsx, which an iframe just shows as a blank/broken viewer
+  // for. Read is offered only where it can actually work; everything else
+  // still gets Download + Share.
+  const isPdf = fileUrl?.toLowerCase().endsWith('.pdf') ?? false
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -244,18 +250,39 @@ export default async function ContentDetailPage({ params }: Props) {
                 </p>
               </>
             ) : hasAccess && fileUrl ? (
-              /* Free + signed in + file available */
+              /* Free + signed in + file available — read in-platform is the
+                 default action; download and share are secondary. This
+                 used to be a single "Download" link that, depending on the
+                 browser, sometimes opened inline anyway and sometimes saved
+                 a file — there was no real way to just read without an
+                 unpredictable side effect. */
               <>
                 <p className="text-label-sm" style={{ color: '#15803d', fontWeight: 700, margin: '0 0 1rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   ✓ Free to access
                 </p>
-                <a
-                  href={`/api/download/${rawItem.id}`}
-                  className="btn-primary"
-                  style={{ display: 'block', textAlign: 'center' }}
-                >
-                  Download {label}
-                </a>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+                  {isPdf && (
+                    <Link
+                      href={`/content/${slug}/read`}
+                      className="btn-primary"
+                      style={{ display: 'block', textAlign: 'center' }}
+                    >
+                      Read {label}
+                    </Link>
+                  )}
+                  <a
+                    href={`/api/download/${rawItem.id}`}
+                    className={isPdf ? 'btn-outline' : 'btn-primary'}
+                    style={{ display: 'block', textAlign: 'center' }}
+                  >
+                    Download
+                  </a>
+                  <ShareButton
+                    contentId={rawItem.id as string}
+                    title={rawItem.title as string}
+                    url={absoluteUrl(`/content/${slug}`)}
+                  />
+                </div>
               </>
             ) : hasAccess && !fileUrl ? (
               /* Free + signed in, no file yet */
