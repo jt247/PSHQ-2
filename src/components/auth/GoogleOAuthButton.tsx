@@ -6,9 +6,9 @@ interface GoogleOAuthButtonProps {
   label?: string
 }
 
-// Google OAuth app is pending verification. Flip to true once approved —
-// everything below stays wired and ready.
-const GOOGLE_OAUTH_ENABLED = false
+// Supabase project has the Google provider configured (Client ID/Secret in
+// Supabase Dashboard → Authentication → Providers → Google) as of this flip.
+const GOOGLE_OAUTH_ENABLED = true
 
 export function GoogleOAuthButton({ label = 'Continue with Google' }: GoogleOAuthButtonProps) {
   async function handleGoogleSignIn() {
