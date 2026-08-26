@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { UpvoteButton } from '@/components/article/UpvoteButton'
 import { AiSummaryPanel } from '@/components/article/AiSummaryPanel'
+import { ListenButton } from '@/components/article/ListenButton'
 import { CommentsSection } from '@/components/article/CommentsSection'
 import { RatingWidget } from '@/components/article/RatingWidget'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -293,11 +294,16 @@ export default async function ArticlePage({ params }: Props) {
             </div>
           </header>
 
-          <AiSummaryPanel
-            contentId={rawItem.id}
-            isLoggedIn={!!user}
-            cachedSummary={cachedSummary}
-          />
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <AiSummaryPanel
+                contentId={rawItem.id}
+                isLoggedIn={!!user}
+                cachedSummary={cachedSummary}
+              />
+            </div>
+            {rawItem.body ? <ListenButton text={rawItem.body as string} /> : null}
+          </div>
 
           {rawItem.body ? (
             <div style={{ marginBottom: '3rem' }}>
