@@ -25,7 +25,7 @@ export default async function DashboardPage() {
       .eq('status', 'published')
       .eq('type', 'article')
       .order('published_at', { ascending: false })
-      .limit(4),
+      .limit(30),
     supabase.from('content')
       .select('id, title, slug, summary, cover_image_url, tags')
       .eq('status', 'published')
@@ -61,7 +61,7 @@ export default async function DashboardPage() {
   }
   const owned = Array.from(engagedById.values())
 
-  const recommended = (recommendedRes.data ?? []) as Array<{
+  const recommendedPool = (recommendedRes.data ?? []) as Array<{
     id: string; title: string; slug: string; summary: string | null;
     cover_image_url: string | null; tags: string[] | null; published_at: string | null;
   }>
@@ -80,6 +80,24 @@ export default async function DashboardPage() {
 
   const name = profile?.full_name?.split(' ')[0] ?? 'there'
   const interests = (profile?.areas_of_interest as string[] | null) ?? []
+
+  // v1 recommendation engine: score each article by how many of the user's
+  // interest areas overlap its tags (case-insensitive — tags are freeform
+  // admin text, areas_of_interest are fixed preset labels, so casing between
+  // the two was never guaranteed to match). Ties fall back to newest first.
+  // With no interests set, this reduces to the previous newest-first behavior.
+  const interestSet = new Set(interests.map(i => i.toLowerCase()))
+  const recommended = [...recommendedPool]
+    .map(article => ({
+      article,
+      score: (article.tags ?? []).filter(t => interestSet.has(t.toLowerCase())).length,
+    }))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score
+      return (b.article.published_at ?? '').localeCompare(a.article.published_at ?? '')
+    })
+    .slice(0, 4)
+    .map(r => r.article)
 
   const ebooks = owned.filter(c => c.type === 'ebook')
   const articles = owned.filter(c => c.type === 'article')

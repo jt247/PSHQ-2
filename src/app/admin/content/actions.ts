@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { logAdminAction } from '@/lib/admin/log'
+import { notifyNewContent } from '@/lib/notifications/notify-new-content'
 
 function requireAdmin(role: string | null) {
   if (!role || !['admin', 'super_admin'].includes(role)) {
@@ -46,6 +47,10 @@ export async function createContentAction(formData: FormData) {
   if (error) throw new Error(error.message)
 
   await logAdminAction({ admin_id: user.id, action_type: 'content_create', target_table: 'content', target_id: data.id, metadata: { title: payload.title, type: payload.type } })
+
+  if (status === 'published') {
+    await notifyNewContent({ id: data.id, title: payload.title, type: payload.type, slug: payload.slug })
+  }
 
   revalidatePath('/admin/content')
   redirect(`/admin/content/${data.id}/edit`)
@@ -95,13 +100,17 @@ export async function publishContentAction(id: string) {
   const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single()
   requireAdmin(profile?.role ?? null)
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('content')
     .update({ status: 'published', published_at: new Date().toISOString() })
     .eq('id', id)
+    .select('title, type, slug')
+    .single()
   if (error) throw new Error(error.message)
 
   await logAdminAction({ admin_id: user.id, action_type: 'content_publish', target_table: 'content', target_id: id })
+
+  if (data) await notifyNewContent({ id, title: data.title, type: data.type, slug: data.slug })
 
   revalidatePath('/admin/content')
 }
