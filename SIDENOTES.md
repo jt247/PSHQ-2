@@ -41,7 +41,19 @@ than it is.
 
 ## 2026-08-26 — LinkedIn-imported article cleanup
 
-Some articles originally sourced from LinkedIn posts carry stray content that
-doesn't belong in a standalone article (engagement bait, "connect with me"
-asks, etc.). Cleanup assigned to an agent this session — see git log for the
-commit and diff of what was removed per article.
+Reviewed all 49 published articles for stray LinkedIn artifacts left over
+from the original import. Found the same artifact in 41 of them: a
+"Recommended by LinkedIn" related-posts widget (three suggested post titles,
+authors, and "X ago" timestamps), pasted mid-body verbatim from LinkedIn's own
+feed UI. Not a phrasing issue and not editorial voice, an actual chunk of
+LinkedIn page chrome sitting inside the article text. Removed that widget
+block from all 41 articles via a direct database update, touching nothing
+else in the body. Titles and summaries were checked too and none needed
+changes. The other 8 articles had no such artifact and were left untouched.
+
+Full per-article breakdown of exactly what was removed is in the agent's
+report from this session, not duplicated here.
+
+Worth checking before importing more LinkedIn posts: since the artifact was
+byte-for-byte identical across all 41 articles, the LinkedIn-to-article
+import pipeline likely still has this bug for any future imports.
