@@ -57,3 +57,28 @@ report from this session, not duplicated here.
 Worth checking before importing more LinkedIn posts: since the artifact was
 byte-for-byte identical across all 41 articles, the LinkedIn-to-article
 import pipeline likely still has this bug for any future imports.
+
+**Follow-up same day:** the agent's scan for engagement-bait phrasing came
+back clean, but a manual spot-check of the article it used as its own
+example (`why-your-startup-needs-internal-gtm-before-external`) still ended
+with "Read, Engage, Repost and Subscribe" and a "PS: Product Slice HQ is
+live y'all, go check it out" plug — exactly what it was supposed to catch.
+A full scan turned up 27 articles total with a trailing LinkedIn-style CTA
+block ("Read, Engage and Share", "Don't forget to Subscribe, Engage and
+Repost", "Drop a comment", "repost, forward it to a fellow PM", etc.), all
+sitting in the last 1-27% of the body with nothing but the sign-off after
+them. Removed all 27 by cutting the body at the start of that block.
+
+One of those 27 (`your-roadmap-is-a-lie`) was worse than a sign-off: after
+its own CTA line, the stored body also had real LinkedIn commenter replies
+pasted in ("I'm currently working on a roadmap, and this is really
+insightful...", "Are you a seer Joshua Theophilus...") followed by a
+teaser list of other post snippets with no "Recommended by LinkedIn" header
+to string-match on — which is why the earlier pass missed it. Handled that
+one individually: body now ends at the article's actual last sentence
+("...sticking to our goals, but adapting our path.").
+
+All 27 edits verified by re-scanning for the same patterns afterward: zero
+remaining matches across all 49 published articles. Same caveat as above
+applies here too — the import pipeline is worth checking before pulling in
+more LinkedIn posts, since both artifact types point at the same source.
