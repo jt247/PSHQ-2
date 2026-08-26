@@ -893,6 +893,18 @@ a { color: inherit; text-decoration: none; }
   .flex-wrap-mobile { flex-wrap: wrap !important; }
 }
 
+/* Auth pages (sign-in, sign-up, onboarding, reset/forgot password) stack
+   .auth-main's 2rem+2.5rem padding on top of .auth-card-inner's own 2rem —
+   on a 375px phone that leaves under 230px for content, so anything that
+   wraps (the onboarding interest chips especially) collapses to one cramped
+   chip per row instead of a normal flowing grid. Cut both paddings down on
+   mobile; the card still reads as a card, it just isn't fighting itself for
+   width. */
+@media (max-width: 767px) {
+  .auth-main { padding: 1.5rem 1rem; }
+  .auth-card-inner { padding: 1.5rem 1.25rem; }
+}
+
 /* Dashboard sidebar mobile drawer — placed after the base .dash-sidebar
    rule above so this wins the cascade (see note near .mobile-nav-backdrop). */
 @media (max-width: 767px) {

@@ -294,14 +294,12 @@ export default async function ArticlePage({ params }: Props) {
             </div>
           </header>
 
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem' }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <AiSummaryPanel
-                contentId={rawItem.id}
-                isLoggedIn={!!user}
-                cachedSummary={cachedSummary}
-              />
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: rawItem.body ? '1fr 1fr' : '1fr', gap: '0.625rem', marginBottom: '1.5rem' }}>
+            <AiSummaryPanel
+              contentId={rawItem.id}
+              isLoggedIn={!!user}
+              cachedSummary={cachedSummary}
+            />
             {rawItem.body ? <ListenButton text={rawItem.body as string} /> : null}
           </div>
 

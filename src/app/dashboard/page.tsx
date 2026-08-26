@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Unlock, BookOpen, GraduationCap, Newspaper, Package, Gem, Gift } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import type { UserRow, ContentRow } from '@/types/database'
 
@@ -176,13 +177,13 @@ export default async function DashboardPage() {
         marginBottom: '1.75rem',
       }}>
         {[
-          { label: 'Content Unlocked', value: owned.length, icon: '🔓', accent: '#FACC15' },
-          { label: 'E-books', value: ebooks.length, icon: '📖', accent: '#7c3aed' },
-          { label: 'Courses', value: courses.length, icon: '🎓', accent: '#0ea5e9' },
-          { label: 'Articles Read', value: articles.length, icon: '📰', accent: '#10b981' },
-          { label: 'Resources', value: resources.length, icon: '📦', accent: '#f97316' },
-          { label: 'Paid', value: paidItems.length, icon: '💎', accent: '#e11d48' },
-          { label: 'Free', value: freeItems.length, icon: '🎁', accent: '#6366f1' },
+          { label: 'Content Unlocked', value: owned.length, Icon: Unlock, accent: '#FACC15' },
+          { label: 'E-books', value: ebooks.length, Icon: BookOpen, accent: '#7c3aed' },
+          { label: 'Courses', value: courses.length, Icon: GraduationCap, accent: '#0ea5e9' },
+          { label: 'Articles Read', value: articles.length, Icon: Newspaper, accent: '#10b981' },
+          { label: 'Resources', value: resources.length, Icon: Package, accent: '#f97316' },
+          { label: 'Paid', value: paidItems.length, Icon: Gem, accent: '#e11d48' },
+          { label: 'Free', value: freeItems.length, Icon: Gift, accent: '#6366f1' },
         ].map(s => (
           <div key={s.label} style={{
             background: '#ffffff',
@@ -191,7 +192,7 @@ export default async function DashboardPage() {
             padding: '1rem 1rem 0.875rem',
             borderTop: `3px solid ${s.accent}`,
           }}>
-            <span style={{ fontSize: '1.125rem' }}>{s.icon}</span>
+            <s.Icon size={18} strokeWidth={2} color={s.accent} />
             <p style={{
               fontFamily: 'var(--font-sans)',
               fontSize: '1.625rem', fontWeight: 800,

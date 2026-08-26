@@ -76,18 +76,19 @@ export function ListenButton({ text }: Props) {
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       disabled={!supported}
       title={supported ? undefined : "Text-to-speech isn't supported in this browser"}
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
-        flexShrink: 0,
-        padding: '0.4rem 0.75rem',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+        width: '100%',
+        padding: '0.75rem 1rem',
         border: `1px solid ${status !== 'idle' ? '#6366f1' : '#d1d5db'}`,
-        borderRadius: '9999px',
+        borderRadius: '0.625rem',
         background: status !== 'idle' ? '#eef2ff' : '#fff',
         color: status !== 'idle' ? '#4f46e5' : '#374151',
-        fontSize: '0.8125rem', fontWeight: 500,
+        fontSize: '0.875rem', fontWeight: 600,
         cursor: supported ? 'pointer' : 'not-allowed',
         opacity: supported ? 1 : 0.5,
         transition: 'all 150ms',

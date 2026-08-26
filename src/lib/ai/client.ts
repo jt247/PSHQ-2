@@ -1,13 +1,17 @@
 // NVIDIA Build (integrate.api.nvidia.com) — OpenAI-compatible chat completions.
 // Free-tier model, swapped in to avoid Gemini billing.
 //
-// z-ai/glm-5.2 (the original choice here) hit end-of-life on 2026-08-21 and
-// NVIDIA now returns 410 Gone for it — that was the actual cause of AI
-// summaries failing, not an expired or invalid key. The key itself was
-// confirmed working (200 on /v1/models and on a live completion) before
-// this swap. No new NVIDIA_API_KEY is needed for this specific failure.
+// This is the SECOND model swap here. z-ai/glm-5.2 hit end-of-life on
+// 2026-08-21 (410 Gone), got replaced with meta/llama-3.3-70b-instruct —
+// which itself hit end-of-life on 2026-08-26, the same day, also 410 Gone.
+// NVIDIA is retiring free-tier models fast. openai/gpt-oss-20b is a newer
+// open-weight release, not an aging Llama point version, so it's a better
+// bet against the same fate, but there's no guarantee — if summaries start
+// failing again, check for a 410 first (model retired) before assuming the
+// key is bad. The key itself has been confirmed working across all three
+// of these swaps.
 const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions'
-const MODEL = 'meta/llama-3.3-70b-instruct'
+const MODEL = 'openai/gpt-oss-20b'
 
 export const AI_MODEL_NAME = MODEL
 
