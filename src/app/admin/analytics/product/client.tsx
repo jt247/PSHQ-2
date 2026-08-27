@@ -9,7 +9,11 @@ type ContentPerformanceRow = {
   type: string
   status: string
   views: number
-  unlocks: number
+  reads: number | null
+  downloads: number | null
+  aiSummaries: number | null
+  listens: number | null
+  shares: number
   comments: number
   upvotes: number
   ratingCount: number
@@ -36,7 +40,7 @@ interface Props {
     }
     content: {
       topViewed: Array<{ title: string; type: string; count: number }>
-      topUnlocked: Array<{ title: string; type: string; count: number }>
+      topDownloaded: Array<{ title: string; type: string; count: number }>
       typeBreakdown: Array<{ type: string; count: number }>
       mostDiscussed: Array<{ title: string; type: string; comment_count: number; upvote_count: number; discussion_score: number }>
       topSelarClicks: Array<{ title: string; type: string; count: number }>
@@ -50,6 +54,7 @@ const pct = (n: number) => `${n}%`
 
 export function ProductClient({ data }: Props) {
   const { days, community, engagement, content, contentPerformance } = data
+  const dash = (n: number | null) => n === null ? '—' : n.toLocaleString()
   const typeRows = content.typeBreakdown.map(t => ({ label: t.type, value: t.count }))
 
   return (
@@ -81,7 +86,7 @@ export function ProductClient({ data }: Props) {
       {/* Engagement Depth */}
       <Section title="Engagement depth">
         <div style={grid2Col}>
-          <MetricRow label="Activation rate (signup → first unlock)" value={pct(engagement.activationRate)} />
+          <MetricRow label="Activation rate (signup → first download)" value={pct(engagement.activationRate)} />
           <MetricRow label="Avg content interactions per active member" value={String(engagement.avgDepth)} />
           <MetricRow label="Engaged members (3+ interactions)" value={pct(engagement.engagedUserPct)} />
           <MetricRow label="AI summary usage rate (summaries / views)" value={pct(engagement.aiSummaryRate)} />
@@ -96,8 +101,8 @@ export function ProductClient({ data }: Props) {
             <ContentRankList items={content.topViewed} metric="views" />
           </div>
           <div>
-            <h4 style={sub2}>Most unlocked</h4>
-            <ContentRankList items={content.topUnlocked} metric="unlocks" />
+            <h4 style={sub2}>Most downloaded</h4>
+            <ContentRankList items={content.topDownloaded} metric="downloads" />
           </div>
         </div>
         <div style={{ ...grid2, marginTop: '1rem' }}>
@@ -124,7 +129,8 @@ export function ProductClient({ data }: Props) {
       {/* Content Performance Table */}
       <Section title="Content performance table">
         <p style={{ fontSize: '0.8125rem', color: '#6b7280', margin: '0 0 1rem' }}>
-          All-time stats per piece of content. Engagement rate = (comments + upvotes + unlocks) / views.
+          All-time stats per piece of content. Reads/Downloads apply to ebooks and templates; AI Summaries/Listens apply
+          to articles — the other shows &ldquo;—&rdquo;. Engagement rate = (comments + upvotes + shares) / views.
         </p>
         {contentPerformance.length === 0 ? (
           <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No content data yet.</p>
@@ -137,7 +143,11 @@ export function ProductClient({ data }: Props) {
                   <th style={{ ...th, textAlign: 'center' }}>Type</th>
                   <th style={{ ...th, textAlign: 'center' }}>Status</th>
                   <th style={{ ...th, textAlign: 'right' }}>Views</th>
-                  <th style={{ ...th, textAlign: 'right' }}>Unlocks</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Reads</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Downloads</th>
+                  <th style={{ ...th, textAlign: 'right' }}>AI Summaries</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Listens</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Shares</th>
                   <th style={{ ...th, textAlign: 'right' }}>Comments</th>
                   <th style={{ ...th, textAlign: 'right' }}>Upvotes</th>
                   <th style={{ ...th, textAlign: 'right' }}>Rating</th>
@@ -155,7 +165,11 @@ export function ProductClient({ data }: Props) {
                       <span style={statusBadge(row.status)}>{row.status}</span>
                     </td>
                     <td style={{ ...td, textAlign: 'right' }}>{row.views.toLocaleString()}</td>
-                    <td style={{ ...td, textAlign: 'right' }}>{row.unlocks.toLocaleString()}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>{dash(row.reads)}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>{dash(row.downloads)}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>{dash(row.aiSummaries)}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>{dash(row.listens)}</td>
+                    <td style={{ ...td, textAlign: 'right' }}>{row.shares.toLocaleString()}</td>
                     <td style={{ ...td, textAlign: 'right' }}>{row.comments.toLocaleString()}</td>
                     <td style={{ ...td, textAlign: 'right' }}>{row.upvotes.toLocaleString()}</td>
                     <td style={{ ...td, textAlign: 'right' }}>

@@ -16,7 +16,7 @@ export type UserRole = 'user' | 'admin' | 'super_admin'
 export type TeamRole = 'product' | 'support' | 'growth'
 export type ContentType = 'article' | 'ebook' | 'template' | 'course'
 export type ContentStatus = 'draft' | 'published' | 'archived'
-export type InteractionType = 'view' | 'click' | 'share' | 'download' | 'unlock' | 'ai_summary_requested' | 'selar_click'
+export type InteractionType = 'view' | 'click' | 'share' | 'download' | 'unlock' | 'ai_summary_requested' | 'selar_click' | 'read' | 'listen'
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type RequestStatus = 'open' | 'in_review' | 'planned' | 'completed' | 'declined'
@@ -89,6 +89,13 @@ export interface ContentCommentRow {
 }
 
 export interface ContentUpvoteRow {
+  id: string
+  content_id: string
+  user_id: string
+  created_at: string
+}
+
+export interface ContentFavoriteRow {
   id: string
   content_id: string
   user_id: string

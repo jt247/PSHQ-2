@@ -7,9 +7,11 @@ import { AiSummaryPanel } from '@/components/article/AiSummaryPanel'
 import { ListenButton } from '@/components/article/ListenButton'
 import { CommentsSection } from '@/components/article/CommentsSection'
 import { RatingWidget } from '@/components/article/RatingWidget'
+import { ShareButton } from '@/components/content/ShareButton'
+import { FavoriteButton } from '@/components/content/FavoriteButton'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { articleSchema, breadcrumbSchema } from '@/lib/seo/schema'
-import { AUTHOR, DEFAULT_OG_IMAGE } from '@/lib/seo/constants'
+import { AUTHOR, DEFAULT_OG_IMAGE, absoluteUrl } from '@/lib/seo/constants'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -118,11 +120,21 @@ export default async function ArticlePage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Parallel data fetches
-  const [upvoteResult, commentResult, ratingResult, summaryResult] = await Promise.all([
+  const [upvoteResult, favoriteResult, commentResult, ratingResult, summaryResult] = await Promise.all([
     // Whether user has upvoted
     user
       ? supabase
           .from('content_upvotes')
+          .select('id')
+          .eq('content_id', rawItem.id)
+          .eq('user_id', user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+
+    // Whether user has favorited
+    user
+      ? supabase
+          .from('content_favorites')
           .select('id')
           .eq('content_id', rawItem.id)
           .eq('user_id', user.id)
@@ -179,6 +191,7 @@ export default async function ArticlePage({ params }: Props) {
   } catch { /* non-fatal — never block the article render on telemetry */ }
 
   const hasUpvoted = !!upvoteResult.data
+  const hasFavorited = !!favoriteResult.data
   const comments = ((commentResult.data ?? []) as unknown[]) as Array<{
     id: string
     body: string
@@ -284,11 +297,21 @@ export default async function ArticlePage({ params }: Props) {
               <span>By {AUTHOR.name}</span>
               {publishedDate && <span>{publishedDate}</span>}
               {showUpdatedDate && <span>Updated {updatedDate}</span>}
-              <span>{(item.view_count as number ?? 0).toLocaleString()} views</span>
               <UpvoteButton
                 contentId={rawItem.id}
                 initialCount={rawItem.upvote_count as number ?? 0}
                 initialUpvoted={hasUpvoted}
+                isLoggedIn={!!user}
+              />
+              <ShareButton
+                contentId={rawItem.id}
+                title={rawItem.title as string}
+                url={absoluteUrl(`/articles/${slug}`)}
+                variant="inline"
+              />
+              <FavoriteButton
+                contentId={rawItem.id}
+                initialFavorited={hasFavorited}
                 isLoggedIn={!!user}
               />
             </div>
@@ -300,7 +323,7 @@ export default async function ArticlePage({ params }: Props) {
               isLoggedIn={!!user}
               cachedSummary={cachedSummary}
             />
-            {rawItem.body ? <ListenButton text={rawItem.body as string} /> : null}
+            {rawItem.body ? <ListenButton text={rawItem.body as string} contentId={rawItem.id} /> : null}
           </div>
 
           {rawItem.body ? (

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 export type Days = 7 | 14 | 30 | 90
 
@@ -135,7 +135,7 @@ export async function getEngagementDepth(days: Days) {
     .from('content_interactions')
     .select('user_id, type')
     .not('user_id', 'is', null)
-    .in('type', ['view', 'unlock', 'download', 'ai_summary_requested'])
+    .in('type', ['view', 'download', 'ai_summary_requested'])
     .gte('created_at', daysAgo(days))
 
   const byUser = new Map<string, number>()
@@ -312,6 +312,13 @@ export async function getSelarClicksBreakdown(limit = 5) {
 }
 
 /** Full content performance table: views, clicks, unlocks, comments, upvotes, ratings */
+// Interaction types that make sense to break out per content item in the
+// performance table. 'read' and 'listen' only ever fire on ebooks/templates
+// and articles respectively, so most rows show '—' for the type that
+// doesn't apply to them — see ContentPerformanceRow rendering.
+const TRACKED_TYPES = ['read', 'download', 'share', 'ai_summary_requested', 'listen'] as const
+type TrackedType = typeof TRACKED_TYPES[number]
+
 export async function getContentPerformanceTable() {
   const supabase = await createClient()
 
@@ -333,38 +340,61 @@ export async function getContentPerformanceTable() {
 
   const ids = contentList.map(c => c.id)
 
-  // Ratings per content
+  // Ratings per content — column is `rating`, not `score` (this previously
+  // queried a column that doesn't exist, so avgRating/ratingCount were
+  // silently always null/0 regardless of real ratings).
   const { data: ratingsRaw } = await supabase
     .from('ratings')
-    .select('content_id, score')
+    .select('content_id, rating')
     .in('content_id', ids)
 
   const ratingMap = new Map<string, { sum: number; count: number }>()
-  for (const r of ((ratingsRaw ?? []) as Array<{ content_id: string; score: number }>)) {
+  for (const r of ((ratingsRaw ?? []) as Array<{ content_id: string; rating: number }>)) {
     const e = ratingMap.get(r.content_id) ?? { sum: 0, count: 0 }
-    e.sum += r.score
+    e.sum += r.rating
     e.count++
     ratingMap.set(r.content_id, e)
   }
 
-  // Unlock interactions per content
-  const { data: unlockRaw } = await supabase
-    .from('content_interactions')
-    .select('content_id')
-    .eq('type', 'unlock')
-    .in('content_id', ids)
-
-  const unlockMap = new Map<string, number>()
-  for (const r of ((unlockRaw ?? []) as Array<{ content_id: string }>)) {
-    unlockMap.set(r.content_id, (unlockMap.get(r.content_id) ?? 0) + 1)
+  // Two queries, not one: 'read' and 'listen' are new enum values added in
+  // migration 20260827000021. Until that migration actually runs against
+  // this database, a single .in(TRACKED_TYPES) query that includes them
+  // throws "invalid input value for enum" — and Postgres fails the WHOLE
+  // query, not just the unknown values, which would silently zero out
+  // download/share/ai_summary_requested too. Querying the always-valid
+  // types separately from the possibly-not-yet-valid ones means this table
+  // degrades to "no read/listen data yet" instead of "no data at all."
+  const interactionMap = new Map<string, Record<TrackedType, number>>()
+  const bump = (contentId: string, type: TrackedType) => {
+    const counts = interactionMap.get(contentId) ?? { read: 0, download: 0, share: 0, ai_summary_requested: 0, listen: 0 }
+    counts[type]++
+    interactionMap.set(contentId, counts)
   }
+
+  const { data: establishedRaw } = await supabase
+    .from('content_interactions')
+    .select('content_id, type')
+    .in('type', ['download', 'share', 'ai_summary_requested'])
+    .in('content_id', ids)
+  for (const r of ((establishedRaw ?? []) as Array<{ content_id: string; type: TrackedType }>)) bump(r.content_id, r.type)
+
+  try {
+    const { data: newTypesRaw, error } = await supabase
+      .from('content_interactions')
+      .select('content_id, type')
+      .in('type', ['read', 'listen'])
+      .in('content_id', ids)
+    if (error) throw error
+    for (const r of ((newTypesRaw ?? []) as Array<{ content_id: string; type: TrackedType }>)) bump(r.content_id, r.type)
+  } catch { /* migration not applied yet — reads/listens report as 0 until it is */ }
 
   return contentList.map(c => {
     const rating = ratingMap.get(c.id)
     const avgRating = rating && rating.count > 0 ? Math.round((rating.sum / rating.count) * 10) / 10 : null
-    const unlocks = unlockMap.get(c.id) ?? 0
+    const counts = interactionMap.get(c.id) ?? { read: 0, download: 0, share: 0, ai_summary_requested: 0, listen: 0 }
+    const isArticle = c.type === 'article'
     const engagementRate = c.view_count > 0
-      ? Math.round(((c.comment_count + c.upvote_count + unlocks) / c.view_count) * 100)
+      ? Math.round(((c.comment_count + c.upvote_count + counts.share) / c.view_count) * 100)
       : 0
 
     return {
@@ -373,7 +403,11 @@ export async function getContentPerformanceTable() {
       type: c.type,
       status: c.status,
       views: c.view_count,
-      unlocks,
+      reads: isArticle ? null : counts.read,
+      downloads: isArticle ? null : counts.download,
+      aiSummaries: isArticle ? counts.ai_summary_requested : null,
+      listens: isArticle ? counts.listen : null,
+      shares: counts.share,
       comments: c.comment_count,
       upvotes: c.upvote_count,
       ratingCount: rating?.count ?? 0,
@@ -381,4 +415,63 @@ export async function getContentPerformanceTable() {
       engagementRate,
     }
   })
+}
+
+// "Top Community Member" — most engaged users, shown on the user dashboard.
+// Weighted so actions that take more effort count for more: a comment is a
+// bigger investment than a one-click upvote. Locked-in weights: comment=3,
+// share=2, upvote=1, ai_summary_requested=1, download=1.
+//
+// content_interactions is RLS-locked to "self read" for regular users, so
+// this needs the service client to see every user's activity, not just the
+// caller's — this function is meant to be read by anyone viewing the
+// dashboard, not gated to admins.
+const LEADERBOARD_WEIGHTS: Record<'share' | 'ai_summary_requested' | 'download', number> = {
+  share: 2,
+  ai_summary_requested: 1,
+  download: 1,
+}
+
+export async function getTopCommunityMembers(limit = 10) {
+  const service = createServiceClient()
+
+  const [commentsRes, upvotesRes, interactionsRes] = await Promise.all([
+    service.from('content_comments').select('user_id'),
+    service.from('content_upvotes').select('user_id'),
+    service.from('content_interactions').select('user_id, type').in('type', ['share', 'ai_summary_requested', 'download']).not('user_id', 'is', null),
+  ])
+
+  const scores = new Map<string, number>()
+  const bump = (userId: string | null, points: number) => {
+    if (!userId) return
+    scores.set(userId, (scores.get(userId) ?? 0) + points)
+  }
+
+  for (const r of ((commentsRes.data ?? []) as Array<{ user_id: string }>)) bump(r.user_id, 3)
+  for (const r of ((upvotesRes.data ?? []) as Array<{ user_id: string }>)) bump(r.user_id, 1)
+  for (const r of ((interactionsRes.data ?? []) as Array<{ user_id: string | null; type: keyof typeof LEADERBOARD_WEIGHTS }>)) {
+    bump(r.user_id, LEADERBOARD_WEIGHTS[r.type] ?? 0)
+  }
+
+  const topIds = Array.from(scores.entries())
+    .filter(([, score]) => score > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+
+  if (topIds.length === 0) return []
+
+  const { data: users } = await service
+    .from('users')
+    .select('id, full_name, avatar_url')
+    .in('id', topIds.map(([id]) => id))
+
+  const userMap = new Map((users ?? []).map((u: { id: string; full_name: string | null; avatar_url: string | null }) => [u.id, u]))
+
+  return topIds.map(([id, score], i) => ({
+    rank: i + 1,
+    userId: id,
+    name: userMap.get(id)?.full_name ?? 'Member',
+    avatarUrl: userMap.get(id)?.avatar_url ?? null,
+    score,
+  }))
 }

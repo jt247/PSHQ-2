@@ -7,7 +7,7 @@ interface Props {
   contentId: string
   title: string
   url: string
-  variant?: 'primary' | 'outline'
+  variant?: 'primary' | 'outline' | 'inline'
 }
 
 // Native Web Share API where it's supported (opens the OS share sheet on
@@ -51,14 +51,30 @@ export function ShareButton({ contentId, title, url, variant = 'outline' }: Prop
   }
 
   const isPrimary = variant === 'primary'
+  const isInline = variant === 'inline'
   const label = status === 'copied' ? 'Link copied!' : status === 'failed' ? `Copy failed — copy manually: ${url}` : 'Share'
+
+  // 'inline' sits next to compact pills like Upvote (author/date row on
+  // articles) — same pill shape as UpvoteButton/ListenButton rather than
+  // the full-width card CTA the other two variants are built for.
+  const inlineStyle: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
+    padding: '0.4rem 0.875rem',
+    border: `1px solid ${status === 'copied' ? '#6366f1' : '#d1d5db'}`,
+    borderRadius: '9999px',
+    background: status === 'copied' ? '#eef2ff' : '#fff',
+    color: status === 'copied' ? '#4f46e5' : '#374151',
+    fontSize: '0.875rem', fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 150ms',
+  }
 
   return (
     <button
       type="button"
       onClick={handleShare}
-      className={isPrimary ? 'btn-primary' : 'btn-outline'}
-      style={{
+      className={isInline ? undefined : isPrimary ? 'btn-primary' : 'btn-outline'}
+      style={isInline ? inlineStyle : {
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%',
         ...(status === 'failed' ? { fontSize: '0.75rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } : {}),
       }}

@@ -33,7 +33,7 @@ export default async function ProductAnalyticsPage({ searchParams }: PageProps) 
     selarClicks,
     interactionTypes,
     topViewed,
-    topUnlocked,
+    topDownloaded,
     contentByType,
     engagementDepth,
     returningRate,
@@ -46,7 +46,7 @@ export default async function ProductAnalyticsPage({ searchParams }: PageProps) 
     getSelarClicks(days),
     getInteractionsByType(days),
     getTopContent('view', 5),
-    getTopContent('unlock', 5),
+    getTopContent('download', 5),
     getContentByType(),
     getEngagementDepth(days),
     getReturningMemberRate(days),
@@ -56,8 +56,10 @@ export default async function ProductAnalyticsPage({ searchParams }: PageProps) 
     getContentPerformanceTable(),
   ])
 
+  // 'unlock' has never been a real event anywhere in the app — 'download'
+  // is the actual "did something with free content" signal here.
   const activationRate = userStats.total > 0
-    ? Math.round((interactionTypes['unlock'] ?? 0) / userStats.total * 100)
+    ? Math.round((interactionTypes['download'] ?? 0) / userStats.total * 100)
     : 0
 
   const engagementRate = userStats.activeUsers7d > 0
@@ -88,7 +90,7 @@ export default async function ProductAnalyticsPage({ searchParams }: PageProps) 
         },
         content: {
           topViewed,
-          topUnlocked,
+          topDownloaded,
           typeBreakdown,
           mostDiscussed,
           topSelarClicks: selarClicksBreakdown,

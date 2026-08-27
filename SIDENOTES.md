@@ -2,6 +2,61 @@
 
 Running decisions and open questions. Not exhaustive history, just what's live.
 
+## 2026-08-27 — ACTION NEEDED: apply migration 20260827000021
+
+`supabase/migrations/20260827000021_favorites_and_read_listen_events.sql`
+is written but NOT applied to the database — the Supabase CLI login here
+doesn't have DB access (403) and there's no DB password in `.env.local` for
+a direct connection, so this needs to be run manually. Paste the file's
+contents into the Supabase Dashboard SQL Editor and run it.
+
+It adds two new interaction types ('read', 'listen') and a new
+`content_favorites` table with RLS. Every code path that depends on these
+is written to degrade gracefully until the migration runs (favorites show
+as empty, reads/listens report as 0, nothing crashes or blocks unrelated
+tracking) — but they won't actually persist data until it's applied.
+
+## 2026-08-27 — Analytics, sharing, favorites, and dashboard overhaul
+
+Built out per JT's request: real per-content analytics (views, reads,
+downloads, shares, AI summaries, listens — split by content type since
+reads/downloads only make sense for ebooks/templates and AI
+summaries/listens only for articles), a Share button on articles (reused
+the existing ShareButton component, added an `inline` compact variant), a
+new Favorite/save feature end to end, and a full dashboard overview
+reorganization (Trending + Recommended side by side, a "Your Activity"
+section covering every action a user can take, and a "Top Community
+Member" leaderboard).
+
+**Two decisions locked with JT before building, both his recommended
+option:** views and reads are separate events now — opening the inline
+reader logs a new 'read' event alongside the existing 'view', which keeps
+`view_count`'s meaning exactly what it's always been rather than
+redefining it. The leaderboard is weighted by effort: comment=3, share=2,
+upvote=1, ai_summary_requested=1, download=1.
+
+**Real bugs found and fixed along the way, not just new features:**
+- `getContentPerformanceTable()` was querying a `score` column on `ratings`
+  that has never existed (the real column is `rating`) — ratings/avg
+  rating on the admin content table were silently always null.
+- The "Most unlocked" / activation-rate metrics used the `unlock`
+  interaction type, which nothing in the app has ever written — always
+  zero. Swapped to `download`, the real "did something with free content"
+  signal.
+- Ratings and comments themselves were suspected broken (per JT) but
+  tested live end to end and work correctly — the earlier test that looked
+  like a failure was a race in the test script, not the app.
+
+**A bug in this session's own first pass, caught before shipping:** a
+combined multi-row interaction insert (view + read) or a single combined
+type filter (download + share + ai_summary + read + listen) fails
+atomically in Postgres if any one value isn't a valid enum member yet —
+which 'read'/'listen' aren't, pre-migration. That would have silently
+broken existing, working view tracking and zeroed out the whole admin
+performance table, not just the new columns. Fixed by splitting into
+separate queries/inserts so the old, already-working signals can't be
+taken down by new ones that haven't landed yet.
+
 ## 2026-08-26 — Text-to-speech for articles
 
 Two options were on the table: the browser's built-in Web Speech API (free, no

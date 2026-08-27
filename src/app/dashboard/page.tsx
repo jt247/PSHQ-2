@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Unlock, BookOpen, GraduationCap, Newspaper, Package, Gem, Gift } from 'lucide-react'
+import { Layers, BookOpen, GraduationCap, Newspaper, Package } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { getTopCommunityMembers } from '@/lib/analytics/queries'
 import type { UserRow, ContentRow } from '@/types/database'
 
 export default async function DashboardPage() {
@@ -9,7 +10,10 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/sign-in')
 
-  const [profileRes, interactionsRes, trendingRes, recommendedRes, coursesRes, trendingEbooksRes, trendingTemplatesRes] = await Promise.all([
+  const [
+    profileRes, interactionsRes, trendingRes, recommendedRes, coursesRes, trendingEbooksRes, trendingTemplatesRes,
+    commentCountRes, upvoteCountRes, activityInteractionsRes, leaderboard,
+  ] = await Promise.all([
     supabase.from('users').select('full_name, areas_of_interest').eq('id', user.id).single(),
     supabase.from('content_interactions')
       .select('id, type, content:content_id(id, title, slug, type, cover_image_url, pricing_type)')
@@ -45,6 +49,14 @@ export default async function DashboardPage() {
       .eq('type', 'template')
       .order('published_at', { ascending: false })
       .limit(4),
+    // Your Activity — every action a user can take on the platform.
+    // content_comments/content_upvotes are public-read, so the RLS-bound
+    // client sees these fine; content_interactions is self-read only, which
+    // is exactly what's needed here since this is the user's own activity.
+    supabase.from('content_comments').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+    supabase.from('content_upvotes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+    supabase.from('content_interactions').select('type').eq('user_id', user.id).in('type', ['share', 'ai_summary_requested', 'download']),
+    getTopCommunityMembers(10),
   ])
 
   const profile = profileRes.data as Pick<UserRow, 'full_name' | 'areas_of_interest'> | null
@@ -103,8 +115,16 @@ export default async function DashboardPage() {
   const ebooks = owned.filter(c => c.type === 'ebook')
   const articles = owned.filter(c => c.type === 'article')
   const resources = owned.filter(c => c.type === 'template')
-  const paidItems = owned.filter(c => (c as { pricing_type?: string }).pricing_type === 'paid')
-  const freeItems = owned.filter(c => (c as { pricing_type?: string }).pricing_type === 'free')
+
+  // Your Activity — every action type a user can take, counted for them.
+  const activityInteractions = (activityInteractionsRes.data ?? []) as Array<{ type: string }>
+  const activityCounts = {
+    comments: commentCountRes.count ?? 0,
+    upvotes: upvoteCountRes.count ?? 0,
+    shares: activityInteractions.filter(i => i.type === 'share').length,
+    aiSummaries: activityInteractions.filter(i => i.type === 'ai_summary_requested').length,
+    downloads: activityInteractions.filter(i => i.type === 'download').length,
+  }
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
@@ -172,18 +192,16 @@ export default async function DashboardPage() {
       {/* ── Stats row ── */}
       <section className="grid-collapse-2" style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
+        gridTemplateColumns: 'repeat(5, 1fr)',
         gap: '0.75rem',
         marginBottom: '1.75rem',
       }}>
         {[
-          { label: 'Content Unlocked', value: owned.length, Icon: Unlock, accent: '#FACC15' },
+          { label: 'Content Interacted With', value: owned.length, Icon: Layers, accent: '#FACC15' },
+          { label: 'Articles', value: articles.length, Icon: Newspaper, accent: '#10b981' },
           { label: 'E-books', value: ebooks.length, Icon: BookOpen, accent: '#7c3aed' },
+          { label: 'Templates', value: resources.length, Icon: Package, accent: '#f97316' },
           { label: 'Courses', value: courses.length, Icon: GraduationCap, accent: '#0ea5e9' },
-          { label: 'Articles Read', value: articles.length, Icon: Newspaper, accent: '#10b981' },
-          { label: 'Resources', value: resources.length, Icon: Package, accent: '#f97316' },
-          { label: 'Paid', value: paidItems.length, Icon: Gem, accent: '#e11d48' },
-          { label: 'Free', value: freeItems.length, Icon: Gift, accent: '#6366f1' },
         ].map(s => (
           <div key={s.label} style={{
             background: '#ffffff',
@@ -284,7 +302,7 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* My Library preview */}
+        {/* Recommended for You */}
         <section style={{
           background: '#ffffff',
           border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
@@ -300,166 +318,140 @@ export default async function DashboardPage() {
               fontWeight: 700, color: 'var(--color-ink-deep)',
               margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em',
             }}>
-              📚 My Library
+              ✨ Recommended for You
             </h3>
-            <Link href="/dashboard/library" style={{
-              fontSize: '0.75rem', color: 'var(--color-text-muted)',
-              textDecoration: 'none', fontFamily: 'var(--font-sans)', fontWeight: 600,
-            }}>
-              View all →
-            </Link>
-          </div>
-          <div style={{ padding: '0 1.5rem' }}>
-            {owned.length === 0 ? (
-              <div style={{ padding: '2rem 0', textAlign: 'center' }}>
-                <p style={{
-                  color: 'var(--color-text-muted)', fontSize: '0.875rem',
-                  fontFamily: 'var(--font-sans)', marginBottom: '1rem',
-                }}>
-                  No content unlocked yet.
-                </p>
-                <Link href="/library" style={{
-                  display: 'inline-flex', padding: '0.5rem 1.125rem',
-                  background: 'var(--color-ink-deep)', color: '#fff',
-                  borderRadius: '0.375rem', fontSize: '0.8125rem',
-                  fontFamily: 'var(--font-sans)', fontWeight: 600, textDecoration: 'none',
-                }}>
-                  Explore library →
-                </Link>
-              </div>
-            ) : owned.slice(0, 5).map((c, i) => {
-              const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-                article: { bg: '#e0eaff', text: '#3451b2' },
-                ebook: { bg: '#f3e8ff', text: '#7c3aed' },
-                template: { bg: '#d1fae5', text: '#065f46' },
-                course: { bg: '#fef3c7', text: '#92400e' },
-                resource: { bg: '#ffe4e6', text: '#9f1239' },
-              }
-              const colors = TYPE_COLORS[c.type ?? ''] ?? { bg: '#f3f4f6', text: '#374151' }
-              return (
-                <Link key={c.id} href={c.type === 'article' ? `/articles/${c.slug}` : `/content/${c.slug}`} style={{
-                  display: 'flex', alignItems: 'center', gap: '0.875rem',
-                  padding: '0.75rem 0',
-                  borderBottom: i < Math.min(owned.length, 5) - 1 ? '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)' : 'none',
-                  textDecoration: 'none',
-                }}>
-                  <span style={{
-                    fontFamily: 'var(--font-sans)', flex: 1,
-                    color: 'var(--color-ink-deep)', fontWeight: 500,
-                    fontSize: '0.875rem', lineHeight: 1.4,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>
-                    {c.title}
-                  </span>
-                  <span style={{
-                    fontFamily: 'var(--font-sans)',
-                    display: 'inline-flex', padding: '0.15rem 0.5rem',
-                    background: colors.bg, color: colors.text,
-                    borderRadius: '0.2rem', fontSize: '0.625rem',
-                    fontWeight: 700, letterSpacing: '0.08em',
-                    textTransform: 'uppercase', flexShrink: 0,
-                  }}>
-                    {c.type}
-                  </span>
-                </Link>
-              )
-            })}
-          </div>
-        </section>
-      </div>
-
-      {/* ── Recommended for You ── */}
-      {recommended.length > 0 && (
-        <section style={{ marginBottom: '1.75rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
-            <div>
-              <h2 style={{
-                fontFamily: 'var(--font-serif)', fontSize: '1.25rem',
-                fontWeight: 700, color: 'var(--color-ink-deep)', margin: '0 0 0.2rem',
-              }}>
-                Recommended for You
-              </h2>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8125rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                {interests.length > 0 ? `Based on your ${interests.length} interest areas` : 'Latest from the knowledge base'}
-              </p>
-            </div>
             <Link href="/articles" style={{
-              fontSize: '0.8125rem', color: 'var(--color-text-muted)',
+              fontSize: '0.75rem', color: 'var(--color-text-muted)',
               textDecoration: 'none', fontFamily: 'var(--font-sans)', fontWeight: 600,
             }}>
               All articles →
             </Link>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
-            gap: '1rem',
-          }}>
-            {recommended.map(article => (
+          <div style={{ padding: '0 1.5rem' }}>
+            {recommended.length === 0 ? (
+              <p style={{ padding: '1.5rem 0', color: 'var(--color-text-muted)', fontSize: '0.875rem', fontFamily: 'var(--font-sans)' }}>
+                Nothing recommended yet.
+              </p>
+            ) : recommended.map((article, i) => (
               <Link key={article.id} href={`/articles/${article.slug}`} style={{
-                display: 'flex', flexDirection: 'column',
-                background: '#ffffff',
-                border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
-                borderRadius: '0.75rem', overflow: 'hidden',
+                display: 'flex', alignItems: 'center', gap: '0.875rem',
+                padding: '0.75rem 0',
+                borderBottom: i < recommended.length - 1 ? '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)' : 'none',
                 textDecoration: 'none',
-                transition: 'box-shadow 200ms, transform 200ms',
-              }}
-              className="content-card"
-              >
-                {article.cover_image_url ? (
-                  <img loading="lazy"
-                    src={article.cover_image_url} alt={article.title}
-                    style={{ width: '100%', height: '150px', objectFit: 'cover' }}
-                  />
-                ) : (
-                  <div style={{
-                    width: '100%', height: '80px',
-                    background: 'linear-gradient(135deg, var(--color-ink-deep) 0%, color-mix(in srgb, var(--color-ink-deep) 60%, var(--color-accent-warm)) 100%)',
-                  }} />
-                )}
-                <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  {article.tags && article.tags.length > 0 && (
-                    <span style={{
-                      fontFamily: 'var(--font-sans)', fontSize: '0.625rem',
-                      fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase',
-                      color: 'var(--color-accent-warm)', display: 'block', marginBottom: '0.375rem',
-                      background: 'color-mix(in srgb, var(--color-accent-warm) 12%, transparent)',
-                      padding: '0.15rem 0.5rem', borderRadius: '0.2rem',
-                      width: 'fit-content',
-                    }}>
-                      {article.tags[0]}
-                    </span>
-                  )}
+              }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{
-                    fontFamily: 'var(--font-sans)', fontWeight: 600,
-                    color: 'var(--color-ink-deep)', margin: '0 0 0.5rem', lineHeight: 1.4,
-                    fontSize: '0.9375rem', flex: 1,
+                    fontFamily: 'var(--font-sans)', fontWeight: 500,
+                    color: 'var(--color-ink-deep)', margin: 0,
+                    fontSize: '0.875rem', lineHeight: 1.4,
+                    overflow: 'hidden', display: '-webkit-box',
+                    WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const,
                   }}>
                     {article.title}
                   </p>
-                  {article.summary && (
-                    <p style={{
-                      fontFamily: 'var(--font-sans)', fontSize: '0.8125rem',
-                      color: 'var(--color-text-muted)', margin: '0 0 0.75rem', lineHeight: 1.5,
-                      overflow: 'hidden', display: '-webkit-box',
-                      WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const,
-                    }}>
-                      {article.summary}
-                    </p>
+                  {article.tags && article.tags.length > 0 && (
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.6875rem', color: 'var(--color-text-muted)' }}>
+                      {article.tags[0]}
+                    </span>
                   )}
-                  <span style={{
-                    fontFamily: 'var(--font-sans)', fontSize: '0.8125rem',
-                    color: 'var(--color-ink-deep)', fontWeight: 700,
-                    letterSpacing: '0.02em',
-                  }}>
-                    Read article →
-                  </span>
                 </div>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', flexShrink: 0 }}>→</span>
               </Link>
             ))}
           </div>
         </section>
-      )}
+      </div>
+
+      {/* ── Your Activity ── */}
+      <section style={{ marginBottom: '1.75rem' }}>
+        <h2 style={{
+          fontFamily: 'var(--font-serif)', fontSize: '1.25rem',
+          fontWeight: 700, color: 'var(--color-ink-deep)', margin: '0 0 1rem',
+        }}>
+          Your Activity
+        </h2>
+        <div className="grid-collapse-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.75rem' }}>
+          {[
+            { label: 'Comments Left', value: activityCounts.comments },
+            { label: 'Upvotes Given', value: activityCounts.upvotes },
+            { label: 'Shares', value: activityCounts.shares },
+            { label: 'AI Summaries Used', value: activityCounts.aiSummaries },
+            { label: 'Downloads', value: activityCounts.downloads },
+          ].map(a => (
+            <div key={a.label} style={{
+              background: '#ffffff',
+              border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
+              borderRadius: '0.625rem',
+              padding: '1rem',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-ink-deep)', margin: '0 0 0.25rem' }}>
+                {a.value}
+              </p>
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-text-muted)', margin: 0 }}>
+                {a.label}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Top Community Member leaderboard ── */}
+      <section style={{ marginBottom: '1.75rem' }}>
+        <div style={{
+          background: '#ffffff',
+          border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
+          borderRadius: '0.75rem', overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '1.25rem 1.5rem 1rem',
+            borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 6%, transparent)',
+          }}>
+            <h3 style={{
+              fontFamily: 'var(--font-sans)', fontSize: '0.875rem',
+              fontWeight: 700, color: 'var(--color-ink-deep)',
+              margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em',
+            }}>
+              🏆 Top Community Member
+            </h3>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0' }}>
+              Most engaged members — comments, shares, upvotes, AI summaries, and downloads.
+            </p>
+          </div>
+          <div style={{ padding: '0 1.5rem' }}>
+            {leaderboard.length === 0 ? (
+              <p style={{ padding: '1.5rem 0', color: 'var(--color-text-muted)', fontSize: '0.875rem', fontFamily: 'var(--font-sans)' }}>
+                No community activity yet.
+              </p>
+            ) : leaderboard.map((member, i) => (
+              <div key={member.userId} style={{
+                display: 'flex', alignItems: 'center', gap: '0.875rem',
+                padding: '0.75rem 0',
+                borderBottom: i < leaderboard.length - 1 ? '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)' : 'none',
+              }}>
+                <span style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.8125rem', fontWeight: 800,
+                  color: i === 0 ? 'var(--color-accent-warm)' : 'color-mix(in srgb, var(--color-text-muted) 50%, transparent)',
+                  width: '1.25rem', flexShrink: 0, lineHeight: 1,
+                }}>
+                  {String(member.rank).padStart(2, '0')}
+                </span>
+                <span style={{
+                  fontFamily: 'var(--font-sans)', flex: 1,
+                  color: 'var(--color-ink-deep)', fontWeight: 500, fontSize: '0.875rem',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {member.name}
+                </span>
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.75rem', color: 'var(--color-text-muted)', flexShrink: 0 }}>
+                  {member.score} pts
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ── E-books + Templates bento ── */}
       {(trendingEbooks.length > 0 || trendingTemplates.length > 0) && (

@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { logListenAction } from '@/app/(public)/content/[slug]/actions'
 
 interface Props {
   text: string
+  contentId: string
 }
 
 type Status = 'idle' | 'playing' | 'paused'
@@ -37,7 +39,7 @@ function toSpeechText(raw: string): string {
 // ponytail: Chrome pauses speechSynthesis after ~15s when the tab is
 // backgrounded/minimized — a documented browser limitation of this
 // API, not something to work around here. See SIDENOTES.md.
-export function ListenButton({ text }: Props) {
+export function ListenButton({ text, contentId }: Props) {
   const [status, setStatus] = useState<Status>('idle')
   const [supported, setSupported] = useState(false)
 
@@ -65,6 +67,7 @@ export function ListenButton({ text }: Props) {
     }
 
     synth.cancel()
+    logListenAction(contentId).catch(() => {})
     const utterance = new SpeechSynthesisUtterance(toSpeechText(text))
     utterance.onend = () => setStatus('idle')
     utterance.onerror = () => setStatus('idle')

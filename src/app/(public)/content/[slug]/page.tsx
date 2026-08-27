@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { SelarButton } from '@/components/content/SelarButton'
 import { ShareButton } from '@/components/content/ShareButton'
+import { FavoriteButton } from '@/components/content/FavoriteButton'
 import { UpvoteButton } from '@/components/article/UpvoteButton'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { digitalDocumentSchema, breadcrumbSchema } from '@/lib/seo/schema'
@@ -90,6 +91,16 @@ export default async function ContentDetailPage({ params }: Props) {
         .maybeSingle()
     : { data: null }
   const hasUpvoted = !!upvoteRow
+
+  const { data: favoriteRow } = user
+    ? await supabase
+        .from('content_favorites')
+        .select('id')
+        .eq('content_id', rawItem.id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+    : { data: null }
+  const hasFavorited = !!favoriteRow
 
   // Free content: any signed-in user has access
   const hasAccess = user != null && pricingType === 'free'
@@ -190,6 +201,11 @@ export default async function ContentDetailPage({ params }: Props) {
                 contentId={rawItem.id as string}
                 initialCount={item.upvote_count as number ?? 0}
                 initialUpvoted={hasUpvoted}
+                isLoggedIn={!!user}
+              />
+              <FavoriteButton
+                contentId={rawItem.id as string}
+                initialFavorited={hasFavorited}
                 isLoggedIn={!!user}
               />
             </div>

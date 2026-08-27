@@ -78,20 +78,28 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid file reference' }, { status: 404 })
   }
 
-  // Log the view (non-fatal). Written via the service client — the
-  // sync_view_count trigger's internal update on `content` is blocked by
-  // RLS when the triggering insert runs as a normal authenticated user, so
-  // going through the RLS-bound client here would silently never move
-  // view_count. Same fix as the upvote/comment insert paths.
+  // Log the view AND a distinct 'read' event (non-fatal). Written via the
+  // service client — the sync_view_count trigger's internal update on
+  // `content` is blocked by RLS when the triggering insert runs as a normal
+  // authenticated user, so going through the RLS-bound client here would
+  // silently never move view_count. Same fix as the upvote/comment insert
+  // paths. 'read' is additive — the trigger only fires on type='view', so
+  // this can't change what view_count means; it's purely a more specific
+  // "opened the reader" signal alongside the existing page-visit view.
+  //
+  // Two separate inserts, not one batch — 'read' is a new enum value
+  // (migration 20260827000021) that may not exist in this database yet. A
+  // multi-row insert is one statement: if 'read' is rejected, Postgres
+  // fails the entire insert, taking the 'view' row down with it. Keeping
+  // them separate means view tracking keeps working regardless of whether
+  // that migration has run.
+  const service = createServiceClient()
   try {
-    const service = createServiceClient()
-    await service.from('content_interactions').insert({
-      content_id: contentId,
-      user_id: user.id,
-      type: 'view',
-      metadata: {},
-    })
+    await service.from('content_interactions').insert({ content_id: contentId, user_id: user.id, type: 'view', metadata: {} })
   } catch { /* non-fatal */ }
+  try {
+    await service.from('content_interactions').insert({ content_id: contentId, user_id: user.id, type: 'read', metadata: {} })
+  } catch { /* non-fatal — reports as 0 reads until the migration adding this enum value runs */ }
 
   const object = await r2.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }))
   const bytes = await object.Body!.transformToByteArray()
