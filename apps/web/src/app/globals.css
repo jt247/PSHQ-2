@@ -1,0 +1,497 @@
+@import "tailwindcss";
+@import "@pshq/ui/tokens.css";
+@import "@pshq/ui/base.css";
+/* === DASHBOARD LAYOUT === */
+.dash-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 16rem;
+  background: var(--color-ink-deep);
+  border-right: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 50;
+}
+.dash-sidebar-brand {
+  padding: 1.75rem 1.5rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.dash-sidebar-brand-text {
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.dash-sidebar-brand-sub {
+  font-family: var(--font-sans);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent-warm);
+  margin-top: 0.125rem;
+}
+.dash-sidebar-nav {
+  flex: 1;
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  overflow-y: auto;
+}
+.dash-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.375rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  transition: color 150ms, background-color 150ms;
+}
+.dash-nav-link:hover {
+  color: #ffffff;
+  background-color: rgba(255,255,255,0.07);
+}
+.dash-nav-link-active {
+  color: #ffffff !important;
+  background-color: rgba(250,204,21,0.12) !important;
+  border-left: 2px solid var(--color-accent-warm);
+  padding-left: calc(0.875rem - 2px) !important;
+}
+.dash-nav-section {
+  padding: 1.25rem 0.875rem 0.375rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  font-family: var(--font-sans);
+}
+.dash-main {
+  margin-left: 16rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 767px) {
+  .dash-main { margin-left: 0; }
+}
+.dash-topbar {
+  position: sticky;
+  top: 0;
+  height: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-margin-edge);
+  background: color-mix(in srgb, var(--color-paper-base) 90%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent);
+  z-index: 40;
+}
+.dash-content {
+  flex: 1;
+  max-width: 80rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem var(--spacing-margin-edge);
+}
+
+/* === ADMIN LAYOUT — defined in admin/admin.css === */
+
+/* === STAT CARD === */
+.stat-card {
+  background: var(--color-paper-darker);
+  border: 1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 8rem;
+}
+
+/* === AUTH STYLES === */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-paper-base);
+}
+.auth-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem var(--spacing-margin-edge);
+}
+.auth-brand {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-ink-deep);
+  text-decoration: none;
+}
+.auth-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem var(--spacing-margin-edge);
+}
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+}
+.auth-card-inner {
+  background: var(--color-paper-darker);
+  border: 1px solid color-mix(in srgb, var(--color-tertiary) 15%, transparent);
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
+.auth-title {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-ink-deep);
+  line-height: 1.3;
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+.auth-subtitle {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  margin: 0 0 1.5rem;
+  text-align: center;
+  font-family: var(--font-sans);
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+.auth-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-sans);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.auth-field input,
+.auth-field select,
+.auth-field textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding: 0.5rem 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--color-ink-deep);
+  outline: none;
+  transition: border-color 150ms;
+  width: 100%;
+}
+.auth-field input:focus,
+.auth-field select:focus,
+.auth-field textarea:focus {
+  border-bottom-color: var(--color-accent-warm);
+}
+.auth-field input::placeholder { color: var(--color-outline); }
+.auth-submit {
+  width: 100%;
+  background: var(--color-ink-deep);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: opacity 150ms, transform 150ms;
+  margin-top: 0.5rem;
+}
+.auth-submit:hover { opacity: 0.9; }
+.auth-submit:active { transform: scale(0.99); }
+.auth-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.auth-oauth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.25rem;
+  background: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink-deep);
+  cursor: pointer;
+  transition: background 150ms;
+  text-decoration: none;
+}
+.auth-oauth-btn:hover { background: var(--color-paper-base); }
+.auth-divider {
+  position: relative;
+  text-align: center;
+  margin: 1rem 0;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 43%;
+  height: 1px;
+  background: var(--color-outline-variant);
+}
+.auth-divider::before { left: 0; }
+.auth-divider::after  { right: 0; }
+.auth-forgot {
+  font-size: 0.8125rem;
+  color: var(--color-on-primary-container);
+  text-decoration: none;
+  transition: color 150ms;
+}
+.auth-forgot:hover { color: var(--color-ink-deep); }
+.auth-error {
+  font-size: 0.875rem;
+  color: var(--color-error);
+  background: var(--color-error-container);
+  border-radius: 0.25rem;
+  padding: 0.625rem 0.875rem;
+  margin: 0;
+}
+.auth-footer {
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  font-family: var(--font-sans);
+}
+.auth-footer a {
+  color: var(--color-ink-deep);
+  font-weight: 600;
+  text-decoration: none;
+}
+.auth-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.auth-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.auth-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+.auth-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* === SETTINGS FORM === */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.settings-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-sans);
+}
+.settings-field input,
+.settings-field select,
+.settings-field textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding: 0.625rem 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--color-ink-deep);
+  outline: none;
+  transition: border-color 150ms;
+  width: 100%;
+}
+.settings-field input:focus,
+.settings-field select:focus,
+.settings-field textarea:focus { border-bottom-color: var(--color-accent-warm); }
+.settings-field input[readonly] { color: var(--color-text-muted); cursor: not-allowed; }
+.settings-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.tags-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+.tag-chip {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.125rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent);
+  background: var(--color-paper-base);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 150ms;
+  font-family: var(--font-sans);
+}
+.tag-chip:hover { border-color: var(--color-ink-deep); color: var(--color-ink-deep); }
+.tag-chip.selected { background: var(--color-ink-deep); color: #ffffff; border-color: var(--color-ink-deep); }
+.tag-chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.settings-actions { display: flex; align-items: center; gap: 1rem; padding-top: 0.5rem; }
+.btn-save {
+  background: var(--color-ink-deep);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.75rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+.btn-save:hover { opacity: 0.88; }
+.btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+.save-msg { font-size: 0.875rem; font-family: var(--font-sans); }
+.save-msg.ok { color: #15803d; }
+.save-msg.err { color: var(--color-error); }
+
+/* === TICKET STATUS === */
+.ticket-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.125rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: var(--font-sans);
+}
+.ticket-status.open { background: #fef9c3; color: #854d0e; }
+.ticket-status.in_progress { background: #dbeafe; color: #1e40af; }
+.ticket-status.resolved { background: #dcfce7; color: #14532d; }
+.ticket-status.closed { background: var(--color-surface-container); color: var(--color-text-muted); }
+
+/* === CONTENT DETAIL PAGE (ebook/template/course) === */
+.content-detail-grid {
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+.content-detail-cta {
+  position: sticky;
+  top: 5rem;
+}
+@media (max-width: 767px) {
+  .content-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .content-detail-cta {
+    position: static;
+  }
+}
+
+/* === RESPONSIVE GRID OVERRIDES ===
+   Fixed-column grids set via inline style (gridTemplateColumns) across the
+   app — inline styles beat plain class rules regardless of specificity, so
+   these need !important to actually override on mobile. Apply the matching
+   class alongside the existing inline style; do not remove the inline style. */
+@media (max-width: 767px) {
+  .grid-collapse-1 { grid-template-columns: 1fr !important; }
+  .grid-collapse-2 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 420px) {
+  .grid-collapse-2-tight { grid-template-columns: 1fr !important; }
+}
+
+/* Flex header/banner rows that use justify-content:space-between without
+   wrap — the second child overflows off-screen once the first child's text
+   takes more room than a narrow viewport has. */
+@media (max-width: 767px) {
+  .flex-wrap-mobile { flex-wrap: wrap !important; }
+}
+
+/* Auth pages (sign-in, sign-up, onboarding, reset/forgot password) stack
+   .auth-main's 2rem+2.5rem padding on top of .auth-card-inner's own 2rem —
+   on a 375px phone that leaves under 230px for content, so anything that
+   wraps (the onboarding interest chips especially) collapses to one cramped
+   chip per row instead of a normal flowing grid. Cut both paddings down on
+   mobile; the card still reads as a card, it just isn't fighting itself for
+   width. */
+@media (max-width: 767px) {
+  .auth-main { padding: 1.5rem 1rem; }
+  .auth-card-inner { padding: 1.5rem 1.25rem; }
+}
+
+/* Dashboard sidebar mobile drawer — placed after the base .dash-sidebar
+   rule above so this wins the cascade (see note near .mobile-nav-backdrop). */
+@media (max-width: 767px) {
+  .dash-sidebar {
+    transform: translateX(-100%);
+    transition: transform 220ms ease;
+    width: 80vw;
+    max-width: 18rem;
+  }
+  body.dash-nav-open .dash-sidebar {
+    transform: translateX(0) !important;
+  }
+
+  /* Same "logo + nav only" treatment as the public header — the drawer is
+     narrow enough on mobile that the brand text and "Member Hub" subtitle
+     next to the logo felt cramped rather than adding information. */
+  .dash-sidebar-brand-text,
+  .dash-sidebar-brand-sub {
+    display: none;
+  }
+}
+

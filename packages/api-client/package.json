@@ -1,0 +1,19 @@
+{
+  "name": "@pshq/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./server": "./src/supabase/server.ts",
+    "./client": "./src/supabase/client.ts",
+    "./storage": "./src/supabase/storage.ts",
+    "./queries": "./src/queries.ts"
+  },
+  "dependencies": {
+    "@pshq/database": "workspace:*",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.2"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0"
+  }
+}

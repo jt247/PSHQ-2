@@ -2,10 +2,16 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "pshq-2",
-      "runtimeExecutable": "npm",
+      "name": "Next.js dev",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "Admin dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "dev:admin"],
+      "port": 3001
     }
   ]
 }
