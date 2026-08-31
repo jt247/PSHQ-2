@@ -1,5 +1,18 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  // Turborepo 2.x defaults to "strict" env mode: a task only sees env vars
+  // it explicitly declares, everything else set on the platform (Vercel
+  // project settings, not a committed .env file) gets filtered out before
+  // the build even starts. That's what broke the first production deploy
+  // after this migration — SUPABASE_SERVICE_ROLE_KEY and friends are real
+  // Vercel env vars, Turbo silently stripped them, and a page that needs
+  // the service client at build time threw "supabaseKey is required."
+  // "loose" restores the pre-migration behavior (every env var visible,
+  // same as a single plain Next.js app) at the cost of Turbo's cache being
+  // slightly less precise about env-driven invalidation — an easy trade
+  // for a project this size versus hand-maintaining a var allowlist that
+  // silently breaks the build again the next time someone adds a key.
+  "envMode": "loose",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
