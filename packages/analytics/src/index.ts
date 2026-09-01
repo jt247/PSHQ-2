@@ -89,4 +89,21 @@ export const trackHomepageSectionViewed = (ctx: TrackContext, section: string) =
 export const trackCtaClicked = (ctx: TrackContext, section: string, label: string) =>
   track(ctx, 'cta_clicked', { metadata: { section, label } })
 
+// ── My ProductSlice dashboard & profile (Epic D) ────────────────────────
+// content_marked_complete is deliberately separate from
+// trackContentCompleted above: that event already fires from the generic
+// per-content completion action for any surface; this one is specific to
+// the dashboard/reading-flow completion moments this epic adds (manual
+// button + automatic scroll/dwell detection), tagged with how it happened
+// so the two paths are distinguishable in the data.
+export const trackDashboardViewed = (ctx: TrackContext) => track(ctx, 'dashboard_viewed')
+export const trackProfileViewed = (ctx: TrackContext, profileUserId: string) =>
+  track(ctx, 'profile_viewed', { metadata: { profileUserId } })
+export const trackProfileUpdated = (ctx: TrackContext, fieldsChanged: string[]) =>
+  track(ctx, 'profile_updated', { metadata: { fieldsChanged } })
+export const trackContentMarkedComplete = (ctx: TrackContext, opts: TrackOptions & { metadata: { auto: boolean } }) =>
+  track(ctx, 'content_marked_complete', opts)
+export const trackNotificationPreferenceUpdated = (ctx: TrackContext, key: string, enabled: boolean) =>
+  track(ctx, 'notification_preference_updated', { metadata: { key, enabled } })
+
 export type { TrackContext, TrackOptions }

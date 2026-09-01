@@ -10,6 +10,7 @@ import { RatingWidget } from '@/components/article/RatingWidget'
 import { ExercisesSection } from '@/components/content/ExercisesSection'
 import { DraftBadge } from '@/components/content/ContentCard'
 import { MarkCompleteButton } from '@/components/content/MarkCompleteButton'
+import { AutoCompleteTracker } from '@/components/content/AutoCompleteTracker'
 import { ShareButton } from '@/components/content/ShareButton'
 import { FavoriteButton } from '@/components/content/FavoriteButton'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -333,6 +334,11 @@ export default async function ArticlePage({ params }: Props) {
                 contentId={rawItem.id}
                 initialComplete={hasCompleted}
                 isLoggedIn={!!user}
+              />
+              <AutoCompleteTracker
+                contentId={rawItem.id}
+                isLoggedIn={!!user}
+                alreadyComplete={hasCompleted}
               />
             </div>
           </header>

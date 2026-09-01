@@ -193,8 +193,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
 }
 
 const NAV = [
-  { href: '/dashboard',         label: 'Overview',       Icon: IconOverview  },
-  { href: '/dashboard/library', label: 'My Library',     Icon: IconLibrary   },
+  { href: '/dashboard',         label: 'My ProductSlice', Icon: IconOverview  },
+  { href: '/dashboard/library', label: 'Saved',          Icon: IconLibrary   },
   { href: '/library',           label: 'Browse Library', Icon: IconBrowse    },
   { href: '/dashboard/requests',label: 'Requests',       Icon: IconRequests  },
 ]

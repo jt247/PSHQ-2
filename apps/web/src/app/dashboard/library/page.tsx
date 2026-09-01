@@ -6,14 +6,16 @@ interface SearchParams { tab?: string; type?: string }
 interface Props { searchParams: Promise<SearchParams> }
 
 const TABS = ['all', 'favorites'] as const
-const TYPE_OPTIONS = ['all', 'article', 'ebook', 'template', 'course'] as const
-const TYPE_LABELS: Record<string, string> = { all: 'All', article: 'Articles', ebook: 'E-books', template: 'Templates', course: 'Courses' }
+const TYPE_OPTIONS = ['all', 'article', 'ebook', 'template', 'course', 'case', 'collection'] as const
+const TYPE_LABELS: Record<string, string> = { all: 'All', article: 'Articles', ebook: 'E-books', template: 'Templates', course: 'Courses', case: 'Case Studies', collection: 'Collections' }
 const TAB_LABELS: Record<string, string> = { all: 'All Interacted', favorites: 'Favorites' }
 const HREF_BY_TYPE: Record<string, (slug: string) => string> = {
   article: slug => `/articles/${slug}`,
   ebook: slug => `/content/${slug}`,
   template: slug => `/content/${slug}`,
   course: slug => `/content/${slug}`,
+  case: slug => `/cases/${slug}`,
+  collection: slug => `/collections/${slug}`,
 }
 
 type ContentRef = {
@@ -26,7 +28,7 @@ type ContentRef = {
   tags: string[]
 }
 
-export default async function MyLibraryPage({ searchParams }: Props) {
+export default async function SavedPage({ searchParams }: Props) {
   const { tab: tabParam, type: typeParam } = await searchParams
   const tab = TABS.includes(tabParam as typeof TABS[number]) ? tabParam! : 'all'
   const type = TYPE_OPTIONS.includes(typeParam as typeof TYPE_OPTIONS[number]) ? typeParam! : 'all'
@@ -38,15 +40,33 @@ export default async function MyLibraryPage({ searchParams }: Props) {
   let items: ContentRef[] = []
 
   if (tab === 'favorites') {
-    const { data } = await supabase
-      .from('content_favorites')
-      .select('content_id, created_at, content:content(id, title, slug, type, summary, cover_image_url, tags)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    // Three separate favorite tables (content_favorites, case_favorites,
+    // collection_favorites) — case studies and collections aren't content
+    // rows, so they never could have lived in content_favorites. Saved
+    // (Epic D §D.3) is the first place all three actually need to appear
+    // together.
+    const [{ data: contentFavs }, { data: caseFavs }, { data: collectionFavs }] = await Promise.all([
+      supabase.from('content_favorites')
+        .select('created_at, content:content(id, title, slug, type, summary, cover_image_url, tags)')
+        .eq('user_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('case_favorites')
+        .select('created_at, case:case_library_entries(id, title, slug, description, logo_url)')
+        .eq('user_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('collection_favorites')
+        .select('created_at, collection:collections(id, title, slug, description, cover_image_url)')
+        .eq('user_id', user.id).order('created_at', { ascending: false }),
+    ])
 
-    items = ((data ?? []) as unknown as Array<{ content: ContentRef | null }>)
-      .map(row => row.content)
-      .filter((c): c is ContentRef => c != null)
+    const fromContent = ((contentFavs ?? []) as unknown as Array<{ content: ContentRef | null }>)
+      .map(row => row.content).filter((c): c is ContentRef => c != null)
+    const fromCases = ((caseFavs ?? []) as unknown as Array<{ case: { id: string; title: string; slug: string; description: string | null; logo_url: string | null } | null }>)
+      .map(row => row.case).filter((c): c is NonNullable<typeof c> => c != null)
+      .map(c => ({ id: c.id, title: c.title, slug: c.slug, type: 'case', summary: c.description, cover_image_url: c.logo_url, tags: [] }))
+    const fromCollections = ((collectionFavs ?? []) as unknown as Array<{ collection: { id: string; title: string; slug: string; description: string | null; cover_image_url: string | null } | null }>)
+      .map(row => row.collection).filter((c): c is NonNullable<typeof c> => c != null)
+      .map(c => ({ id: c.id, title: c.title, slug: c.slug, type: 'collection', summary: c.description, cover_image_url: c.cover_image_url, tags: [] }))
+
+    items = [...fromContent, ...fromCases, ...fromCollections]
   } else {
     // Everything the user has actually opened or downloaded. There is no
     // 'unlock' interaction type — nothing in the app has ever written one —
@@ -76,10 +96,10 @@ export default async function MyLibraryPage({ searchParams }: Props) {
     <div className="dash-content">
       <section style={{ marginBottom: '1.5rem' }}>
         <h1 className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', marginBottom: '0.375rem' }}>
-          My Library
+          Saved
         </h1>
         <p className="text-body-lg" style={{ color: 'var(--color-text-muted)' }}>
-          Content you&apos;ve saved, read, or downloaded.
+          Part of My ProductSlice — content you&apos;ve saved, read, or downloaded.
         </p>
       </section>
 

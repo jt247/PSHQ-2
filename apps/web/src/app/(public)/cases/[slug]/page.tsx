@@ -5,6 +5,8 @@ import { createClient, createServiceClient } from '@pshq/api-client/server'
 import { trackContentOpened } from '@pshq/analytics'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+import { CaseFavoriteButton } from '@/components/content/CaseFavoriteButton'
+import { CaseCompleteButton } from '@/components/content/CaseCompleteButton'
 
 interface CaseDetail {
   id: string
@@ -79,6 +81,25 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ slu
   const { data: { user } } = await supabase.auth.getUser()
   await trackContentOpened({ supabase, source: 'web', userId: user?.id ?? null }, { contentId: item.id, contentType: 'article' })
 
+  let isFavorited = false
+  let isCompleted = false
+  if (user) {
+    const [{ data: fav }, { data: progress }] = await Promise.all([
+      supabase.from('case_favorites').select('id').eq('case_id', item.id).eq('user_id', user.id).maybeSingle(),
+      supabase.from('case_progress').select('status').eq('case_id', item.id).eq('user_id', user.id).maybeSingle(),
+    ])
+    isFavorited = !!fav
+    isCompleted = progress?.status === 'completed'
+
+    // Real "opened" signal for Continue Learning / Recently Viewed — see
+    // migration 20260901000028 for why this can't just be
+    // trackContentOpened like every other content type.
+    await supabase.from('case_progress').upsert(
+      { user_id: user.id, case_id: item.id, last_viewed_at: new Date().toISOString() },
+      { onConflict: 'user_id,case_id', ignoreDuplicates: false }
+    )
+  }
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
       <PublicNav activeHref="/cases" />
@@ -99,6 +120,11 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ slu
             <h1 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>{item.title}</h1>
           </div>
         </header>
+
+        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem' }}>
+          <CaseFavoriteButton caseId={item.id} initialFavorited={isFavorited} isLoggedIn={!!user} />
+          <CaseCompleteButton caseId={item.id} initialComplete={isCompleted} isLoggedIn={!!user} />
+        </div>
 
         {/* Quick facts */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2.5rem', padding: '1.25rem', background: 'var(--color-paper-darker)', borderRadius: '0.5rem' }}>

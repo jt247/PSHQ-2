@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ScrollView, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import { useLocalSearchParams, Stack } from 'expo-router'
-import { trackLearningPathStarted, trackLearningModuleCompleted, trackLearningPathCompleted } from '@pshq/analytics'
+import { trackLearningPathStarted, trackLearningModuleCompleted, trackLearningPathCompleted, trackContentMarkedComplete } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { supabase } from '@/lib/supabase'
@@ -68,6 +68,7 @@ export default function LearningPathDetailScreen() {
 
     if (!isDone) {
       await trackLearningModuleCompleted({ supabase, source: 'mobile', userId }, { contentId: moduleId })
+      await trackContentMarkedComplete({ supabase, source: 'mobile', userId }, { contentId: moduleId, metadata: { auto: false } })
       const required = path.learning_path_modules.filter(m => m.is_required)
       if (required.length > 0 && required.every(m => next.has(m.id))) {
         await supabase.from('user_learning_paths').update({ completed_at: new Date().toISOString() }).eq('user_id', userId).eq('learning_path_id', path.id)

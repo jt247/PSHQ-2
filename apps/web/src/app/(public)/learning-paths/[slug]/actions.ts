@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
-import { trackLearningPathStarted, trackLearningModuleCompleted, trackLearningPathCompleted } from '@pshq/analytics'
+import { trackLearningPathStarted, trackLearningModuleCompleted, trackLearningPathCompleted, trackContentMarkedComplete } from '@pshq/analytics'
 
 async function requireUser() {
   const supabase = await createClient()
@@ -37,6 +37,7 @@ export async function toggleModuleCompleteAction(moduleId: string, pathId: strin
 
   if (markComplete) {
     await trackLearningModuleCompleted({ supabase, source: 'web', userId: user.id }, { contentId: moduleId })
+    await trackContentMarkedComplete({ supabase, source: 'web', userId: user.id }, { contentId: moduleId, metadata: { auto: false } })
 
     // Check if every required module in the path is now complete.
     const { data: modules } = await service.from('learning_path_modules').select('id, is_required').eq('learning_path_id', pathId)

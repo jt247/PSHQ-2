@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient, createServiceClient } from '@pshq/api-client/server'
-import { trackExerciseCompleted, trackContentCompleted } from '@pshq/analytics'
+import { trackExerciseCompleted, trackContentCompleted, trackContentMarkedComplete } from '@pshq/analytics'
 
 // Fire-and-forget analytics only — the actual share (native sheet or
 // clipboard copy) already happened client-side by the time this runs.
@@ -101,7 +101,11 @@ export async function deleteExerciseResponseAction(exerciseId: string): Promise<
 // content_progress existed as a table but a Series page's completion
 // checkmarks could never actually light up. Private per-user, same RLS
 // pattern as favorites/exercise responses.
-export async function toggleContentCompleteAction(contentId: string, isComplete: boolean): Promise<{ error?: string }> {
+// `auto` distinguishes this epic's new automatic scroll/dwell detection
+// (AutoCompleteTracker) from the manual button — both call this same
+// action so there's exactly one write path for content_progress, but the
+// analytics event tags how it happened.
+export async function toggleContentCompleteAction(contentId: string, isComplete: boolean, auto = false): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Sign in to track progress.' }
@@ -113,6 +117,25 @@ export async function toggleContentCompleteAction(contentId: string, isComplete:
   )
   if (error) return { error: error.message }
 
-  if (isComplete) await trackContentCompleted({ supabase, source: 'web', userId: user.id }, { contentId })
+  if (isComplete) {
+    await trackContentCompleted({ supabase, source: 'web', userId: user.id }, { contentId })
+    await trackContentMarkedComplete({ supabase, source: 'web', userId: user.id }, { contentId, metadata: { auto } })
+  }
   return {}
+}
+
+// No-op if already completed (avoids a redundant write + duplicate
+// analytics event on every subsequent visit past the scroll threshold).
+// If a member manually un-completes something afterward, scrolling to the
+// bottom again in a later session will legitimately re-complete it — same
+// as pressing the manual button again.
+export async function autoMarkContentCompleteAction(contentId: string): Promise<{ error?: string; skipped?: boolean }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated.' }
+
+  const { data: existing } = await supabase.from('content_progress').select('status').eq('user_id', user.id).eq('content_id', contentId).maybeSingle()
+  if (existing?.status === 'completed') return { skipped: true }
+
+  return toggleContentCompleteAction(contentId, true, true)
 }

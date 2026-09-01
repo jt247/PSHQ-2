@@ -8,6 +8,7 @@
     "./storage": "./src/supabase/storage.ts",
     "./queries": "./src/queries.ts",
     "./recommendations": "./src/recommendations.ts",
+    "./dashboard": "./src/dashboard.ts",
     "./onboarding": "./src/onboarding.ts",
     "./mobile": "./src/supabase/mobile.ts"
   },

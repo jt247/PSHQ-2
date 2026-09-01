@@ -58,6 +58,9 @@ export interface UserRow {
   experience_level: ExperienceLevel | null
   privacy_tier: PrivacyTier
   primary_role_id: string | null
+  // Epic D addition — /profile/[username]. Nullable until set, editable
+  // any time from Settings (not locked after first claim).
+  username: string | null
   created_at: string
   updated_at: string
 }
@@ -333,7 +336,7 @@ export type UserUpdate = Partial<Pick<UserRow,
   'job_role' | 'country' | 'areas_of_interest' | 'onboarding_done' | 'auth_provider' |
   'company' | 'region' | 'headline' | 'linkedin_url' | 'website_url' | 'portfolio_url' |
   'github_url' | 'x_url' | 'skills' | 'career_focus' | 'years_experience' |
-  'experience_level' | 'privacy_tier' | 'primary_role_id'
+  'experience_level' | 'privacy_tier' | 'primary_role_id' | 'username'
 >>
 
 export type OnboardingProgressUpsert = Pick<OnboardingProgressRow, 'user_id'> &
