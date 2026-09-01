@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createServiceClient } from '@pshq/api-client/server'
+import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { trackContentOpened } from '@pshq/analytics'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 
@@ -73,6 +74,10 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ slu
   const { slug } = await params
   const item = await getCase(slug)
   if (!item) notFound()
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  await trackContentOpened({ supabase, source: 'web', userId: user?.id ?? null }, { contentId: item.id, contentType: 'article' })
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>

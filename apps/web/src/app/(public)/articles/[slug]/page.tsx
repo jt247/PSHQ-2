@@ -8,6 +8,7 @@ import { ListenButton } from '@/components/article/ListenButton'
 import { CommentsSection } from '@/components/article/CommentsSection'
 import { RatingWidget } from '@/components/article/RatingWidget'
 import { ExercisesSection } from '@/components/content/ExercisesSection'
+import { MarkCompleteButton } from '@/components/content/MarkCompleteButton'
 import { ShareButton } from '@/components/content/ShareButton'
 import { FavoriteButton } from '@/components/content/FavoriteButton'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -121,7 +122,7 @@ export default async function ArticlePage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Parallel data fetches
-  const [upvoteResult, favoriteResult, commentResult, ratingResult, summaryResult] = await Promise.all([
+  const [upvoteResult, favoriteResult, commentResult, ratingResult, summaryResult, progressResult] = await Promise.all([
     // Whether user has upvoted
     user
       ? supabase
@@ -172,6 +173,16 @@ export default async function ArticlePage({ params }: Props) {
           .limit(1)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+
+    // Mark-as-complete state (drives Series page checkmarks)
+    user
+      ? supabase
+          .from('content_progress')
+          .select('status')
+          .eq('content_id', rawItem.id)
+          .eq('user_id', user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
 
   // Record view. This must be awaited: an unawaited insert is routinely
@@ -193,6 +204,7 @@ export default async function ArticlePage({ params }: Props) {
 
   const hasUpvoted = !!upvoteResult.data
   const hasFavorited = !!favoriteResult.data
+  const hasCompleted = (progressResult.data as { status?: string } | null)?.status === 'completed'
   const comments = ((commentResult.data ?? []) as unknown[]) as Array<{
     id: string
     body: string
@@ -313,6 +325,11 @@ export default async function ArticlePage({ params }: Props) {
               <FavoriteButton
                 contentId={rawItem.id}
                 initialFavorited={hasFavorited}
+                isLoggedIn={!!user}
+              />
+              <MarkCompleteButton
+                contentId={rawItem.id}
+                initialComplete={hasCompleted}
                 isLoggedIn={!!user}
               />
             </div>

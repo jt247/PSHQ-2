@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FlatList, StyleSheet, ActivityIndicator } from 'react-native'
 import { useLocalSearchParams, Stack } from 'expo-router'
+import { trackContentOpened } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { supabase } from '@/lib/supabase'
@@ -18,7 +19,7 @@ export default function CollectionDetailScreen() {
     async function load() {
       const { data } = await supabase
         .from('collections')
-        .select('title, description, collection_items (display_order, content:content_id (title, type, summary))')
+        .select('id, title, description, collection_items (display_order, content:content_id (title, type, summary))')
         .eq('slug', slug)
         .eq('status', 'published')
         .maybeSingle()
@@ -28,6 +29,8 @@ export default function CollectionDetailScreen() {
         const rows = ((data.collection_items ?? []) as unknown as { display_order: number; content: Item }[])
           .slice().sort((a, b) => a.display_order - b.display_order).map(r => r.content)
         setItems(rows)
+        const { data: { user } } = await supabase.auth.getUser()
+        await trackContentOpened({ supabase, source: 'mobile', userId: user?.id ?? null }, { contentId: data.id, contentType: 'article' })
       }
       setLoading(false)
     }

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { useLocalSearchParams, Stack } from 'expo-router'
+import { trackContentOpened } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { supabase } from '@/lib/supabase'
 
 interface CaseDetail {
-  title: string; company_name: string; description: string | null
+  id: string; title: string; company_name: string; description: string | null
   industry: string | null; country: string | null; stage: string | null
   problem: string | null; jt_analysis: string | null
   key_lessons: string[]
@@ -21,6 +22,10 @@ export default function CaseDetailScreen() {
     async function load() {
       const { data } = await supabase.from('case_library_entries').select('*').eq('slug', slug).eq('status', 'published').maybeSingle()
       setItem(data as CaseDetail | null)
+      if (data) {
+        const { data: { user } } = await supabase.auth.getUser()
+        await trackContentOpened({ supabase, source: 'mobile', userId: user?.id ?? null }, { contentId: data.id, contentType: 'article' })
+      }
       setLoading(false)
     }
     load()

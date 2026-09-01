@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { trackContentOpened } from '@pshq/analytics'
 import { ContentCard } from '@/components/content/ContentCard'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
@@ -60,6 +61,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
     const { data } = await supabase.from('collection_favorites').select('id').eq('user_id', user.id).eq('collection_id', collection.id).maybeSingle()
     isSaved = !!data
   }
+  await trackContentOpened({ supabase, source: 'web', userId: user?.id ?? null }, { contentId: collection.id, contentType: 'article' })
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>

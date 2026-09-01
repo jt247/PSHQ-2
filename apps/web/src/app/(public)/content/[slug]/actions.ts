@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient, createServiceClient } from '@pshq/api-client/server'
-import { trackExerciseCompleted } from '@pshq/analytics'
+import { trackExerciseCompleted, trackContentCompleted } from '@pshq/analytics'
 
 // Fire-and-forget analytics only — the actual share (native sheet or
 // clipboard copy) already happened client-side by the time this runs.
@@ -93,5 +93,26 @@ export async function deleteExerciseResponseAction(exerciseId: string): Promise<
 
   const { error } = await supabase.from('exercise_responses').delete().eq('exercise_id', exerciseId).eq('user_id', user.id)
   if (error) return { error: error.message }
+  return {}
+}
+
+// Generic "Mark as Complete" for any content row (article/ebook/template/
+// guide/build note) — the piece nothing previously wrote to, which meant
+// content_progress existed as a table but a Series page's completion
+// checkmarks could never actually light up. Private per-user, same RLS
+// pattern as favorites/exercise responses.
+export async function toggleContentCompleteAction(contentId: string, isComplete: boolean): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Sign in to track progress.' }
+
+  const now = new Date().toISOString()
+  const { error } = await supabase.from('content_progress').upsert(
+    { user_id: user.id, content_id: contentId, status: isComplete ? 'completed' : 'not_started', completed_at: isComplete ? now : null, updated_at: now },
+    { onConflict: 'user_id,content_id' }
+  )
+  if (error) return { error: error.message }
+
+  if (isComplete) await trackContentCompleted({ supabase, source: 'web', userId: user.id }, { contentId })
   return {}
 }
