@@ -488,7 +488,14 @@ grant execute on function public.check_and_award_achievements() to authenticated
 -- need zero changes — only adds earned achievement keys as a new trailing
 -- column, additive.
 -- ----------------------------------------------------------
-create or replace function public.get_public_profile(p_username text)
+-- Postgres refuses to CREATE OR REPLACE a function that changes its
+-- return row shape (this one gains achievement_keys as a new trailing
+-- column) — has to be dropped first. Safe: nothing else in this database
+-- calls get_public_profile positionally by column count, both call sites
+-- (web, mobile) already read named fields off the RPC result.
+drop function if exists public.get_public_profile(text);
+
+create function public.get_public_profile(p_username text)
 returns table (
   id uuid, username text, full_name text, avatar_url text, headline text,
   job_role text, company text, country text, region text,
