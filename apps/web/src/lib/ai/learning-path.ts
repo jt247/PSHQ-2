@@ -120,7 +120,11 @@ Design a learning path with approximately ${recommendedModuleCount} modules, eac
     return { insufficientContent: true, message: "We don't currently have enough ProductSlice resources for this part of your goal." }
   }
 
-  const slug = `${parsed.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${userId.slice(0, 8)}`
+  // Title + user-id fragment alone can collide if the same member creates
+  // two paths with an identical AI-generated title in the same month (the
+  // cap allows up to 3) — appended time fragment guarantees uniqueness
+  // without a select-then-retry round trip.
+  const slug = `${parsed.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${userId.slice(0, 8)}-${Date.now().toString(36)}`
 
   const { data: path, error: pathError } = await supabase
     .from('learning_paths')
