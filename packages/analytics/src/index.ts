@@ -106,4 +106,14 @@ export const trackContentMarkedComplete = (ctx: TrackContext, opts: TrackOptions
 export const trackNotificationPreferenceUpdated = (ctx: TrackContext, key: string, enabled: boolean) =>
   track(ctx, 'notification_preference_updated', { metadata: { key, enabled } })
 
+// ── AI & Personalization (Epic E) ───────────────────────────────────────
+// ai_learning_path_created and ai_summary_requested already existed
+// (Build Prompt 1) — used as-is, not redefined here.
+export const trackAiRecommendationShown = (ctx: TrackContext, slot: 'recommended_for_you' | 'new_for_you' | 'onboarding_starting_point', contentIds: string[]) =>
+  track(ctx, 'ai_recommendation_shown', { metadata: { slot, contentIds } })
+export const trackAiRecommendationClicked = (ctx: TrackContext, slot: 'recommended_for_you' | 'new_for_you' | 'onboarding_starting_point', opts: TrackOptions) =>
+  track(ctx, 'ai_recommendation_clicked', { ...opts, metadata: { ...opts.metadata, slot } })
+export const trackContentAssistanceRequested = (ctx: TrackContext, action: 'key_takeaways' | 'action_checklist' | 'reflection_questions', contentId: string) =>
+  track(ctx, 'ai_content_assistance_requested', { contentId, metadata: { action } })
+
 export type { TrackContext, TrackOptions }

@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
-import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { createServiceClient } from '@pshq/api-client/server'
 import { generateText, AI_MODEL_NAME } from '@/lib/ai/client'
 import { rateLimit } from '@/lib/ratelimit'
+import { getAuthedRequestUser } from '@/lib/api-auth'
 
 interface Params { params: Promise<{ contentId: string }> }
 
-// GET: return cached summary if available
-export async function GET(_req: NextRequest, { params }: Params) {
+// GET: return cached summary if available. Epic E made this route mobile-
+// reachable too — getAuthedRequestUser accepts either the existing cookie
+// session (web, unchanged) or a mobile Bearer token, same helper every
+// new Epic E route uses.
+export async function GET(req: NextRequest, { params }: Params) {
   const { contentId } = await params
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await getAuthedRequestUser(req)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { user, supabase } = auth
 
   const { data } = await supabase
     .from('ai_summaries')
@@ -32,15 +35,14 @@ export async function GET(_req: NextRequest, { params }: Params) {
   })
 }
 
-// POST: generate summary via Gemini, cache, return
-export async function POST(_req: NextRequest, { params }: Params) {
+// POST: generate summary, cache, return
+export async function POST(req: NextRequest, { params }: Params) {
   const { contentId } = await params
-  const supabase = await createClient()
+  const auth = await getAuthedRequestUser(req)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { user, supabase } = auth
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  // Rate limit paid Gemini generations: 5 per user per 5 minutes.
+  // Rate limit paid OpenAI generations: 5 per user per 5 minutes.
   // Cached summaries are served by the check below and stay free.
   const allowed = await rateLimit('ai-summary', user.id, 5, 300)
   if (!allowed) {

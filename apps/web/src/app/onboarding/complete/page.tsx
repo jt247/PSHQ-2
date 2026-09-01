@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@pshq/api-client/server'
 import { getStarterRecommendations } from '@pshq/api-client/recommendations'
+import { rerankRecommendations } from '@/lib/ai/rerank'
+import { trackAiRecommendationShown } from '@pshq/analytics'
 import type { UserRow } from '@pshq/database'
 
 const TYPE_HREF: Record<string, (slug: string) => string> = {
@@ -21,6 +23,30 @@ export default async function OnboardingCompletePage() {
   if (!profile?.onboarding_done) redirect('/onboarding')
 
   const recs = await getStarterRecommendations(supabase, user.id)
+
+  // Layer 2 (E.6) — re-rank the one real list in this stub's output (the
+  // 3 recommended articles). primaryPath/template/collection are single
+  // picks, not lists, so there's nothing to re-rank there.
+  if (recs.articles.length > 1) {
+    const [{ data: userRow }, { data: userTopics }, { data: userGoals }] = await Promise.all([
+      supabase.from('users').select('experience_level, roles:primary_role_id(name)').eq('id', user.id).maybeSingle(),
+      supabase.from('user_topics').select('topic:topics(name)').eq('user_id', user.id),
+      supabase.from('user_goals').select('goal:goals(name)').eq('user_id', user.id),
+    ])
+    const roleName = (userRow as unknown as { roles: { name: string } | null } | null)?.roles?.name ?? null
+    const level = (userRow as { experience_level: string | null } | null)?.experience_level ?? null
+    const topicNames = ((userTopics ?? []) as unknown as Array<{ topic: { name: string } | null }>).map(t => t.topic?.name).filter((n): n is string => !!n)
+    const goalNames = ((userGoals ?? []) as unknown as Array<{ goal: { name: string } | null }>).map(g => g.goal?.name).filter((n): n is string => !!n)
+
+    const ranked = await rerankRecommendations(
+      supabase, user.id, 'onboarding_starting_point',
+      recs.articles.map(a => ({ id: a.id, title: a.title, slug: a.slug, type: a.type, excerpt: a.summary ?? '' })),
+      { roleName, level, topicNames, goalNames }
+    )
+    recs.articles = ranked.map(r => ({ id: r.id, title: r.title, slug: r.slug, type: r.type, summary: r.excerpt || null, coverImageUrl: recs.articles.find(a => a.id === r.id)?.coverImageUrl ?? null }))
+  }
+
+  await trackAiRecommendationShown({ supabase, source: 'web', userId: user.id }, 'onboarding_starting_point', recs.articles.map(a => a.id))
 
   return (
     <div className="auth-page">

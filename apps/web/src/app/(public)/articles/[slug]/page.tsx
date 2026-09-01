@@ -12,6 +12,8 @@ import { MarkCompleteButton } from '@/components/content/MarkCompleteButton'
 import { AutoCompleteTracker } from '@/components/content/AutoCompleteTracker'
 import { ShareButton } from '@/components/content/ShareButton'
 import { FavoriteButton } from '@/components/content/FavoriteButton'
+import { ContinueFromHereSection } from '@/components/content/ContinueFromHereSection'
+import { retrieveContinueFromHere } from '@pshq/api-client/ai'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { articleSchema, breadcrumbSchema } from '@/lib/seo/schema'
 import { AUTHOR, DEFAULT_OG_IMAGE, absoluteUrl } from '@/lib/seo/constants'
@@ -123,7 +125,7 @@ export default async function ArticlePage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Parallel data fetches
-  const [upvoteResult, favoriteResult, commentResult, ratingResult, summaryResult, progressResult] = await Promise.all([
+  const [upvoteResult, favoriteResult, commentResult, ratingResult, summaryResult, progressResult, continueFromHere] = await Promise.all([
     // Whether user has upvoted
     user
       ? supabase
@@ -184,6 +186,14 @@ export default async function ArticlePage({ params }: Props) {
           .eq('user_id', user.id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+
+    // Continue From Here (E.7) — Layer 1 metadata lookup, no AI call.
+    retrieveContinueFromHere(supabase, {
+      contentId: rawItem.id,
+      domain: (item.domain as string | null) ?? null,
+      tags: (item.tags as string[] | null) ?? [],
+      seriesId: (item.series_id as string | null) ?? null,
+    }),
   ])
 
   // Record view. This must be awaited: an unawaited insert is routinely
@@ -383,6 +393,8 @@ export default async function ArticlePage({ params }: Props) {
             comments={comments}
             isLoggedIn={!!user}
           />
+
+          <ContinueFromHereSection items={continueFromHere} />
         </article>
       </main>
     </div>

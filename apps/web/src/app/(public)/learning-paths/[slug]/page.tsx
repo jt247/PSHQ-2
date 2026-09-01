@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
-import { ModuleRow } from './ModuleRow'
+import { ModuleRow } from '@/components/learning-paths/ModuleRow'
 import { StartPathButton } from './StartPathButton'
 
 interface ModuleContent { slug: string; type: string }

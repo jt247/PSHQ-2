@@ -32,6 +32,7 @@ interface LearningPathRow {
   completedModules: number
   remainingModules: number
   isComplete: boolean
+  source: 'curated' | 'ai_generated'
 }
 
 // Epic D §D.2/§D.3/§D.4/§D.7 — real My ProductSlice screen, full parity
@@ -79,7 +80,7 @@ export default function ProfileScreen() {
         supabase.from('content_progress').select('content_id, status, content:content_id(type)').eq('user_id', user.id),
         supabase.from('case_progress').select('status, last_viewed_at, completed_at, case:case_library_entries(id, title, slug)').eq('user_id', user.id),
         supabase.from('content_favorites').select('content:content(id, title, slug, type)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
-        supabase.from('user_learning_paths').select('started_at, completed_at, path:learning_paths(id, title, slug)').eq('user_id', user.id).order('started_at', { ascending: false }),
+        supabase.from('user_learning_paths').select('started_at, completed_at, path:learning_paths(id, title, slug, source)').eq('user_id', user.id).order('started_at', { ascending: false }),
         supabase.from('module_progress').select('status, module:learning_path_modules(learning_path_id)').eq('user_id', user.id),
       ])
       if (cancelled) return
@@ -99,7 +100,7 @@ export default function ProfileScreen() {
       const caseProgress = (caseProgressRes.data ?? []) as unknown as CaseProgress[]
       const casesCompleted = caseProgress.filter(c => c.status === 'completed').length
 
-      type ULP = { started_at: string; completed_at: string | null; path: { id: string; title: string; slug: string } | null }
+      type ULP = { started_at: string; completed_at: string | null; path: { id: string; title: string; slug: string; source: 'curated' | 'ai_generated' } | null }
       const ulps = ((userLearningPathsRes.data ?? []) as unknown as ULP[]).filter(u => u.path)
       type ModuleProgress = { status: string; module: { learning_path_id: string } | null }
       const completedModulesByPath = new Map<string, number>()
@@ -121,7 +122,7 @@ export default function ProfileScreen() {
       const pathRows: LearningPathRow[] = ulps.map(u => {
         const completed = completedModulesByPath.get(u.path!.id) ?? 0
         const total = pathModuleTotals.get(u.path!.id) ?? 0
-        return { slug: u.path!.slug, title: u.path!.title, completedModules: completed, remainingModules: Math.max(0, total - completed), isComplete: !!u.completed_at }
+        return { slug: u.path!.slug, title: u.path!.title, source: u.path!.source, completedModules: completed, remainingModules: Math.max(0, total - completed), isComplete: !!u.completed_at }
       })
 
       // Continue Learning: last article/ebook not completed + last case
@@ -244,10 +245,13 @@ export default function ProfileScreen() {
         ) : newForYou.map(item => <ContentRow key={item.id} id={item.id} type={item.type} slug={item.slug} title={item.title} />)}
 
         <SectionTitle title="My Learning Paths" />
+        <Pressable onPress={() => router.push('/learning-paths/create' as never)}>
+          <ThemedText type="small" style={styles.createPathLink}>+ Create My Learning Path</ThemedText>
+        </Pressable>
         {learningPaths.length === 0 ? (
           <ThemedText type="small" style={styles.muted}>You haven&apos;t started a learning path yet.</ThemedText>
         ) : learningPaths.map(p => (
-          <Pressable key={p.slug} style={styles.pathCard} onPress={() => router.push(`/learning-paths/${p.slug}` as never)}>
+          <Pressable key={p.slug} style={styles.pathCard} onPress={() => router.push((p.source === 'ai_generated' ? `/learning-paths/mine/${p.slug}` : `/learning-paths/${p.slug}`) as never)}>
             <ThemedText type="default" style={styles.pathTitle}>{p.title}</ThemedText>
             <ThemedText type="small" style={styles.muted}>
               {p.isComplete ? 'Completed' : `${p.completedModules} done · ${p.remainingModules} remaining`}
@@ -333,6 +337,7 @@ const styles = StyleSheet.create({
   primaryButton: { backgroundColor: '#111827', borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 8 },
   primaryButtonText: { color: '#fff', fontWeight: '700' },
   viewPublicLink: { textAlign: 'center', marginTop: 10, fontWeight: '600' },
+  createPathLink: { fontWeight: '600', marginBottom: 8 },
   completionNudge: { textAlign: 'center', opacity: 0.7, marginBottom: 4 },
   secondaryButton: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 20 },
   secondaryButtonText: { fontWeight: '600' },

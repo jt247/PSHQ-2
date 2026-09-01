@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { Layers, BookOpen, GraduationCap, Newspaper, Package } from 'lucide-react'
 import { createClient } from '@pshq/api-client/server'
 import { getCommunityPosition, getStreak, getRecommendedForYou, getNewForYou, getProfileCompletionPercent } from '@pshq/api-client/dashboard'
-import { trackDashboardViewed } from '@pshq/analytics'
+import { rerankRecommendations } from '@/lib/ai/rerank'
+import { trackDashboardViewed, trackAiRecommendationShown } from '@pshq/analytics'
 import type { UserRow, ContentRow, OnboardingProgressRow } from '@pshq/database'
 import { MyProductSliceHeader } from '@/components/dashboard/MyProductSliceHeader'
 import { ContinueLearningSection, type ContinueLearningItem, type ContinueLearningPath } from '@/components/dashboard/ContinueLearningSection'
@@ -22,7 +23,8 @@ export default async function DashboardPage() {
   const [
     profileRes, interactionsRes, trendingRes, coursesRes, trendingEbooksRes, trendingTemplatesRes,
     onboardingProgressRes, userLearningPathsRes, moduleProgressRes, contentProgressRes, caseProgressRes,
-    favoritesRes, streak, communityPosition, recommended, newForYou,
+    favoritesRes, streak, communityPosition, recommendedLayer1, newForYouLayer1,
+    userTopicsRes, userGoalsRes,
   ] = await Promise.all([
     supabase.from('users').select('*').eq('id', user.id).single(),
     supabase.from('content_interactions')
@@ -35,7 +37,7 @@ export default async function DashboardPage() {
     supabase.from('content').select('id, title, slug, cover_image_url, tags').eq('status', 'published').eq('type', 'ebook').order('published_at', { ascending: false }).limit(4),
     supabase.from('content').select('id, title, slug, cover_image_url, tags').eq('status', 'published').eq('type', 'template').order('published_at', { ascending: false }).limit(4),
     supabase.from('onboarding_progress').select('*').eq('user_id', user.id).maybeSingle(),
-    supabase.from('user_learning_paths').select('started_at, completed_at, path:learning_paths(id, title, slug)').eq('user_id', user.id).order('started_at', { ascending: false }),
+    supabase.from('user_learning_paths').select('started_at, completed_at, path:learning_paths(id, title, slug, source)').eq('user_id', user.id).order('started_at', { ascending: false }),
     supabase.from('module_progress').select('status, module:learning_path_modules(learning_path_id)').eq('user_id', user.id),
     supabase.from('content_progress').select('status, content:content_id(type)').eq('user_id', user.id),
     supabase.from('case_progress').select('status, last_viewed_at, completed_at, case:case_library_entries(id, title, slug)').eq('user_id', user.id),
@@ -44,9 +46,24 @@ export default async function DashboardPage() {
     getCommunityPosition(supabase),
     getRecommendedForYou(supabase, user.id),
     getNewForYou(supabase, user.id),
+    supabase.from('user_topics').select('topic:topics(name)').eq('user_id', user.id),
+    supabase.from('user_goals').select('goal:goals(name)').eq('user_id', user.id),
   ])
 
   const profile = profileRes.data as UserRow | null
+
+  // Layer 2 (E.6) — re-rank what Layer 1 already retrieved, using fuller
+  // context than the tag-overlap scorer alone. Falls back silently to
+  // Layer-1 order on any AI failure — see rerank.ts.
+  const topicNames = ((userTopicsRes.data ?? []) as unknown as Array<{ topic: { name: string } | null }>).map(t => t.topic?.name).filter((n): n is string => !!n)
+  const goalNames = ((userGoalsRes.data ?? []) as unknown as Array<{ goal: { name: string } | null }>).map(g => g.goal?.name).filter((n): n is string => !!n)
+  const rerankContext = { roleName: null, level: profile?.experience_level ?? null, topicNames, goalNames }
+  const [recommended, newForYou] = await Promise.all([
+    rerankRecommendations(supabase, user.id, 'recommended_for_you', recommendedLayer1.map(r => ({ ...r, excerpt: r.summary ?? '' })), rerankContext),
+    rerankRecommendations(supabase, user.id, 'new_for_you', newForYouLayer1.map(r => ({ ...r, excerpt: r.summary ?? '' })), rerankContext),
+  ])
+  if (recommended.length > 0) await trackAiRecommendationShown({ supabase, source: 'web', userId: user.id }, 'recommended_for_you', recommended.map(r => r.id))
+  if (newForYou.length > 0) await trackAiRecommendationShown({ supabase, source: 'web', userId: user.id }, 'new_for_you', newForYou.map(r => r.id))
   const onboardingProgress = onboardingProgressRes.data as OnboardingProgressRow | null
   const onboardingSteps = onboardingProgress
     ? [onboardingProgress.about_you_completed_at, onboardingProgress.role_completed_at, onboardingProgress.experience_completed_at, onboardingProgress.goals_completed_at, onboardingProgress.topics_completed_at]
@@ -76,7 +93,7 @@ export default async function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   // ── My Learning Paths + Continue Learning path slot ──
-  type ULPRow = { started_at: string; completed_at: string | null; path: { id: string; title: string; slug: string } | null }
+  type ULPRow = { started_at: string; completed_at: string | null; path: { id: string; title: string; slug: string; source: 'curated' | 'ai_generated' } | null }
   const ulps = ((userLearningPathsRes.data ?? []) as unknown as ULPRow[]).filter(r => r.path)
   type ModuleProgressRow = { status: string; module: { learning_path_id: string } | null }
   const completedModulesByPath = new Map<string, number>()
@@ -97,7 +114,7 @@ export default async function DashboardPage() {
     const completed = completedModulesByPath.get(u.path!.id) ?? 0
     const total = pathModuleTotals.get(u.path!.id) ?? 0
     return {
-      slug: u.path!.slug, title: u.path!.title,
+      slug: u.path!.slug, title: u.path!.title, source: u.path!.source,
       completedModules: completed, remainingModules: Math.max(0, total - completed),
       isComplete: !!u.completed_at,
     }
@@ -243,12 +260,14 @@ export default async function DashboardPage() {
           items={recommended}
           emptyText="Set your topics and goals in Settings for personalized picks."
           seeAllHref={{ href: '/library', label: 'Browse library →' }}
+          tracking={{ slot: 'recommended_for_you', userId: user.id }}
         />
         <ContentListSection
           title="🆕 New for You"
           items={newForYou}
           emptyText="Nothing new matching your topics yet."
           seeAllHref={{ href: '/library', label: 'Browse library →' }}
+          tracking={{ slot: 'new_for_you', userId: user.id }}
         />
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react'
 import Link from 'next/link'
-import { toggleModuleCompleteAction } from './actions'
+import { toggleModuleCompleteAction } from '@/app/(public)/learning-paths/[slug]/actions'
 
 interface Props {
   moduleId: string
