@@ -35,7 +35,10 @@ const TYPE_PLACEHOLDER: Record<string, string> = {
 }
 
 export function ContentCard(props: ContentCardProps) {
-  const { title, slug, type, summary, cover_image_url, pricing_type, view_count, upvote_count, tags, is_coming_soon } = props
+  // view_count/upvote_count are intentionally not destructured — Standing
+  // Rule / PRD §5.1: view counts never render on any public-facing card.
+  // They stay in the prop type since callers pass the full content row.
+  const { title, slug, type, summary, cover_image_url, pricing_type, tags, is_coming_soon } = props
   const href = type === 'article' ? `/articles/${slug}` : type === 'build_note' ? `/build-notes/${slug}` : `/content/${slug}`
   const label = TYPE_LABELS[type] ?? type
 
@@ -114,18 +117,6 @@ export function ContentCard(props: ContentCardProps) {
         </div>
       )}
 
-      {!is_coming_soon && (
-        <div className="text-label-sm" style={{
-          display: 'flex', alignItems: 'center', gap: '0.75rem',
-          color: 'var(--color-text-muted)', paddingTop: '0.5rem',
-          borderTop: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
-          marginTop: '0.25rem',
-        }}>
-          <span>{view_count.toLocaleString()} views</span>
-          <span>·</span>
-          <span>{upvote_count} upvotes</span>
-        </div>
-      )}
     </div>
   )
 
@@ -208,17 +199,6 @@ export function ContentCard(props: ContentCardProps) {
             ))}
           </div>
         )}
-
-        <div className="text-label-sm" style={{
-          display: 'flex', alignItems: 'center', gap: '0.75rem',
-          color: 'var(--color-text-muted)', paddingTop: '0.5rem',
-          borderTop: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
-          marginTop: '0.25rem',
-        }}>
-          <span>{view_count.toLocaleString()} views</span>
-          <span>·</span>
-          <span>{upvote_count} upvotes</span>
-        </div>
       </div>
     </article>
   )

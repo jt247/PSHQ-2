@@ -83,4 +83,10 @@ export const trackSearchPerformed = (ctx: TrackContext, query: string, resultCou
 export const trackSearchZeroResults = (ctx: TrackContext, query: string) =>
   track(ctx, 'search_zero_results', { metadata: { query } })
 
+// ── Homepage (Epic C) ────────────────────────────────────────────────────
+export const trackHomepageSectionViewed = (ctx: TrackContext, section: string) =>
+  track(ctx, 'homepage_section_viewed', { metadata: { section } })
+export const trackCtaClicked = (ctx: TrackContext, section: string, label: string) =>
+  track(ctx, 'cta_clicked', { metadata: { section, label } })
+
 export type { TrackContext, TrackOptions }
