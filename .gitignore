@@ -58,3 +58,10 @@ expo-env.d.ts
 # Internal security docs
 SECURITY-FINDINGS.md
 .claude/worktrees/
+
+# Internal project docs — everything at repo root except README.md is
+# working/planning material, not meant to be public. Files stay on disk,
+# just not tracked/pushed. See CLAUDE.md's standard doc table for the
+# intended file set; this pattern also covers any future root-level .md.
+/*.md
+!/README.md
