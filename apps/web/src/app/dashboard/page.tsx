@@ -3,8 +3,9 @@ import Link from 'next/link'
 import { Layers, BookOpen, GraduationCap, Newspaper, Package } from 'lucide-react'
 import { createClient } from '@pshq/api-client/server'
 import { getCommunityPosition, getStreak, getRecommendedForYou, getNewForYou, getProfileCompletionPercent } from '@pshq/api-client/dashboard'
+import { getMyAchievements, checkAndAwardAchievements, checkAndAwardStreakBonus } from '@pshq/api-client/community'
 import { rerankRecommendations } from '@/lib/ai/rerank'
-import { trackDashboardViewed, trackAiRecommendationShown } from '@pshq/analytics'
+import { trackDashboardViewed, trackAiRecommendationShown, trackAchievementUnlocked, trackContributionScored } from '@pshq/analytics'
 import type { UserRow, ContentRow, OnboardingProgressRow } from '@pshq/database'
 import { MyProductSliceHeader } from '@/components/dashboard/MyProductSliceHeader'
 import { ContinueLearningSection, type ContinueLearningItem, type ContinueLearningPath } from '@/components/dashboard/ContinueLearningSection'
@@ -19,6 +20,17 @@ export default async function DashboardPage() {
   if (!user) redirect('/sign-in')
 
   await trackDashboardViewed({ supabase, source: 'web', userId: user.id })
+
+  // Epic F — cheap, idempotent checks on every dashboard load: catches
+  // achievements/streak bonuses earned from activity that predates this
+  // epic shipping, not just going forward.
+  const [newlyEarnedKeys, streakBonusAwarded] = await Promise.all([
+    checkAndAwardAchievements(supabase),
+    checkAndAwardStreakBonus(supabase),
+  ])
+  for (const key of newlyEarnedKeys) await trackAchievementUnlocked({ supabase, source: 'web', userId: user.id }, key)
+  if (streakBonusAwarded) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'streak_bonus', 5)
+  const achievements = await getMyAchievements(supabase, user.id)
 
   const [
     profileRes, interactionsRes, trendingRes, coursesRes, trendingEbooksRes, trendingTemplatesRes,
@@ -301,7 +313,7 @@ export default async function DashboardPage() {
       </div>
 
       <div style={{ marginBottom: '1.75rem' }}>
-        <AchievementsAndPositionRow position={communityPosition} />
+        <AchievementsAndPositionRow position={communityPosition} achievements={achievements} />
       </div>
 
       {(trendingEbooks.length > 0 || trendingTemplates.length > 0) && (

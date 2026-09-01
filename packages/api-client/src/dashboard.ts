@@ -59,6 +59,11 @@ export interface PublicProfile {
   completedResourcesCount: number
   contributionScore: number
   createdAt: string
+  /** Epic F — earned achievement keys, most recent first. Join against
+   * @pshq/api-client/community's fixed achievement metadata (title/icon/
+   * description) to render; kept as bare keys here so this function
+   * doesn't need to duplicate that metadata. */
+  achievementKeys: string[]
 }
 
 /** /profile/[username] via get_public_profile() — the privacy check
@@ -77,7 +82,7 @@ export async function getPublicProfile(supabase: SupabaseClient, username: strin
     linkedin_url: string | null; portfolio_url: string | null; website_url: string | null; github_url: string | null; x_url: string | null
     privacy_tier: string; topic_names: string[] | null; goal_names: string[] | null
     completed_paths_count: number; completed_resources_count: number; contribution_score: number
-    created_at: string
+    created_at: string; achievement_keys: string[] | null
   }
   return {
     id: r.id, username: r.username, fullName: r.full_name, avatarUrl: r.avatar_url, headline: r.headline,
@@ -86,7 +91,7 @@ export async function getPublicProfile(supabase: SupabaseClient, username: strin
     linkedinUrl: r.linkedin_url, portfolioUrl: r.portfolio_url, websiteUrl: r.website_url, githubUrl: r.github_url, xUrl: r.x_url,
     privacyTier: r.privacy_tier, topicNames: r.topic_names ?? [], goalNames: r.goal_names ?? [],
     completedPathsCount: r.completed_paths_count, completedResourcesCount: r.completed_resources_count,
-    contributionScore: r.contribution_score, createdAt: r.created_at,
+    contributionScore: r.contribution_score, createdAt: r.created_at, achievementKeys: r.achievement_keys ?? [],
   }
 }
 

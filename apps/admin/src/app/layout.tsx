@@ -17,6 +17,7 @@ const NAV_ITEMS: (null | { href: string; label: string })[] = [
   { href: '/requests',       label: 'Content Requests' },
   { href: '/notifications',  label: 'Notifications' },
   { href: '/quality',        label: 'Quality Control' },
+  { href: '/community',      label: 'Community Scoring' },
   null,
   { href: '/initiatives',                      label: 'Initiatives' },
   { href: '/initiatives/product-lab',          label: '   ↳ Product Lab' },

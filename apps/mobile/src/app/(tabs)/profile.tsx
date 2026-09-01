@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react'
 import { ScrollView, View, Pressable, StyleSheet, ActivityIndicator, Image, Alert } from 'react-native'
 import { router, useFocusEffect } from 'expo-router'
 import { getCommunityPosition, getStreak, getProfileCompletionPercent, getRecommendedForYou, getNewForYou, type CommunityPosition, type DashboardContentItem } from '@pshq/api-client/dashboard'
-import { trackDashboardViewed } from '@pshq/analytics'
+import { getMyAchievements, checkAndAwardAchievements, checkAndAwardStreakBonus, type EarnedAchievement } from '@pshq/api-client/community'
+import { trackDashboardViewed, trackAchievementUnlocked, trackContributionScored } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { ContentRow } from '@/components/content-row'
@@ -49,6 +50,7 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [streak, setStreak] = useState(0)
   const [position, setPosition] = useState<CommunityPosition | null>(null)
+  const [achievements, setAchievements] = useState<EarnedAchievement[]>([])
   const [counts, setCounts] = useState<Counts>(EMPTY_COUNTS)
   const [continueLearning, setContinueLearning] = useState<Array<{ id: string; type: string; slug: string; title: string }>>([])
   const [learningPaths, setLearningPaths] = useState<LearningPathRow[]>([])
@@ -168,6 +170,15 @@ export default function ProfileScreen() {
       setLoading(false)
 
       await trackDashboardViewed({ supabase, source: 'mobile', userId: user.id })
+
+      // Epic F — same idempotent checks as web's dashboard load.
+      const [newlyEarnedKeys, streakBonusAwarded] = await Promise.all([
+        checkAndAwardAchievements(supabase),
+        checkAndAwardStreakBonus(supabase),
+      ])
+      for (const key of newlyEarnedKeys) await trackAchievementUnlocked({ supabase, source: 'mobile', userId: user.id }, key)
+      if (streakBonusAwarded) await trackContributionScored({ supabase, source: 'mobile', userId: user.id }, 'streak_bonus', 5)
+      setAchievements(await getMyAchievements(supabase, user.id))
     }
 
     load()
@@ -290,7 +301,18 @@ export default function ProfileScreen() {
         )}
 
         <SectionTitle title="Achievements" />
-        <ThemedText type="small" style={styles.muted}>Complete your first learning activity to earn an achievement.</ThemedText>
+        {achievements.length === 0 ? (
+          <ThemedText type="small" style={styles.muted}>Complete your first learning activity to earn an achievement.</ThemedText>
+        ) : (
+          <View style={styles.achievementRow}>
+            {achievements.map(a => (
+              <View key={a.key} style={styles.achievementBadge}>
+                <ThemedText style={{ fontSize: 16 }}>{a.icon}</ThemedText>
+                <ThemedText type="smallBold">{a.title}</ThemedText>
+              </View>
+            ))}
+          </View>
+        )}
 
         <Pressable style={styles.secondaryButton} onPress={() => router.push('/notification-preferences')}>
           <ThemedText style={styles.secondaryButtonText}>Notification Preferences</ThemedText>
@@ -338,6 +360,8 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: '#fff', fontWeight: '700' },
   viewPublicLink: { textAlign: 'center', marginTop: 10, fontWeight: '600' },
   createPathLink: { fontWeight: '600', marginBottom: 8 },
+  achievementRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  achievementBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fffbeb', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 12 },
   completionNudge: { textAlign: 'center', opacity: 0.7, marginBottom: 4 },
   secondaryButton: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 20 },
   secondaryButtonText: { fontWeight: '600' },

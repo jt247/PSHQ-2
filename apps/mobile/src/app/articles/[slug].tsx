@@ -7,6 +7,7 @@ import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { AiAssistantButton } from '@/components/ai-assistant-panel'
 import { ContentRow } from '@/components/content-row'
+import { CommentsAndRating } from '@/components/comments-and-rating'
 import { supabase } from '@/lib/supabase'
 
 interface Article { id: string; title: string; summary: string | null; body: string | null; domain: string | null; tags: string[] | null; series_id: string | null }
@@ -56,6 +57,8 @@ export default function ArticleReaderScreen() {
             {continueFromHere.map(c => <ContentRow key={c.id} id={c.id} type={c.type} slug={c.slug} title={c.title} />)}
           </>
         )}
+
+        <CommentsAndRating contentId={item.id} />
       </ScrollView>
     </ThemedView>
   )

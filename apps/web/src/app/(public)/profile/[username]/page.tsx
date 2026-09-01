@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@pshq/api-client/server'
 import { getPublicProfile } from '@pshq/api-client/dashboard'
+import { ACHIEVEMENT_METADATA } from '@pshq/api-client/community'
 import { trackProfileViewed } from '@pshq/analytics'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
@@ -108,11 +109,26 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           ))}
         </section>
 
-        {/* Achievements: Epic F owns real scoring — honest empty state,
-            never a fabricated badge, same rule as the dashboard slot. */}
+        {/* Achievements (Epic F §F.4) — real, from get_public_profile's
+            achievement_keys. Empty state preserved verbatim for a member
+            who hasn't earned one yet. */}
         <section style={{ marginBottom: '1.75rem' }}>
           <h2 className="text-label-sm" style={{ color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.625rem' }}>Achievements</h2>
-          <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>No achievements yet.</p>
+          {profile.achievementKeys.length === 0 ? (
+            <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>No achievements yet.</p>
+          ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {profile.achievementKeys.map(key => {
+                const meta = ACHIEVEMENT_METADATA[key]
+                if (!meta) return null
+                return (
+                  <span key={key} title={meta.description} className="badge" style={{ background: 'color-mix(in srgb, var(--color-accent-warm) 15%, transparent)', color: 'var(--color-ink-deep)', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
+                    <span>{meta.icon}</span> {meta.title}
+                  </span>
+                )
+              })}
+            </div>
+          )}
         </section>
 
         {LINK_FIELDS.some(([key]) => profile[key]) && (

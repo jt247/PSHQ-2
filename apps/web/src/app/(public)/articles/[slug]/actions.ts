@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { awardContribution, normalizeCommentText, THOUGHTFUL_COMMENT_MIN_LENGTH } from '@pshq/api-client/community'
+import { trackContributionScored } from '@pshq/analytics'
 
 // ── Comments ─────────────────────────────────────────────────
 
@@ -23,6 +25,20 @@ export async function postCommentAction(
   if (!body || body.length < 2) return { error: 'Comment is too short.' }
   if (body.length > 2000) return { error: 'Comment is too long (max 2000 chars).' }
 
+  // §F.3 basic spam detection: block outright (not just de-score) a
+  // near-duplicate of the member's own last few comments — catches
+  // "great article! great article! great article!" bulk-posting, which a
+  // scoring-only dedupe wouldn't stop from cluttering the thread.
+  const normalized = normalizeCommentText(body)
+  const { data: recentOwn } = await supabase
+    .from('content_comments')
+    .select('body')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(5)
+  const isDuplicate = (recentOwn ?? []).some(c => normalizeCommentText(c.body) === normalized)
+  if (isDuplicate) return { error: 'You already posted something very similar recently.' }
+
   // Written via the service client, not the RLS-bound one above. The
   // sync_comment_count trigger's internal `update content set
   // comment_count = comment_count + 1` runs as whichever role executed the
@@ -38,6 +54,17 @@ export async function postCommentAction(
   })
   if (error) {
     return { error: 'Failed to post comment. Try again.' }
+  }
+
+  // §F.2 +4 "thoughtful comment" — the judgment call this pass makes real
+  // per the PRD's own instruction: a length floor stands in for
+  // "thoughtful" rather than any real NLP judgment. Deduped on the
+  // normalized text itself (not content_id), so distinct real comments on
+  // the same article each score, up to the daily cap, but the same
+  // near-duplicate text never scores twice even across different articles.
+  if (body.length >= THOUGHTFUL_COMMENT_MIN_LENGTH) {
+    const scored = await awardContribution(supabase, 'thoughtful_comment', contentId, normalized)
+    if (scored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'thoughtful_comment', 4, contentId)
   }
 
   revalidatePath(`/articles`)
@@ -124,6 +151,11 @@ export async function submitRatingAction(
 
     return { error: 'Failed to save rating. Try again.' }
   }
+
+  // §F.2 +1, deduped on content_id — updating an existing rating (the
+  // upsert path above) never re-scores, only the first rating ever does.
+  const scored = await awardContribution(supabase, 'rating', contentId, contentId)
+  if (scored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'rating', 1, contentId)
 
   revalidatePath(`/articles`)
   revalidatePath(`/content`)

@@ -1,14 +1,30 @@
 import type { CommunityPosition } from '@pshq/api-client/dashboard'
+import type { EarnedAchievement } from '@pshq/api-client/community'
 import { SectionCard, EmptyState } from './DashboardPrimitives'
 
-// Achievements: Epic F owns real scoring — this is deliberately an honest
-// empty slot forever, until that epic lands, per the build prompt
-// ("Complete your first learning activity to earn an achievement,"
-// established in Build Prompt 1). Never fabricate a badge here.
-function AchievementsCard() {
+// Achievements (Epic F §F.4) — real unlock logic now lives behind this
+// slot; the exact empty-state copy from Build Prompt 5 is preserved
+// verbatim for a member with zero earned achievements, per the standing
+// rule that this must not regress for a brand-new member.
+function AchievementsCard({ achievements }: { achievements: EarnedAchievement[] }) {
   return (
     <SectionCard title="🏅 Achievements">
-      <EmptyState>Complete your first learning activity to earn an achievement.</EmptyState>
+      {achievements.length === 0 ? (
+        <EmptyState>Complete your first learning activity to earn an achievement.</EmptyState>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem', padding: '0.875rem 0 1.25rem' }}>
+          {achievements.map(a => (
+            <div key={a.key} title={a.description} style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.5rem 0.75rem', borderRadius: '9999px',
+              background: 'color-mix(in srgb, var(--color-accent-warm) 15%, transparent)',
+            }}>
+              <span style={{ fontSize: '1.125rem' }}>{a.icon}</span>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-ink-deep)' }}>{a.title}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </SectionCard>
   )
 }
@@ -47,10 +63,10 @@ function CommunityPositionCard({ position }: { position: CommunityPosition | nul
   )
 }
 
-export function AchievementsAndPositionRow({ position }: { position: CommunityPosition | null }) {
+export function AchievementsAndPositionRow({ position, achievements }: { position: CommunityPosition | null; achievements: EarnedAchievement[] }) {
   return (
     <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-      <AchievementsCard />
+      <AchievementsCard achievements={achievements} />
       <CommunityPositionCard position={position} />
     </div>
   )

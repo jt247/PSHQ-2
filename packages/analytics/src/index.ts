@@ -116,4 +116,12 @@ export const trackAiRecommendationClicked = (ctx: TrackContext, slot: 'recommend
 export const trackContentAssistanceRequested = (ctx: TrackContext, action: 'key_takeaways' | 'action_checklist' | 'reflection_questions', contentId: string) =>
   track(ctx, 'ai_content_assistance_requested', { contentId, metadata: { action } })
 
+// ── Community & Engagement (Epic F) ─────────────────────────────────────
+export const trackContributionScored = (ctx: TrackContext, action: string, points: number, contentId?: string | null) =>
+  track(ctx, 'contribution_scored', { contentId: contentId ?? undefined, metadata: { action, points } })
+export const trackLeaderboardViewed = (ctx: TrackContext, period: 'weekly' | 'monthly' | 'all_time') =>
+  track(ctx, 'leaderboard_viewed', { metadata: { period } })
+export const trackAchievementUnlocked = (ctx: TrackContext, achievementKey: string) =>
+  track(ctx, 'achievement_unlocked', { metadata: { achievementKey } })
+
 export type { TrackContext, TrackOptions }

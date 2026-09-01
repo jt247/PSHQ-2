@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@pshq/api-client/server'
-import { trackContentCompleted, trackContentMarkedComplete } from '@pshq/analytics'
+import { awardContribution } from '@pshq/api-client/community'
+import { trackContentCompleted, trackContentMarkedComplete, trackContributionScored } from '@pshq/analytics'
 
 // Case studies live in case_library_entries, a separate table from
 // content, so they can't use content_favorites/content_progress (both
@@ -22,6 +23,9 @@ export async function toggleCaseFavoriteAction(caseId: string, isFavorited: bool
 
   const { error } = await supabase.from('case_favorites').insert({ case_id: caseId, user_id: user.id })
   if (error) return { error: error.message }
+
+  const scored = await awardContribution(supabase, 'favorite', caseId, caseId)
+  if (scored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'favorite', 1, caseId)
   return {}
 }
 
@@ -44,6 +48,9 @@ export async function toggleCaseCompleteAction(caseId: string, isComplete: boole
   if (isComplete) {
     await trackContentCompleted({ supabase, source: 'web', userId: user.id }, { contentId: caseId, contentType: 'article' })
     await trackContentMarkedComplete({ supabase, source: 'web', userId: user.id }, { contentId: caseId, metadata: { auto: false } })
+
+    const scored = await awardContribution(supabase, 'content_completed', caseId, caseId)
+    if (scored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'content_completed', 2, caseId)
   }
   return {}
 }

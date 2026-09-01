@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ScrollView, View, Pressable, StyleSheet, ActivityIndicator, Image, Linking } from 'react-native'
 import { useLocalSearchParams, router, Stack } from 'expo-router'
 import { getPublicProfile, type PublicProfile } from '@pshq/api-client/dashboard'
+import { ACHIEVEMENT_METADATA } from '@pshq/api-client/community'
 import { trackProfileViewed } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
@@ -103,7 +104,22 @@ export default function PublicProfileScreen() {
         </View>
 
         <SectionTitle title="Achievements" />
-        <ThemedText type="small" style={styles.muted}>No achievements yet.</ThemedText>
+        {profile.achievementKeys.length === 0 ? (
+          <ThemedText type="small" style={styles.muted}>No achievements yet.</ThemedText>
+        ) : (
+          <View style={styles.badgeRow}>
+            {profile.achievementKeys.map(key => {
+              const meta = ACHIEVEMENT_METADATA[key]
+              if (!meta) return null
+              return (
+                <View key={key} style={styles.badge}>
+                  <ThemedText style={{ fontSize: 14 }}>{meta.icon}</ThemedText>
+                  <ThemedText style={styles.badgeText}>{meta.title}</ThemedText>
+                </View>
+              )
+            })}
+          </View>
+        )}
 
         {LINK_FIELDS.some(([key]) => profile[key]) && (
           <View style={styles.linkRow}>

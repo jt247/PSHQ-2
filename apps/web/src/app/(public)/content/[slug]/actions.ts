@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient, createServiceClient } from '@pshq/api-client/server'
-import { trackExerciseCompleted, trackContentCompleted, trackContentMarkedComplete } from '@pshq/analytics'
+import { awardContribution } from '@pshq/api-client/community'
+import { trackExerciseCompleted, trackContentCompleted, trackContentMarkedComplete, trackContributionScored } from '@pshq/analytics'
 
 // Fire-and-forget analytics only — the actual share (native sheet or
 // clipboard copy) already happened client-side by the time this runs.
@@ -62,6 +63,12 @@ export async function toggleFavoriteAction(contentId: string, isFavorited: boole
     .from('content_favorites')
     .insert({ content_id: contentId, user_id: user.id })
   if (error) return { error: error.message }
+
+  // §F.2 +1, deduped on content_id (§F.3: "favoriting and unfavoriting the
+  // same item repeatedly must not repeatedly score" — this only ever
+  // scores the first time a given item is favorited by this user, ever).
+  const scored = await awardContribution(supabase, 'favorite', contentId, contentId)
+  if (scored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'favorite', 1, contentId)
   return {}
 }
 
@@ -120,6 +127,11 @@ export async function toggleContentCompleteAction(contentId: string, isComplete:
   if (isComplete) {
     await trackContentCompleted({ supabase, source: 'web', userId: user.id }, { contentId })
     await trackContentMarkedComplete({ supabase, source: 'web', userId: user.id }, { contentId, metadata: { auto } })
+
+    // §F.2 +2, deduped on content_id — re-completing after an un-complete
+    // never scores twice for the same item.
+    const scored = await awardContribution(supabase, 'content_completed', contentId, contentId)
+    if (scored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'content_completed', 2, contentId)
   }
   return {}
 }

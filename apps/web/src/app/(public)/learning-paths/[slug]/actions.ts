@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
-import { trackLearningPathStarted, trackLearningModuleCompleted, trackLearningPathCompleted, trackContentMarkedComplete } from '@pshq/analytics'
+import { awardContribution } from '@pshq/api-client/community'
+import { trackLearningPathStarted, trackLearningModuleCompleted, trackLearningPathCompleted, trackContentMarkedComplete, trackContributionScored } from '@pshq/analytics'
 
 async function requireUser() {
   const supabase = await createClient()
@@ -39,6 +40,12 @@ export async function toggleModuleCompleteAction(moduleId: string, pathId: strin
     await trackLearningModuleCompleted({ supabase, source: 'web', userId: user.id }, { contentId: moduleId })
     await trackContentMarkedComplete({ supabase, source: 'web', userId: user.id }, { contentId: moduleId, metadata: { auto: false } })
 
+    // §F.2 +3, deduped on module_id. Scoring calls go through the user's
+    // own RLS-bound client (not `service`) — award_contribution_event()
+    // reads auth.uid() internally, which is null under the service role.
+    const scored = await awardContribution(supabase, 'module_completed', moduleId, moduleId)
+    if (scored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'module_completed', 3, moduleId)
+
     // Check if every required module in the path is now complete.
     const { data: modules } = await service.from('learning_path_modules').select('id, is_required').eq('learning_path_id', pathId)
     const requiredIds = (modules ?? []).filter(m => m.is_required).map(m => m.id)
@@ -47,6 +54,10 @@ export async function toggleModuleCompleteAction(moduleId: string, pathId: strin
       if ((completed ?? []).length >= requiredIds.length) {
         await service.from('user_learning_paths').update({ completed_at: new Date().toISOString() }).eq('user_id', user.id).eq('learning_path_id', pathId)
         await trackLearningPathCompleted({ supabase, source: 'web', userId: user.id }, { contentId: pathId })
+
+        // §F.2 +15, deduped on pathId.
+        const pathScored = await awardContribution(supabase, 'path_completed', pathId, pathId)
+        if (pathScored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'path_completed', 15, pathId)
       }
     }
   }

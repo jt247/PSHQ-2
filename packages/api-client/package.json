@@ -10,6 +10,7 @@
     "./recommendations": "./src/recommendations.ts",
     "./dashboard": "./src/dashboard.ts",
     "./ai": "./src/ai/index.ts",
+    "./community": "./src/community/index.ts",
     "./onboarding": "./src/onboarding.ts",
     "./mobile": "./src/supabase/mobile.ts"
   },
