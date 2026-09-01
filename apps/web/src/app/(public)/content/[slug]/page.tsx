@@ -8,7 +8,6 @@ import { FavoriteButton } from '@/components/content/FavoriteButton'
 import { MarkCompleteButton } from '@/components/content/MarkCompleteButton'
 import { UpvoteButton } from '@/components/article/UpvoteButton'
 import { JsonLd } from '@/components/seo/JsonLd'
-import { DraftBadge } from '@/components/content/ContentCard'
 import { digitalDocumentSchema, breadcrumbSchema } from '@/lib/seo/schema'
 import { AUTHOR, DEFAULT_OG_IMAGE, absoluteUrl } from '@/lib/seo/constants'
 import { isViewableInline } from '@/lib/viewable'
@@ -180,7 +179,6 @@ export default async function ContentDetailPage({ params }: Props) {
               }}>
                 {label}
               </span>
-              {Boolean(rawItem.needs_review) && <DraftBadge />}
             </div>
 
             <h1 className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', margin: '0 0 1rem' }}>

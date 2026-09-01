@@ -13,7 +13,7 @@ interface Item {
   content: {
     id: string; title: string; slug: string; type: string; summary: string | null
     cover_image_url: string | null; pricing_type: string; view_count: number
-    upvote_count: number; tags: string[]; published_at: string | null; needs_review: boolean
+    upvote_count: number; tags: string[]; published_at: string | null
   }
 }
 
@@ -31,7 +31,7 @@ async function getCollection(slug: string): Promise<CollectionDetail | null> {
     .from('collections')
     .select(`
       id, slug, title, description,
-      collection_items (display_order, content:content_id (id, title, slug, type, summary, cover_image_url, pricing_type, view_count, upvote_count, tags, published_at, needs_review))
+      collection_items (display_order, content:content_id (id, title, slug, type, summary, cover_image_url, pricing_type, view_count, upvote_count, tags, published_at))
     `)
     .eq('slug', slug)
     .eq('status', 'published')

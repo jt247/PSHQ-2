@@ -158,6 +158,8 @@ export default async function DashboardPage() {
     .slice(0, 5)
     .map(c => ({ id: c.id, title: c.title ?? '', type: c.type, slug: c.slug, tags: [] }))
 
+  const profileCompletionPercent = profile ? getProfileCompletionPercent(profile as unknown as Record<string, unknown>) : 0
+
   return (
     <div className="dash-content">
       <MyProductSliceHeader
@@ -165,9 +167,32 @@ export default async function DashboardPage() {
         name={profile?.full_name ?? name}
         headline={profile?.headline ?? null}
         streak={streak}
-        profileCompletionPercent={profile ? getProfileCompletionPercent(profile as unknown as Record<string, unknown>) : 0}
+        profileCompletionPercent={profileCompletionPercent}
         greeting={greeting}
       />
+
+      {/* Existing members whose account predates Epic D's profile fields
+          (headline, links, skills, username, ...) never went through the
+          old 5-step onboarding a second time, so onboarding_done being
+          true says nothing about whether these newer fields are filled
+          in. Separate nudge, shown once onboarding itself is done. */}
+      {profile?.onboarding_done && profileCompletionPercent < 100 && (
+        <section style={{
+          background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '0.75rem',
+          padding: '1.25rem 1.5rem', marginBottom: '1.75rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem', flexWrap: 'wrap',
+        }}>
+          <div style={{ flex: 1, minWidth: '220px' }}>
+            <p className="text-body-md" style={{ fontWeight: 700, color: 'var(--color-ink-deep)', margin: '0 0 0.375rem' }}>
+              Your profile is {profileCompletionPercent}% complete
+            </p>
+            <p className="text-body-sm" style={{ color: 'var(--color-text-muted)', margin: 0 }}>
+              Add a headline, your skills, and links so other members can find and recognize you.
+            </p>
+          </div>
+          <Link href="/dashboard/settings" className="btn-primary" style={{ whiteSpace: 'nowrap' }}>Complete your profile →</Link>
+        </section>
+      )}
 
       {!profile?.onboarding_done && (
         <section style={{

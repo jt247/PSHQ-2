@@ -9,7 +9,6 @@ import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { trackContentOpened } from '@pshq/analytics'
 import { absoluteUrl } from '@/lib/seo/constants'
-import { DraftBadge } from '@/components/content/ContentCard'
 
 function renderBody(text: string) {
   return text.split(/\n\n+/).map((block, i) => {
@@ -61,7 +60,6 @@ export default async function BuildNoteDetailPage({ params }: { params: Promise<
 
         <header style={{ margin: '1.5rem 0 2.5rem' }}>
           <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            {item.needs_review && <DraftBadge />}
             {(item.tags ?? []).slice(0, 3).map((t: string) => (
               <span key={t} className="badge" style={{ background: 'var(--color-paper-darker)', color: 'var(--color-ink-deep)' }}>{t}</span>
             ))}

@@ -4,6 +4,7 @@ import { router, Stack } from 'expo-router'
 import { trackProfileUpdated } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
+import { ChipMultiSelect } from '@/components/chip-select'
 import { supabase } from '@/lib/supabase'
 
 const USERNAME_RE = /^[a-z0-9_]{3,30}$/
@@ -37,12 +38,28 @@ export default function ProfileEditScreen() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState<FormState>(BLANK)
   const [error, setError] = useState<string | null>(null)
+  const [topicOptions, setTopicOptions] = useState<string[]>([])
+  const [goalOptions, setGoalOptions] = useState<string[]>([])
+  const [topics, setTopics] = useState<string[]>([])
+  const [goals, setGoals] = useState<string[]>([])
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
+
+      const [{ data }, { data: allTopics }, { data: allGoals }, { data: userTopics }, { data: userGoals }] = await Promise.all([
+        supabase.from('users').select('*').eq('id', user.id).single(),
+        supabase.from('topics').select('name').order('sort_order'),
+        supabase.from('goals').select('name').order('sort_order'),
+        supabase.from('user_topics').select('topic:topics(name)').eq('user_id', user.id),
+        supabase.from('user_goals').select('goal:goals(name)').eq('user_id', user.id),
+      ])
+      setTopicOptions((allTopics ?? []).map(t => t.name))
+      setGoalOptions((allGoals ?? []).map(g => g.name))
+      setTopics(((userTopics ?? []) as unknown as Array<{ topic: { name: string } | null }>).map(t => t.topic?.name).filter((n): n is string => !!n))
+      setGoals(((userGoals ?? []) as unknown as Array<{ goal: { name: string } | null }>).map(g => g.goal?.name).filter((n): n is string => !!n))
+
       if (data) {
         const row = data as Record<string, unknown>
         setForm({
@@ -97,13 +114,27 @@ export default function ProfileEditScreen() {
       privacy_tier: form.privacy_tier,
     }).eq('id', user.id)
 
-    setSaving(false)
     if (updateError) {
+      setSaving(false)
       setError(updateError.code === '23505' ? 'That username is already taken.' : 'Failed to save. Try again.')
       return
     }
 
-    await trackProfileUpdated({ supabase, source: 'mobile', userId: user.id }, Object.keys(form))
+    // Delete-then-insert-selected — same sync shape as web's settings action.
+    const [{ data: allTopics }, { data: allGoals }] = await Promise.all([
+      supabase.from('topics').select('id, name'),
+      supabase.from('goals').select('id, name'),
+    ])
+    const topicIds = (allTopics ?? []).filter(t => topics.includes(t.name)).map(t => t.id)
+    const goalIds = (allGoals ?? []).filter(g => goals.includes(g.name)).map(g => g.id)
+
+    await supabase.from('user_topics').delete().eq('user_id', user.id)
+    if (topicIds.length > 0) await supabase.from('user_topics').insert(topicIds.map(topic_id => ({ user_id: user.id, topic_id })))
+    await supabase.from('user_goals').delete().eq('user_id', user.id)
+    for (const goal_id of goalIds.slice(0, 5)) await supabase.from('user_goals').insert({ user_id: user.id, goal_id })
+
+    setSaving(false)
+    await trackProfileUpdated({ supabase, source: 'mobile', userId: user.id }, [...Object.keys(form), 'topics', 'goals'])
     Alert.alert('Saved', 'Your profile has been updated.', [{ text: 'OK', onPress: () => router.back() }])
   }
 
@@ -130,6 +161,14 @@ export default function ProfileEditScreen() {
         <Field label="Website"><TextInput style={styles.input} value={form.website_url} onChangeText={v => set('website_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
         <Field label="GitHub"><TextInput style={styles.input} value={form.github_url} onChangeText={v => set('github_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
         <Field label="X (Twitter)"><TextInput style={styles.input} value={form.x_url} onChangeText={v => set('x_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
+
+        <Field label="Topics">
+          <ChipMultiSelect options={topicOptions} value={topics} onChange={setTopics} />
+        </Field>
+
+        <Field label={`Goals (${goals.length}/5 selected)`}>
+          <ChipMultiSelect options={goalOptions} value={goals} onChange={setGoals} max={5} />
+        </Field>
 
         <ThemedText type="smallBold" style={styles.label}>Profile privacy</ThemedText>
         <View style={styles.privacyRow}>

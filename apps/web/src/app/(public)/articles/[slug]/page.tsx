@@ -8,7 +8,6 @@ import { ListenButton } from '@/components/article/ListenButton'
 import { CommentsSection } from '@/components/article/CommentsSection'
 import { RatingWidget } from '@/components/article/RatingWidget'
 import { ExercisesSection } from '@/components/content/ExercisesSection'
-import { DraftBadge } from '@/components/content/ContentCard'
 import { MarkCompleteButton } from '@/components/content/MarkCompleteButton'
 import { AutoCompleteTracker } from '@/components/content/AutoCompleteTracker'
 import { ShareButton } from '@/components/content/ShareButton'
@@ -277,10 +276,9 @@ export default async function ArticlePage({ params }: Props) {
               />
             )}
 
-            {(rawItem.needs_review || (rawItem.tags && Array.isArray(rawItem.tags) && (rawItem.tags as string[]).length > 0)) && (
+            {rawItem.tags && Array.isArray(rawItem.tags) && (rawItem.tags as string[]).length > 0 && (
               <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-                {Boolean(rawItem.needs_review) && <DraftBadge />}
-                {(rawItem.tags as string[] | null)?.map(tag => (
+                {(rawItem.tags as string[]).map(tag => (
                   <span key={tag} className="text-label-sm" style={{
                     background: 'var(--color-paper-darker)',
                     color: 'var(--color-text-muted)',
