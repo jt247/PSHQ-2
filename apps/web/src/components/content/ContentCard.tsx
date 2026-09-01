@@ -21,6 +21,8 @@ const TYPE_LABELS: Record<string, string> = {
   ebook: 'Ebook',
   template: 'Template',
   course: 'Course',
+  guide: 'Guide',
+  build_note: 'Build Note',
 }
 
 const TYPE_PLACEHOLDER: Record<string, string> = {
@@ -28,11 +30,13 @@ const TYPE_PLACEHOLDER: Record<string, string> = {
   ebook: '📚',
   template: '📋',
   course: '🎓',
+  guide: '🧭',
+  build_note: '🔧',
 }
 
 export function ContentCard(props: ContentCardProps) {
   const { title, slug, type, summary, cover_image_url, pricing_type, view_count, upvote_count, tags, is_coming_soon } = props
-  const href = type === 'article' ? `/articles/${slug}` : `/content/${slug}`
+  const href = type === 'article' ? `/articles/${slug}` : type === 'build_note' ? `/build-notes/${slug}` : `/content/${slug}`
   const label = TYPE_LABELS[type] ?? type
 
   const coverEl = cover_image_url ? (

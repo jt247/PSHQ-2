@@ -5,6 +5,7 @@ import { ContentCard } from '@/components/content/ContentCard'
 import { LibrarySearch } from '@/components/content/LibrarySearch'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+import { trackSearchPerformed, trackSearchZeroResults } from '@pshq/analytics'
 
 // Canonical always points to the unfiltered base URL — type/pricing filter
 // states are the same underlying content, just re-sorted, so they should
@@ -16,27 +17,30 @@ export const metadata: Metadata = {
   alternates: { canonical: '/library' },
 }
 
-interface SearchParams { type?: string; pricing?: string; search?: string; sort?: string }
+interface SearchParams { type?: string; pricing?: string; domain?: string; search?: string; sort?: string }
 interface Props { searchParams: Promise<SearchParams> }
 
-const TYPE_OPTIONS = ['all', 'article', 'ebook', 'template', 'course'] as const
+const TYPE_OPTIONS = ['all', 'article', 'ebook', 'template', 'course', 'guide', 'build_note'] as const
 const PRICING_OPTIONS = ['all', 'free', 'paid'] as const
+const DOMAIN_OPTIONS = ['all', 'product', 'growth', 'ai', 'building', 'careers', 'leadership'] as const
 const SORT_OPTIONS = ['newest', 'oldest'] as const
-const TYPE_LABELS: Record<string, string> = { all: 'All', article: 'Articles', ebook: 'E-books', template: 'Templates', course: 'Courses' }
+const TYPE_LABELS: Record<string, string> = { all: 'All', article: 'Articles', ebook: 'E-books', template: 'Templates', course: 'Courses', guide: 'Guides', build_note: 'Build Notes' }
+const DOMAIN_LABELS: Record<string, string> = { all: 'All domains', product: 'Product', growth: 'Growth', ai: 'AI', building: 'Building', careers: 'Careers', leadership: 'Leadership' }
 const SORT_LABELS: Record<string, string> = { newest: 'Newest first', oldest: 'Oldest first' }
 
 export default async function LibraryPage({ searchParams }: Props) {
-  const { type = 'all', pricing = 'all', search = '', sort = 'newest' } = await searchParams
+  const { type = 'all', pricing = 'all', domain = 'all', search = '', sort = 'newest' } = await searchParams
   const sortOrder = sort === 'oldest' ? 'oldest' : 'newest'
   const supabase = await createClient()
 
   let query = supabase
     .from('content')
-    .select('id,title,slug,type,summary,cover_image_url,tags,pricing_type,selar_url,view_count,upvote_count,comment_count,published_at,is_coming_soon')
+    .select('id,title,slug,type,summary,cover_image_url,tags,pricing_type,selar_url,view_count,upvote_count,comment_count,published_at,is_coming_soon,domain')
     .eq('status', 'published')
     .order('published_at', { ascending: sortOrder === 'oldest' })
 
   if (type && type !== 'all') query = query.eq('type', type)
+  if (domain && domain !== 'all') query = query.eq('domain', domain)
 
   const { data: rawItems } = await query
   const items = (rawItems ?? []).map(item => ({
@@ -54,14 +58,22 @@ export default async function LibraryPage({ searchParams }: Props) {
     return haystack.includes(searchTerm)
   })
 
-  // Every filter link needs to preserve the other three params — this was
+  if (searchTerm) {
+    const { data: { user } } = await supabase.auth.getUser()
+    const ctx = { supabase, source: 'web' as const, userId: user?.id ?? null }
+    await trackSearchPerformed(ctx, searchTerm, filtered.length)
+    if (filtered.length === 0) await trackSearchZeroResults(ctx, searchTerm)
+  }
+
+  // Every filter link needs to preserve the other params — this was
   // already a source of one real bug (switching type/pricing used to
   // silently drop an active search term). One builder for all of them
-  // instead of hand-concatenating the string four times.
-  function buildUrl(overrides: Partial<{ type: string; pricing: string; sort: string }>) {
+  // instead of hand-concatenating the string repeatedly.
+  function buildUrl(overrides: Partial<{ type: string; pricing: string; domain: string; sort: string }>) {
     const params = new URLSearchParams()
     params.set('type', overrides.type ?? type)
     params.set('pricing', overrides.pricing ?? pricing)
+    params.set('domain', overrides.domain ?? domain)
     const nextSort = overrides.sort ?? sortOrder
     if (nextSort !== 'newest') params.set('sort', nextSort)
     if (search) params.set('search', search)
@@ -107,6 +119,28 @@ export default async function LibraryPage({ searchParams }: Props) {
                   transition: 'all 150ms',
                 }}>
                   {TYPE_LABELS[t] ?? t}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Domain filters */}
+          <div>
+            <p className="text-label-sm" style={{ textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-muted)', marginBottom: '0.5rem', opacity: 0.6 }}>
+              Domain
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {DOMAIN_OPTIONS.map(d => (
+                <a key={d} href={buildUrl({ domain: d })} className="text-label-sm" style={{
+                  padding: '0.375rem 1rem',
+                  borderRadius: '0.125rem',
+                  background: domain === d ? 'var(--color-ink-deep)' : 'var(--color-paper-darker)',
+                  color: domain === d ? '#ffffff' : 'var(--color-ink-deep)',
+                  border: '1px solid color-mix(in srgb, var(--color-tertiary) 10%, transparent)',
+                  textDecoration: 'none',
+                  transition: 'all 150ms',
+                }}>
+                  {DOMAIN_LABELS[d]}
                 </a>
               ))}
             </div>

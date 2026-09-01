@@ -1,24 +1,16 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { createServiceClient } from '@pshq/api-client/server'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
-import { CurriculumGrid } from '@/components/curriculum/CurriculumGrid'
-import { JsonLd } from '@/components/seo/JsonLd'
-import { FaqAccordion } from '@/components/seo/FaqAccordion'
-import { courseSchema, educationalOrgSchema, faqPageSchema } from '@/lib/seo/schema'
-import { CURRICULUM_FAQ } from '@/lib/seo/faq-content'
-import './curriculum.css'
 
 export const metadata: Metadata = {
-  title: 'Free Product Management Curriculum 2026',
-  description:
-    'Six structured, free learning paths for product practitioners — General PM, AI PM, Growth PM, Technical PM, Strategic PM, and The PM Architect. A guide, not a course.',
+  title: 'Open PM Curriculum — Free, Structured PM Education',
+  description: 'A freely available, structured curriculum covering product fundamentals, discovery, strategy, execution, analytics, GTM, AI, leadership, and career practice — built for product practitioners.',
   alternates: { canonical: '/initiatives/open-pm-curriculum' },
 }
 
 interface Pathway {
-  id: string
   slug: string
   title: string
   description: string | null
@@ -28,158 +20,42 @@ interface Pathway {
 
 async function getPathways(): Promise<Pathway[]> {
   const service = createServiceClient()
-
-  const { data, error } = await service
-    .from('curriculum_pathways')
-    .select('id, slug, title, description, status, display_order')
-    .order('display_order', { ascending: true })
-
-  if (error || !data) return []
-  return data as Pathway[]
+  const { data } = await service.from('curriculum_pathways').select('slug, title, description, status, display_order').order('display_order')
+  return (data ?? []) as Pathway[]
 }
 
-const STAGES = [
-  { num: '01', label: 'Overview', sub: 'What this path is and who it\'s for' },
-  { num: '02', label: 'Foundation', sub: 'Core concepts and mental models' },
-  { num: '03', label: 'Craft', sub: 'Tools, frameworks, real practice' },
-  { num: '04', label: 'Portfolio', sub: 'Build something you can show' },
-  { num: '05', label: 'Next Steps', sub: 'Where to go from here' },
-]
-
-export default async function OpenPMCurriculumPage() {
+export default async function OpenPmCurriculumPage() {
   const pathways = await getPathways()
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
-      <JsonLd data={educationalOrgSchema()} />
-      {pathways.map(p => (
-        <JsonLd key={p.id} data={courseSchema({
-          name: p.title,
-          description: p.description,
-          path: `/initiatives/open-pm-curriculum#${p.slug}`,
-        })} />
-      ))}
-      <JsonLd data={faqPageSchema(CURRICULUM_FAQ)} />
       <PublicNav activeHref="/initiatives" />
 
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, maxWidth: '64rem', margin: '0 auto', width: '100%', padding: '5rem var(--spacing-margin-edge)' }}>
+        <p className="text-label-sm" style={{ color: 'var(--color-accent-warm)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Initiative · Interim version, actively developed</p>
+        <h1 className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', marginBottom: '1rem' }}>Open PM Curriculum</h1>
+        <p className="text-body-lg" style={{ color: 'var(--color-text-muted)', maxWidth: '58ch', marginBottom: '1rem' }}>
+          The comprehensive, canonical product education resource — distinct from a Learning Path, which targets one specific outcome. This is everything.
+        </p>
+        <p className="text-body-sm" style={{ color: 'var(--color-text-muted)', maxWidth: '58ch', marginBottom: '3rem', fontStyle: 'italic' }}>
+          General PM is drafted as a full interim curriculum today. JT is actively writing and expanding the other five pathways with his own material — this page updates as that lands.
+        </p>
 
-        {/* ── Hero ── */}
-        <header className="opc-hero">
-          <div className="opc-hero-inner">
-            <div>
-              <Link href="/initiatives" className="opc-hero-back">
-                ← All initiatives
-              </Link>
-              <p className="opc-hero-eyebrow">Open PM Curriculum</p>
-              <h1>Six Ways to Learn Product Management in 2026</h1>
-            </div>
-
-            <div className="opc-hero-right">
-              <span className="opc-hero-status">
-                <span style={{ width: '0.375rem', height: '0.375rem', borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} aria-hidden="true" />
-                Curriculum Coming Soon
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
+          {pathways.map(p => (
+            <Link key={p.slug} href={`/initiatives/open-pm-curriculum/${p.slug}`} style={{
+              display: 'block', textDecoration: 'none', padding: '1.5rem',
+              border: '1px solid color-mix(in srgb, var(--color-tertiary) 12%, transparent)',
+              borderRadius: '0.5rem',
+            }}>
+              <span className="badge" style={{ background: p.status === 'live' ? '#dcfce7' : 'var(--color-paper-darker)', color: p.status === 'live' ? '#15803d' : 'var(--color-ink-deep)', marginBottom: '0.75rem', display: 'inline-block' }}>
+                {p.status === 'live' ? 'Live' : 'Coming Soon'}
               </span>
-
-              <p className="opc-hero-subhead">
-                This is a guide, not a course. We won&apos;t teach you here — we&apos;ll
-                tell you exactly what to focus on and where to look. Pick your
-                path, then go find the courses, channels, and resources that fit
-                where you are. We point, you do the work.
-              </p>
-
-              <div className="opc-hero-meta" aria-label="Curriculum overview">
-                <div className="opc-hero-meta-item">
-                  <span className="opc-hero-meta-value">6</span>
-                  <span className="opc-hero-meta-label">Pathways</span>
-                </div>
-                <div className="opc-hero-meta-divider" aria-hidden="true" />
-                <div className="opc-hero-meta-item">
-                  <span className="opc-hero-meta-value">5</span>
-                  <span className="opc-hero-meta-label">Stages each</span>
-                </div>
-                <div className="opc-hero-meta-divider" aria-hidden="true" />
-                <div className="opc-hero-meta-item">
-                  <span className="opc-hero-meta-value">Free</span>
-                  <span className="opc-hero-meta-label">Always</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* ── Pathway grid ── */}
-        <section className="opc-paths" aria-labelledby="paths-heading">
-          <div className="opc-paths-inner">
-            <div className="opc-paths-header">
-              <h2 id="paths-heading">Choose your path</h2>
-              <p>Click any pathway to see its status. All six are in progress — launching together.</p>
-            </div>
-
-            <CurriculumGrid pathways={pathways} />
-          </div>
-        </section>
-
-        {/* ── Curriculum structure teaser ── */}
-        <section className="opc-structure" aria-labelledby="structure-heading">
-          <div className="opc-structure-inner">
-            <div className="opc-structure-left">
-              <h2 id="structure-heading">Every pathway follows the same five stages</h2>
-              <p>
-                We designed the structure so you always know where you are and
-                what comes next — regardless of which path you pick.
-              </p>
-            </div>
-
-            <div className="opc-stages" role="list" aria-label="Curriculum stages">
-              {STAGES.map((stage, idx) => (
-                <div key={stage.num} className="opc-stage" role="listitem">
-                  <span className="opc-stage-num">{stage.num}</span>
-                  <span className="opc-stage-label">{stage.label}</span>
-                  <p className="opc-stage-sub">{stage.sub}</p>
-                  {idx < STAGES.length - 1 && (
-                    <span className="opc-stage-arrow" aria-hidden="true">→</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── FAQ ── */}
-        <section style={{ padding: '5rem var(--spacing-margin-edge)' }}>
-          <div style={{ maxWidth: '44rem', margin: '0 auto' }}>
-            <h2 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', marginBottom: '2rem', textAlign: 'center' }}>
-              Common questions
-            </h2>
-            <FaqAccordion items={CURRICULUM_FAQ} />
-          </div>
-        </section>
-
-        {/* ── CTA ── */}
-        <div className="opc-cta">
-          <div className="opc-cta-inner">
-            <div>
-              <h2>Want to know when this launches?</h2>
-              <p>
-                Send us an email and we&apos;ll notify you when the curriculum
-                goes live. No newsletter, no drip — just one email when it&apos;s ready.
-              </p>
-            </div>
-
-            <div className="opc-cta-actions">
-              <a
-                href="mailto:hello@productslicehq.com?subject=Open PM Curriculum — Notify Me"
-                className="opc-notify-link"
-                aria-label="Email to be notified when the curriculum launches"
-              >
-                hello@productslicehq.com →
-              </a>
-              <span className="opc-notify-sub">One email. No spam.</span>
-            </div>
-          </div>
+              <p className="text-body-lg" style={{ fontWeight: 700, color: 'var(--color-ink-deep)', marginBottom: '0.375rem' }}>{p.title}</p>
+              {p.description && <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>{p.description}</p>}
+            </Link>
+          ))}
         </div>
-
       </main>
 
       <PublicFooter />
