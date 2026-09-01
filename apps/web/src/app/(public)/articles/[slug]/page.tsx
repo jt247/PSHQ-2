@@ -7,6 +7,7 @@ import { AiSummaryPanel } from '@/components/article/AiSummaryPanel'
 import { ListenButton } from '@/components/article/ListenButton'
 import { CommentsSection } from '@/components/article/CommentsSection'
 import { RatingWidget } from '@/components/article/RatingWidget'
+import { ExercisesSection } from '@/components/content/ExercisesSection'
 import { ShareButton } from '@/components/content/ShareButton'
 import { FavoriteButton } from '@/components/content/FavoriteButton'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -333,6 +334,8 @@ export default async function ArticlePage({ params }: Props) {
           ) : (
             <p className="text-body-md" style={{ color: 'var(--color-text-muted)', marginBottom: '3rem' }}>No content yet.</p>
           )}
+
+          <ExercisesSection contentId={rawItem.id} isLoggedIn={!!user} />
 
           <div style={{
             marginBottom: '2.5rem',

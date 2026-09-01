@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { trackExerciseCompleted } from '@pshq/analytics'
 
 // Fire-and-forget analytics only — the actual share (native sheet or
 // clipboard copy) already happened client-side by the time this runs.
@@ -60,6 +61,37 @@ export async function toggleFavoriteAction(contentId: string, isFavorited: boole
   const { error } = await supabase
     .from('content_favorites')
     .insert({ content_id: contentId, user_id: user.id })
+  if (error) return { error: error.message }
+  return {}
+}
+
+// Exercise responses are private (RLS: self read/insert/update/delete —
+// never exposed publicly per Epic B §9/§58), so this goes through the
+// RLS-bound client directly, same as favorites.
+export async function saveExerciseResponseAction(exerciseId: string, response: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Sign in to save your response.' }
+
+  const trimmed = response.trim()
+  if (!trimmed) return { error: 'Write a response before saving.' }
+
+  const { error } = await supabase.from('exercise_responses').upsert(
+    { exercise_id: exerciseId, user_id: user.id, response: { text: trimmed }, updated_at: new Date().toISOString() },
+    { onConflict: 'exercise_id,user_id' }
+  )
+  if (error) return { error: error.message }
+
+  await trackExerciseCompleted({ supabase, source: 'web', userId: user.id }, { contentId: exerciseId })
+  return {}
+}
+
+export async function deleteExerciseResponseAction(exerciseId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated.' }
+
+  const { error } = await supabase.from('exercise_responses').delete().eq('exercise_id', exerciseId).eq('user_id', user.id)
   if (error) return { error: error.message }
   return {}
 }
