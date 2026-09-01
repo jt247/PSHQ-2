@@ -14,7 +14,7 @@ async function getBuildNotes() {
   const service = createServiceClient()
   const { data } = await service
     .from('content')
-    .select('id,title,slug,type,summary,cover_image_url,tags,pricing_type,view_count,upvote_count,published_at')
+    .select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,needs_review')
     .eq('type', 'build_note')
     .eq('status', 'published')
     .order('published_at', { ascending: false })

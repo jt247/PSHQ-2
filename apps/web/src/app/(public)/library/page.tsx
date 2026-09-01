@@ -70,7 +70,7 @@ export default async function LibraryPage({ searchParams }: Props) {
 
   let query = supabase
     .from('content')
-    .select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,is_coming_soon,domain,level,resource_intent,estimated_time_minutes,series_id')
+    .select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,is_coming_soon,domain,level,resource_intent,estimated_time_minutes,series_id,needs_review')
     .eq('status', 'published')
 
   if (type !== 'all') query = query.eq('type', type)

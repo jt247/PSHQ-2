@@ -41,8 +41,8 @@ export default async function HomePage() {
     productLabResult,
   ] = await Promise.all([
     service.from('learning_paths').select('slug, title, description, level, estimated_time_minutes').eq('status', 'published').order('display_order').limit(3),
-    service.from('content').select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,is_coming_soon').eq('status', 'published').in('type', ['template', 'ebook', 'guide']).order('published_at', { ascending: false }).limit(3),
-    service.from('content').select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,is_coming_soon').eq('status', 'published').eq('type', 'build_note').order('published_at', { ascending: false }).limit(3),
+    service.from('content').select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,is_coming_soon,needs_review').eq('status', 'published').in('type', ['template', 'ebook', 'guide']).order('published_at', { ascending: false }).limit(3),
+    service.from('content').select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,is_coming_soon,needs_review').eq('status', 'published').eq('type', 'build_note').order('published_at', { ascending: false }).limit(3),
     service.from('case_library_entries').select('id, slug, title, company_name, description, logo_url').eq('status', 'published').not('slug', 'is', null).order('published_at', { ascending: false }).limit(3),
     service.from('initiative_editions').select('slug, edition_number, title, focus_description, status, pricing').eq('edition_number', '3.0').maybeSingle(),
   ])

@@ -57,7 +57,7 @@ export default async function DomainHubPage({ params }: { params: Promise<{ doma
   const [{ data: items }, featuredResult] = await Promise.all([
     service
       .from('content')
-      .select('id,title,slug,type,summary,cover_image_url,tags,pricing_type,selar_url,view_count,upvote_count,published_at,is_coming_soon')
+      .select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,is_coming_soon,needs_review')
       .eq('status', 'published')
       .eq('domain', domain)
       .order('published_at', { ascending: false }),

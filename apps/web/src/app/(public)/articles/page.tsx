@@ -15,7 +15,7 @@ export default async function ArticlesPage() {
   const supabase = await createClient()
   const { data: rawItems } = await supabase
     .from('content')
-    .select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,comment_count,published_at')
+    .select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,comment_count,published_at,needs_review')
     .eq('status', 'published')
     .eq('type', 'article')
     .order('published_at', { ascending: false })

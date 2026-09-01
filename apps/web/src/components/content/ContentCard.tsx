@@ -12,6 +12,19 @@ interface ContentCardProps {
   tags: string[]
   published_at: string | null
   is_coming_soon?: boolean
+  needs_review?: boolean
+}
+
+// Cosmetic only — never written back anywhere, just a visible signal for
+// content that hasn't had a full standards pass yet (see SIDENOTES.md).
+// Driven by the existing `needs_review` column; JT clears it per item as
+// each one is actually finished.
+export function DraftBadge() {
+  return (
+    <span className="badge" title="First draft — a fuller update is coming" style={{ background: 'color-mix(in srgb, var(--color-tertiary) 15%, transparent)', color: 'var(--color-text-muted)' }}>
+      V1 · Draft
+    </span>
+  )
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -36,7 +49,7 @@ export function ContentCard(props: ContentCardProps) {
   // view_count/upvote_count are intentionally not destructured — Standing
   // Rule / PRD §5.1: view counts never render on any public-facing card.
   // They stay in the prop type since callers pass the full content row.
-  const { title, slug, type, summary, cover_image_url, tags, is_coming_soon } = props
+  const { title, slug, type, summary, cover_image_url, tags, is_coming_soon, needs_review } = props
   const href = type === 'article' ? `/articles/${slug}` : type === 'build_note' ? `/build-notes/${slug}` : `/content/${slug}`
   const label = TYPE_LABELS[type] ?? type
 
@@ -77,6 +90,7 @@ export function ContentCard(props: ContentCardProps) {
             Coming Soon
           </span>
         )}
+        {needs_review && !is_coming_soon && <DraftBadge />}
       </div>
 
       <p className="text-body-lg" style={{ margin: 0, fontWeight: 600, lineHeight: 1.4, color: 'var(--color-ink-deep)' }}>
@@ -151,6 +165,7 @@ export function ContentCard(props: ContentCardProps) {
           }}>
             {label}
           </span>
+          {needs_review && <DraftBadge />}
         </div>
 
         <Link href={href} style={{ textDecoration: 'none', color: 'inherit' }}>
