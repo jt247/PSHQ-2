@@ -1,74 +1,75 @@
-'use client'
-
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { useActionState } from 'react'
-import { onboardingAction, type OnboardingState } from '@/app/(auth)/actions/auth'
-import { AreaPicker } from '@/components/dashboard/AreaPicker'
+import { createClient } from '@pshq/api-client/server'
+import type { UserRow, OnboardingProgressRow } from '@pshq/database'
+import { OnboardingWizard, type Step } from './OnboardingWizard'
 
-const initial: OnboardingState = { error: null }
+interface Props { searchParams: Promise<{ step?: string }> }
 
-export default function OnboardingPage() {
-  const [state, action, pending] = useActionState(onboardingAction, initial)
+const STEP_ORDER: Step[] = ['about_you', 'role', 'experience', 'goals', 'topics']
+
+// Whichever step's *_completed_at is still null, in order, is where a user
+// who left mid-way resumes — this is the entire "resume" mechanism.
+function firstIncompleteStep(progress: OnboardingProgressRow | null): Step {
+  if (!progress) return 'about_you'
+  if (!progress.about_you_completed_at) return 'about_you'
+  if (!progress.role_completed_at) return 'role'
+  if (!progress.experience_completed_at) return 'experience'
+  if (!progress.goals_completed_at) return 'goals'
+  return 'topics'
+}
+
+export default async function OnboardingPage({ searchParams }: Props) {
+  const { step: stepParam } = await searchParams
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/sign-in?redirect=/onboarding')
+
+  const [profileRes, progressRes, secondaryRolesRes, goalsRes, topicsRes, primaryRoleRes] = await Promise.all([
+    supabase.from('users').select('*').eq('id', user.id).single(),
+    supabase.from('onboarding_progress').select('*').eq('user_id', user.id).maybeSingle(),
+    supabase.from('user_secondary_roles').select('role:roles(name)').eq('user_id', user.id),
+    supabase.from('user_goals').select('goal:goals(name)').eq('user_id', user.id),
+    supabase.from('user_topics').select('topic:topics(name)').eq('user_id', user.id),
+    supabase.from('users').select('primary_role_id, roles:primary_role_id(name)').eq('id', user.id).single(),
+  ])
+
+  const profile = profileRes.data as UserRow | null
+  if (profile?.onboarding_done) redirect('/dashboard')
+
+  const progress = progressRes.data as OnboardingProgressRow | null
+  const requested = stepParam as Step | undefined
+  const step = requested && STEP_ORDER.includes(requested) ? requested : firstIncompleteStep(progress)
+
+  const primaryRoleName = (primaryRoleRes.data as unknown as { roles: { name: string } | null } | null)?.roles?.name ?? null
+  const secondaryRoleNames = ((secondaryRolesRes.data ?? []) as unknown as Array<{ role: { name: string } | null }>)
+    .map(r => r.role?.name).filter((n): n is string => !!n)
+  const goalNames = ((goalsRes.data ?? []) as unknown as Array<{ goal: { name: string } | null }>)
+    .map(g => g.goal?.name).filter((n): n is string => !!n)
+  const topicNames = ((topicsRes.data ?? []) as unknown as Array<{ topic: { name: string } | null }>)
+    .map(t => t.topic?.name).filter((n): n is string => !!n)
 
   return (
     <div className="auth-page">
       <header className="auth-header">
         <Link href="/" className="auth-brand">Product Slice HQ</Link>
       </header>
-
       <main className="auth-main">
-        <div className="auth-card" style={{ maxWidth: '520px' }}>
-          <div className="auth-card-inner">
-            <div style={{ marginBottom: '1.75rem' }}>
-              <p className="text-label-sm" style={{ color: 'var(--color-accent-warm)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
-                One last step
-              </p>
-              <h1 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', marginBottom: '0.5rem' }}>
-                Tell us about yourself
-              </h1>
-              <p className="text-body-md" style={{ color: 'var(--color-text-muted)' }}>
-                We&apos;ll use this to tailor your experience and surface the most relevant content.
-              </p>
-            </div>
-
-            <form action={action} className="auth-form">
-              <div className="auth-field">
-                <label htmlFor="job_role">Your role</label>
-                <input
-                  id="job_role"
-                  name="job_role"
-                  type="text"
-                  placeholder="e.g. Product Manager, Founder, Designer"
-                  required
-                />
-              </div>
-
-              <div className="auth-field">
-                <label htmlFor="country">Country</label>
-                <input
-                  id="country"
-                  name="country"
-                  type="text"
-                  placeholder="e.g. Nigeria, UK, US"
-                  required
-                />
-              </div>
-
-              <fieldset className="auth-field" style={{ border: 'none', padding: 0, margin: 0 }}>
-                <legend className="text-body-sm" style={{ fontWeight: 500, color: 'var(--color-ink-deep)', marginBottom: '0.75rem', display: 'block' }}>
-                  Areas of interest
-                </legend>
-                <AreaPicker initial={[]} />
-              </fieldset>
-
-              {state.error && <p className="auth-error" role="alert">{state.error}</p>}
-
-              <button type="submit" disabled={pending} className="auth-submit">
-                {pending ? 'Saving…' : 'GO TO DASHBOARD →'}
-              </button>
-            </form>
-          </div>
-        </div>
+        <OnboardingWizard
+          step={step}
+          initial={{
+            jobRole: profile?.job_role ?? null,
+            company: profile?.company ?? null,
+            country: profile?.country ?? null,
+            region: profile?.region ?? null,
+            headline: profile?.headline ?? null,
+            primaryRole: primaryRoleName,
+            secondaryRoles: secondaryRoleNames,
+            experienceLevel: profile?.experience_level ?? null,
+            goals: goalNames,
+            topics: topicNames,
+          }}
+        />
       </main>
     </div>
   )

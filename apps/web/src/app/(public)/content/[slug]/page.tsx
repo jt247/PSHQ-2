@@ -10,6 +10,7 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { digitalDocumentSchema, breadcrumbSchema } from '@/lib/seo/schema'
 import { AUTHOR, DEFAULT_OG_IMAGE, absoluteUrl } from '@/lib/seo/constants'
 import { isViewableInline } from '@/lib/viewable'
+import { isOnboarded } from '@pshq/api-client/onboarding'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -102,8 +103,12 @@ export default async function ContentDetailPage({ params }: Props) {
     : { data: null }
   const hasFavorited = !!favoriteRow
 
-  // Free content: any signed-in user has access
-  const hasAccess = user != null && pricingType === 'free'
+  // Free content: any signed-in, onboarded user has access (Epic A.3 —
+  // templates/ebooks/downloads are gated behind completed onboarding;
+  // articles deliberately are not, see the articles/[slug] page instead).
+  const userOnboarded = user ? await isOnboarded(supabase, user.id) : false
+  const hasAccess = user != null && pricingType === 'free' && userOnboarded
+  const needsOnboarding = user != null && pricingType === 'free' && !userOnboarded
 
   const label = TYPE_LABELS[rawItem.type as string] ?? rawItem.type as string
   const publishedDate = rawItem.published_at
@@ -305,6 +310,17 @@ export default async function ContentDetailPage({ params }: Props) {
               <p className="text-body-sm" style={{ color: '#15803d', fontWeight: 600, margin: 0 }}>
                 Free resource — download link coming soon.
               </p>
+            ) : needsOnboarding ? (
+              /* Signed in, but templates/ebooks/downloads are gated behind
+                 completed onboarding (Epic A.3) — articles aren't, this is. */
+              <>
+                <p className="text-body-sm" style={{ color: 'var(--color-text-muted)', margin: '0 0 1.25rem', lineHeight: 1.65 }}>
+                  Finish setting up your profile to unlock {label.toLowerCase()}s and downloads.
+                </p>
+                <Link href="/onboarding" className="btn-primary" style={{ display: 'block', textAlign: 'center' }}>
+                  Complete your profile
+                </Link>
+              </>
             ) : (
               /* Not signed in */
               <>

@@ -3,8 +3,8 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { trackSignupStarted, trackSignupCompleted } from '@pshq/analytics'
 import { rateLimit, clientIp } from '@/lib/ratelimit'
-import { sanitizeAreas } from '@/app/dashboard/constants'
 import type { UserRow } from '@pshq/database'
 import { adminUrl } from '@/lib/admin-url'
 
@@ -40,6 +40,12 @@ export async function signUpAction(
     return { error: 'Too many sign-up attempts. Please try again in an hour.', success: false }
   }
 
+  // No anonymous_id wired up yet (would need a pre-auth tracking cookie,
+  // e.g. reusing PostHog's own distinct_id) — event still records, just
+  // without a way to correlate it back to whoever becomes this user later.
+  const trackingClient = await createClient()
+  await trackSignupStarted({ supabase: trackingClient, source: 'web' })
+
   // Validate invite token if present
   let inviteTeamRole: string | null = null
   if (inviteToken) {
@@ -61,7 +67,7 @@ export async function signUpAction(
 
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -80,6 +86,10 @@ export async function signUpAction(
   if (error) {
     return { error: error.message, success: false }
   }
+
+  // signUp() returns the new user immediately even though email
+  // confirmation is still pending — real signal to correlate against.
+  await trackSignupCompleted({ supabase, source: 'web', userId: data.user?.id })
 
   return { error: null, success: true }
 }
@@ -141,14 +151,12 @@ export async function signInAction(
     .single()
   const profile = profileRaw as UserRow | null
 
-  if (!profile?.onboarding_done) {
-    redirect('/onboarding')
-  }
-
   if (profile?.role === 'admin' || profile?.role === 'super_admin') {
     redirect(adminUrl())
   }
 
+  // Onboarding is no longer a forced redirect (Epic A.4) — the dashboard
+  // itself shows the progress card for anyone who hasn't finished it.
   redirect('/dashboard')
 }
 
@@ -234,48 +242,4 @@ export async function resetPasswordAction(
   redirect('/dashboard')
 }
 
-// ─── Onboarding ──────────────────────────────────────────────────────────────
-
-export type OnboardingState = {
-  error: string | null
-}
-
-export async function onboardingAction(
-  _prev: OnboardingState,
-  formData: FormData
-): Promise<OnboardingState> {
-  const jobRole  = formData.get('job_role')  as string
-  const country  = formData.get('country')   as string
-  const areasRaw = sanitizeAreas(formData.getAll('areas_of_interest') as string[])
-
-  if (!jobRole || !country) {
-    return { error: 'Job role and country are required.' }
-  }
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { error: 'Not authenticated.' }
-  }
-
-  const service = createServiceClient()
-  const { error } = await service
-    .from('users')
-    .update({ job_role: jobRole, country, areas_of_interest: areasRaw, onboarding_done: true })
-    .eq('id', user.id)
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  // Check role to redirect admin invitees to the right place
-  const { data: profileRaw } = await supabase.from('users').select('role').eq('id', user.id).single()
-  const role = (profileRaw as Pick<UserRow, 'role'> | null)?.role
-
-  if (role === 'admin' || role === 'super_admin') {
-    redirect(adminUrl())
-  }
-
-  redirect('/dashboard')
-}
+// Onboarding is now a multi-step wizard — see src/app/onboarding/actions.ts.

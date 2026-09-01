@@ -475,3 +475,9 @@ export async function getTopCommunityMembers(limit = 10) {
     score,
   }))
 }
+
+// getStarterRecommendations moved to ./recommendations.ts (Epic A mobile
+// work) — that module takes a caller-supplied Supabase client instead of
+// importing './supabase/server' (next/headers), so mobile can import it
+// through @pshq/api-client/recommendations without pulling in a Next.js-only
+// dependency via this file's module-level import above.

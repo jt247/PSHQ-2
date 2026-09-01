@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Layers, BookOpen, GraduationCap, Newspaper, Package } from 'lucide-react'
 import { createClient } from '@pshq/api-client/server'
 import { getTopCommunityMembers } from '@pshq/api-client/queries'
-import type { UserRow, ContentRow } from '@pshq/database'
+import type { UserRow, ContentRow, OnboardingProgressRow } from '@pshq/database'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -12,9 +12,9 @@ export default async function DashboardPage() {
 
   const [
     profileRes, interactionsRes, trendingRes, recommendedRes, coursesRes, trendingEbooksRes, trendingTemplatesRes,
-    commentCountRes, upvoteCountRes, activityInteractionsRes, leaderboard,
+    commentCountRes, upvoteCountRes, activityInteractionsRes, leaderboard, onboardingProgressRes,
   ] = await Promise.all([
-    supabase.from('users').select('full_name, areas_of_interest').eq('id', user.id).single(),
+    supabase.from('users').select('full_name, areas_of_interest, onboarding_done').eq('id', user.id).single(),
     supabase.from('content_interactions')
       .select('id, type, content:content_id(id, title, slug, type, cover_image_url, pricing_type)')
       .eq('user_id', user.id)
@@ -57,9 +57,15 @@ export default async function DashboardPage() {
     supabase.from('content_upvotes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
     supabase.from('content_interactions').select('type').eq('user_id', user.id).in('type', ['share', 'ai_summary_requested', 'download']),
     getTopCommunityMembers(10),
+    supabase.from('onboarding_progress').select('*').eq('user_id', user.id).maybeSingle(),
   ])
 
-  const profile = profileRes.data as Pick<UserRow, 'full_name' | 'areas_of_interest'> | null
+  const profile = profileRes.data as Pick<UserRow, 'full_name' | 'areas_of_interest' | 'onboarding_done'> | null
+  const onboardingProgress = onboardingProgressRes.data as OnboardingProgressRow | null
+  const onboardingSteps = onboardingProgress
+    ? [onboardingProgress.about_you_completed_at, onboardingProgress.role_completed_at, onboardingProgress.experience_completed_at, onboardingProgress.goals_completed_at, onboardingProgress.topics_completed_at]
+    : []
+  const onboardingStepsDone = onboardingSteps.filter(Boolean).length
   const interactions = (interactionsRes.data ?? []) as Array<{ id: string; type: string; content: Partial<ContentRow> | null }>
   const trending = (trendingRes.data ?? []) as Array<Pick<ContentRow, 'id' | 'title' | 'slug' | 'type' | 'view_count'>>
 
@@ -188,6 +194,36 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </section>
+
+      {/* ── Onboarding progress card (Epic A.4) — templates/downloads/
+          ebooks/etc. are gated on this being complete; articles aren't. */}
+      {!profile?.onboarding_done && (
+        <section style={{
+          background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '0.75rem',
+          padding: '1.25rem 1.5rem', marginBottom: '1.75rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem', flexWrap: 'wrap',
+        }}>
+          <div style={{ flex: 1, minWidth: '220px' }}>
+            <p className="text-body-md" style={{ fontWeight: 700, color: 'var(--color-ink-deep)', margin: '0 0 0.375rem' }}>
+              Finish setting up your profile
+            </p>
+            <p className="text-body-sm" style={{ color: 'var(--color-text-muted)', margin: '0 0 0.625rem' }}>
+              {onboardingStepsDone} of 5 steps completed — unlock templates, ebook downloads, and personalized recommendations.
+            </p>
+            <div style={{ display: 'flex', gap: '0.25rem', maxWidth: '260px' }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} style={{
+                  flex: 1, height: '4px', borderRadius: '2px',
+                  background: i < onboardingStepsDone ? '#f59e0b' : '#fde68a',
+                }} />
+              ))}
+            </div>
+          </div>
+          <Link href="/onboarding" className="btn-primary" style={{ whiteSpace: 'nowrap' }}>
+            Continue →
+          </Link>
+        </section>
+      )}
 
       {/* ── Stats row ── */}
       <section className="grid-collapse-2" style={{

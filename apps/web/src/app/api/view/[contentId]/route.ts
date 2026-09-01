@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { isOnboarded } from '@pshq/api-client/onboarding'
 import { renderSpreadsheetAsHtml } from '@/lib/spreadsheet-viewer'
 import { isViewableInline } from '@/lib/viewable'
 
@@ -43,6 +44,13 @@ export async function GET(
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Reading ebooks/templates inline is gated behind completed onboarding
+  // (Epic A.3), same as downloads. This route only ever serves those two
+  // types — see isViewableInline usage in content/[slug]/read/page.tsx.
+  if (!(await isOnboarded(supabase, user.id))) {
+    return NextResponse.json({ error: 'Complete onboarding to view this content.' }, { status: 403 })
   }
 
   const { data: content, error } = await supabase

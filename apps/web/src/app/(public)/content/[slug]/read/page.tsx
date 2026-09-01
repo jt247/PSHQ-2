@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@pshq/api-client/server'
+import { isOnboarded } from '@pshq/api-client/onboarding'
 import { ShareButton } from '@/components/content/ShareButton'
 import { absoluteUrl } from '@/lib/seo/constants'
 import { isViewableInline } from '@/lib/viewable'
@@ -25,6 +26,7 @@ export default async function ReadContentPage({ params }: Props) {
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/sign-in?redirect=/content/${slug}/read`)
+  if (!(await isOnboarded(supabase, user.id))) redirect('/onboarding')
 
   const { data: item, error } = await supabase
     .from('content')

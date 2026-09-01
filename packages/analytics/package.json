@@ -5,6 +5,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
-    "@pshq/api-client": "workspace:*"
+    "@pshq/api-client": "workspace:*",
+    "@supabase/supabase-js": "^2.108.2"
   }
 }

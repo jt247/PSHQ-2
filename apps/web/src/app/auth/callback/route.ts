@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { trackEmailVerified } from '@pshq/analytics'
 import type { UserRow } from '@pshq/database'
+import { adminUrl } from '@/lib/admin-url'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -64,7 +66,14 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${origin}${safeNext}`)
       }
 
-      // Check onboarding and role
+      // This callback handles both email-link confirmation and the Google
+      // OAuth redirect — only the email/password flow actually needs email
+      // verification, so that's the signal for whether this specific hit
+      // represents "a user just verified their email."
+      if (data.user.app_metadata?.provider === 'email') {
+        await trackEmailVerified({ supabase, source: 'web', userId })
+      }
+
       const { data: profileRaw } = await supabase
         .from('users')
         .select('*')
@@ -72,14 +81,14 @@ export async function GET(request: NextRequest) {
         .single()
       const profile = profileRaw as UserRow | null
 
-      if (!profile?.onboarding_done) {
-        return NextResponse.redirect(`${origin}/onboarding`)
+      if (profile?.role === 'admin' || profile?.role === 'super_admin') {
+        return NextResponse.redirect(adminUrl())
       }
 
-      if (profile.role === 'admin' || profile.role === 'super_admin') {
-        return NextResponse.redirect(`${origin}/admin`)
-      }
-
+      // Onboarding is no longer a forced redirect (Epic A.4) — land on the
+      // dashboard either way, which shows the onboarding progress card for
+      // anyone who hasn't finished it. Articles stay accessible either
+      // way; only specific features gate on requireOnboarded().
       return NextResponse.redirect(`${origin}/dashboard`)
     }
   }

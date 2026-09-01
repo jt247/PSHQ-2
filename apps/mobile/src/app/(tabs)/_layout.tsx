@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons'
-import { Tabs } from 'expo-router'
+import { Redirect, Tabs } from 'expo-router'
 
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { useAuth } from '@/lib/auth-context'
 
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   index: 'home-outline',
@@ -15,6 +16,14 @@ const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 export default function TabsLayout() {
   const scheme = useColorScheme()
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light']
+  const { session, loading, onboardingDone, profileLoading } = useAuth()
+
+  // The tab navigator itself is the gate (Epic A.3): no session → sign in;
+  // session but profile not finished → onboarding. Nothing behind here
+  // needs its own per-screen check as a result.
+  if (loading || (session && profileLoading)) return null
+  if (!session) return <Redirect href="/sign-in" />
+  if (!onboardingDone) return <Redirect href="/onboarding" />
 
   return (
     <Tabs

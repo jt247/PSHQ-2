@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { isOnboarded } from '@pshq/api-client/onboarding'
 
 const r2 = new S3Client({
   region: 'auto',
@@ -40,6 +41,13 @@ export async function GET(
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Downloads are gated behind completed onboarding (Epic A.3) — the UI
+  // already hides this behind a "complete your profile" CTA, this is the
+  // enforcement so hitting the route URL directly can't skip that.
+  if (!(await isOnboarded(supabase, user.id))) {
+    return NextResponse.json({ error: 'Complete onboarding to download resources.' }, { status: 403 })
   }
 
   const { data: content, error } = await supabase

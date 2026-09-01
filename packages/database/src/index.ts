@@ -43,8 +43,85 @@ export interface UserRow {
   areas_of_interest: string[]
   onboarding_done: boolean
   auth_provider: string
+  // Epic A additions — profile fields (users IS Profile, no separate table)
+  company: string | null
+  region: string | null
+  headline: string | null
+  linkedin_url: string | null
+  website_url: string | null
+  portfolio_url: string | null
+  github_url: string | null
+  x_url: string | null
+  skills: string[]
+  career_focus: string | null
+  years_experience: number | null
+  experience_level: ExperienceLevel | null
+  privacy_tier: PrivacyTier
+  primary_role_id: string | null
   created_at: string
   updated_at: string
+}
+
+export type ExperienceLevel = 'exploring' | 'beginner' | 'intermediate' | 'senior' | 'leader'
+export type PrivacyTier = 'public' | 'community' | 'private'
+
+export interface RoleRow {
+  id: string
+  name: string
+  sort_order: number
+}
+
+export interface GoalRow {
+  id: string
+  name: string
+  sort_order: number
+}
+
+export interface TopicRow {
+  id: string
+  name: string
+  sort_order: number
+}
+
+export interface UserSecondaryRoleRow {
+  id: string
+  user_id: string
+  role_id: string
+  created_at: string
+}
+
+export interface UserGoalRow {
+  id: string
+  user_id: string
+  goal_id: string
+  created_at: string
+}
+
+export interface UserTopicRow {
+  id: string
+  user_id: string
+  topic_id: string
+  created_at: string
+}
+
+export interface OnboardingProgressRow {
+  user_id: string
+  account_completed_at: string | null
+  about_you_completed_at: string | null
+  role_completed_at: string | null
+  experience_completed_at: string | null
+  goals_completed_at: string | null
+  topics_completed_at: string | null
+  completed_at: string | null
+  updated_at: string
+}
+
+export interface NotificationPreferenceRow {
+  id: string
+  user_id: string
+  key: string
+  enabled: boolean
+  created_at: string
 }
 
 export interface ContentRow {
@@ -251,7 +328,16 @@ export type AdminActionLogInsert = Pick<AdminActionLogRow, 'admin_id' | 'action_
 // UPDATE TYPES  (all fields optional except id)
 // ============================================================
 
-export type UserUpdate = Partial<Pick<UserRow, 'full_name' | 'first_name' | 'last_name' | 'avatar_url' | 'bio' | 'role' | 'team_role' | 'job_role' | 'country' | 'areas_of_interest' | 'onboarding_done' | 'auth_provider'>>
+export type UserUpdate = Partial<Pick<UserRow,
+  'full_name' | 'first_name' | 'last_name' | 'avatar_url' | 'bio' | 'role' | 'team_role' |
+  'job_role' | 'country' | 'areas_of_interest' | 'onboarding_done' | 'auth_provider' |
+  'company' | 'region' | 'headline' | 'linkedin_url' | 'website_url' | 'portfolio_url' |
+  'github_url' | 'x_url' | 'skills' | 'career_focus' | 'years_experience' |
+  'experience_level' | 'privacy_tier' | 'primary_role_id'
+>>
+
+export type OnboardingProgressUpsert = Pick<OnboardingProgressRow, 'user_id'> &
+  Partial<Pick<OnboardingProgressRow, 'account_completed_at' | 'about_you_completed_at' | 'role_completed_at' | 'experience_completed_at' | 'goals_completed_at' | 'topics_completed_at' | 'completed_at'>>
 
 export type ContentUpdate = Partial<Pick<ContentRow,
   'title' | 'slug' | 'type' | 'status' | 'summary' | 'body' |
