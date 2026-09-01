@@ -30,39 +30,44 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   );
 }
 
+// Sized down one step across the board (2026-09-01, JT feedback: headings
+// and especially body text read too large). `title` in particular was the
+// Expo starter template's splash-screen scale (48px) but got reused as
+// every screen's plain page header (Library, Settings, ...) — 48px reads
+// oversized for that job on a phone-width screen, so it drops the most.
 const styles = StyleSheet.create({
   small: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: 500,
   },
   smallBold: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: 700,
   },
   default: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 22,
     fontWeight: 500,
   },
   title: {
-    fontSize: 48,
+    fontSize: 28,
     fontWeight: 600,
-    lineHeight: 52,
+    lineHeight: 34,
   },
   subtitle: {
-    fontSize: 32,
-    lineHeight: 44,
+    fontSize: 21,
+    lineHeight: 27,
     fontWeight: 600,
   },
   link: {
-    lineHeight: 30,
-    fontSize: 14,
+    lineHeight: 26,
+    fontSize: 13,
   },
   linkPrimary: {
-    lineHeight: 30,
-    fontSize: 14,
+    lineHeight: 26,
+    fontSize: 13,
     color: '#3c87f7',
   },
   code: {
