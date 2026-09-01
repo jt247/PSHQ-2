@@ -19,11 +19,6 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
 
-// Community Activity (Section 3.10) only renders once real numbers clear
-// this bar — per the PRD, never show vanity metrics while the platform is
-// still small. JT to adjust as the real member base grows.
-const COMMUNITY_ACTIVITY_THRESHOLD = 50
-
 const DOMAINS = [
   { slug: 'product', label: 'Product' },
   { slug: 'growth', label: 'Growth' },
@@ -44,20 +39,12 @@ export default async function HomePage() {
     buildNotesResult,
     casesResult,
     productLabResult,
-    initiativesResult,
-    userCountResult,
-    completionCountResult,
-    pathStartCountResult,
   ] = await Promise.all([
     service.from('learning_paths').select('slug, title, description, level, estimated_time_minutes').eq('status', 'published').order('display_order').limit(3),
-    service.from('content').select('id,title,slug,type,summary,cover_image_url,tags,pricing_type,selar_url,view_count,upvote_count,published_at,is_coming_soon').eq('status', 'published').in('type', ['template', 'ebook', 'guide']).order('published_at', { ascending: false }).limit(3),
-    service.from('content').select('id,title,slug,type,summary,cover_image_url,tags,pricing_type,selar_url,view_count,upvote_count,published_at,is_coming_soon').eq('status', 'published').eq('type', 'build_note').order('published_at', { ascending: false }).limit(3),
+    service.from('content').select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,is_coming_soon').eq('status', 'published').in('type', ['template', 'ebook', 'guide']).order('published_at', { ascending: false }).limit(3),
+    service.from('content').select('id,title,slug,type,summary,cover_image_url,tags,view_count,upvote_count,published_at,is_coming_soon').eq('status', 'published').eq('type', 'build_note').order('published_at', { ascending: false }).limit(3),
     service.from('case_library_entries').select('id, slug, title, company_name, description, logo_url').eq('status', 'published').not('slug', 'is', null).order('published_at', { ascending: false }).limit(3),
     service.from('initiative_editions').select('slug, edition_number, title, focus_description, status, pricing').eq('edition_number', '3.0').maybeSingle(),
-    service.from('initiatives').select('slug, title, short_description, status').eq('slug', 'product-lab').maybeSingle(),
-    service.from('users').select('id', { count: 'exact', head: true }),
-    service.from('content_progress').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
-    service.from('user_learning_paths').select('id', { count: 'exact', head: true }),
   ])
 
   const learningPaths = learningPathsResult.data ?? []
@@ -65,10 +52,6 @@ export default async function HomePage() {
   const buildNotes = buildNotesResult.data ?? []
   const cases = casesResult.data ?? []
   const productLabEdition = productLabResult.data
-  const memberCount = userCountResult.count ?? 0
-  const completionCount = completionCountResult.count ?? 0
-  const pathStartCount = pathStartCountResult.count ?? 0
-  const showCommunityActivity = memberCount >= COMMUNITY_ACTIVITY_THRESHOLD
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-base)' }}>
@@ -266,20 +249,10 @@ export default async function HomePage() {
           <TestimonialCarousel />
         </section>
 
-        {/* ── 3.10 Community Activity — threshold gated, real numbers only ── */}
-        {showCommunityActivity && (
-          <section style={{ padding: '5rem var(--spacing-margin-edge)', background: 'var(--color-paper-darker)' }}>
-            <SectionTracker section="community_activity" />
-            <div style={{ maxWidth: '80rem', margin: '0 auto', textAlign: 'center' }}>
-              <h2 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', marginBottom: '2.5rem' }}>A growing community of builders.</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '2rem', maxWidth: '48rem', margin: '0 auto' }}>
-                <Stat value={memberCount} label="Members Learning" />
-                <Stat value={completionCount} label="Resources Completed" />
-                <Stat value={pathStartCount} label="Learning Paths Started" />
-              </div>
-            </div>
-          </section>
-        )}
+        {/* ── 3.10 Community Activity — deliberately not public. Per JT:
+             analytics belongs in the admin dashboard, not the public
+             homepage. Member/completion/path-start counts live in
+             apps/admin instead (content analytics + growth pages). ── */}
 
         {/* ── 3.11 Final CTA ───────────────────────────────────────── */}
         {!user && (
@@ -336,15 +309,6 @@ function SectionHeader({ eyebrow, title, href, cta, section }: { eyebrow: string
       <CtaLink href={href} section={section} label={cta} className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', textDecoration: 'none' }}>
         {cta} →
       </CtaLink>
-    </div>
-  )
-}
-
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div>
-      <p className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>{value.toLocaleString()}</p>
-      <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', margin: 0 }}>{label}</p>
     </div>
   )
 }

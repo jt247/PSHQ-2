@@ -7,8 +7,6 @@ interface ContentCardProps {
   type: string
   summary: string | null
   cover_image_url: string | null
-  pricing_type: string
-  selar_url?: string | null
   view_count: number
   upvote_count: number
   tags: string[]
@@ -38,7 +36,7 @@ export function ContentCard(props: ContentCardProps) {
   // view_count/upvote_count are intentionally not destructured — Standing
   // Rule / PRD §5.1: view counts never render on any public-facing card.
   // They stay in the prop type since callers pass the full content row.
-  const { title, slug, type, summary, cover_image_url, pricing_type, tags, is_coming_soon } = props
+  const { title, slug, type, summary, cover_image_url, tags, is_coming_soon } = props
   const href = type === 'article' ? `/articles/${slug}` : type === 'build_note' ? `/build-notes/${slug}` : `/content/${slug}`
   const label = TYPE_LABELS[type] ?? type
 
@@ -74,16 +72,10 @@ export function ContentCard(props: ContentCardProps) {
         }}>
           {label}
         </span>
-        {is_coming_soon ? (
+        {is_coming_soon && (
           <span className="badge" style={{ background: 'color-mix(in srgb, var(--color-accent-warm) 20%, transparent)', color: 'oklch(45% 0.12 85)' }}>
             Coming Soon
           </span>
-        ) : pricing_type === 'paid' ? (
-          <span className="badge" style={{ background: 'color-mix(in srgb, var(--color-accent-warm) 20%, transparent)', color: 'oklch(45% 0.12 85)' }}>
-            Available on Selar
-          </span>
-        ) : (
-          <span className="badge" style={{ background: '#dcfce7', color: '#15803d' }}>Free</span>
         )}
       </div>
 
@@ -159,13 +151,6 @@ export function ContentCard(props: ContentCardProps) {
           }}>
             {label}
           </span>
-          {pricing_type === 'paid' ? (
-            <span className="badge" style={{ background: 'color-mix(in srgb, var(--color-accent-warm) 20%, transparent)', color: 'oklch(45% 0.12 85)' }}>
-              Available on Selar
-            </span>
-          ) : (
-            <span className="badge" style={{ background: '#dcfce7', color: '#15803d' }}>Free</span>
-          )}
         </div>
 
         <Link href={href} style={{ textDecoration: 'none', color: 'inherit' }}>

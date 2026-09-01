@@ -98,8 +98,6 @@ export function ContentTableClient({ content }: { content: ContentRow[] }) {
               <th>Title</th>
               <th>Type</th>
               <th>Status</th>
-              <th>Pricing</th>
-              <th title="Selar Clicks">Selar ↗</th>
               <th title="Views">Views</th>
               <th title="Upvotes">↑</th>
               <th title="Comments">💬</th>
@@ -116,20 +114,13 @@ export function ContentTableClient({ content }: { content: ContentRow[] }) {
             {filtered.map(row => (
               <tr key={row.id} className={row.status === 'archived' ? 'row-archived' : ''}>
                 <td className="td-title">
-                  <Link href={`/content/${row.id}/edit`} className="table-title-link">
+                  <Link href={`/content/${row.id}`} className="table-title-link">
                     {row.title}
                   </Link>
                   <span className="table-slug">/{row.slug}</span>
                 </td>
                 <td><span className={`badge ${TYPE_BADGES[row.type] ?? 'badge-gray'}`}>{row.type}</span></td>
                 <td><span className={`badge ${STATUS_BADGES[row.status] ?? 'badge-gray'}`}>{row.status}</span></td>
-                <td>
-                  {row.pricing_type === 'paid'
-                    ? <span className="badge badge-yellow">{row.selar_url ? <a href={row.selar_url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>Selar ↗</a> : 'Paid'}</span>
-                    : <span className="badge badge-gray">Free</span>
-                  }
-                </td>
-                <td className="td-num">{row.selar_clicks}</td>
                 <td className="td-num">{row.view_count.toLocaleString()}</td>
                 <td className="td-num">{row.upvote_count}</td>
                 <td className="td-num">{row.comment_count}</td>

@@ -179,13 +179,6 @@ export default async function ContentDetailPage({ params }: Props) {
               }}>
                 {label}
               </span>
-              {pricingType === 'free' ? (
-                <span className="badge" style={{ background: '#dcfce7', color: '#15803d' }}>Free</span>
-              ) : (
-                <span className="badge" style={{ background: 'color-mix(in srgb, var(--color-accent-warm) 25%, transparent)', color: 'oklch(45% 0.12 85)' }}>
-                  Available on Selar
-                </span>
-              )}
             </div>
 
             <h1 className="text-headline-xl" style={{ color: 'var(--color-ink-deep)', margin: '0 0 1rem' }}>
@@ -294,9 +287,6 @@ export default async function ContentDetailPage({ params }: Props) {
                  a file — there was no real way to just read without an
                  unpredictable side effect. */
               <>
-                <p className="text-label-sm" style={{ color: '#15803d', fontWeight: 700, margin: '0 0 1rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  ✓ Free to access
-                </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                   {isReadable && (
                     <Link
