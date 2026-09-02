@@ -116,6 +116,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
           <div className="dash-nav-section">System</div>
 
+          <Link href="/feedback" className="dash-nav-link">
+            <IconSupport />
+            Give Feedback
+          </Link>
           <Link href="/dashboard/support" className="dash-nav-link">
             <IconSupport />
             Support

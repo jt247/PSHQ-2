@@ -151,6 +151,15 @@ export async function signInAction(
     .single()
   const profile = profileRaw as UserRow | null
 
+  // Epic G: a suspended account can still pass Supabase auth (the ban lives
+  // in our own users table, not in auth.users) — block it here, at the
+  // earliest point we have the profile, rather than letting them in and
+  // catching it on the next navigation via proxy.ts.
+  if (profile?.suspended_at) {
+    await supabase.auth.signOut()
+    return { error: 'This account has been suspended. Contact support if you believe this is a mistake.' }
+  }
+
   if (profile?.role === 'admin' || profile?.role === 'super_admin') {
     redirect(adminUrl())
   }

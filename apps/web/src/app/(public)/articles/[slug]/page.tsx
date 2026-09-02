@@ -154,6 +154,7 @@ export default async function ArticlePage({ params }: Props) {
       .from('content_comments')
       .select('id, body, is_deleted, created_at, user:users(full_name, email)')
       .eq('content_id', rawItem.id)
+      .eq('is_hidden', false)
       .order('created_at', { ascending: true }),
 
     // User's existing rating

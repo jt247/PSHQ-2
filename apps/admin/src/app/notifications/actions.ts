@@ -22,8 +22,15 @@ interface AudienceFilters {
   interests?: string[]
   signup_from?: string
   signup_to?: string
+  engagement_status?: 'new' | 'inactive'
+  learning_path_id?: string
 }
 
+// Epic G §G.10 — respects notification_preferences (Build Prompt 5's
+// member-side controls) before ever including a user in a send, plus adds
+// the engagement-status and learning-path segmentation axes the prompt
+// asks for on top of the existing job_role/country/interests/signup-range
+// filters already shipped.
 async function getMatchingUsers(filters: AudienceFilters): Promise<Array<{ id: string; email: string }>> {
   const service = createServiceClient()
   let query = service.from('users').select('id, email')
@@ -38,8 +45,39 @@ async function getMatchingUsers(filters: AudienceFilters): Promise<Array<{ id: s
   if (filters.signup_from) query = query.gte('created_at', filters.signup_from)
   if (filters.signup_to)   query = query.lte('created_at', filters.signup_to)
 
-  const { data } = await query
-  return (data ?? []) as Array<{ id: string; email: string }>
+  if (filters.engagement_status === 'new') {
+    query = query.gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+  }
+  if (filters.engagement_status === 'inactive') {
+    // "Inactive" interim definition (Build Prompt 9/Epic H replaces this
+    // with the exact spec) — no analytics_events row in 30 days.
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    const { data: recentlyActive } = await service.from('analytics_events').select('user_id').gte('created_at', cutoff).not('user_id', 'is', null)
+    const activeIds = new Set((recentlyActive ?? []).map(r => r.user_id))
+    query = query.not('id', 'in', `(${[...activeIds].join(',') || '00000000-0000-0000-0000-000000000000'})`)
+  }
+
+  if (filters.learning_path_id) {
+    const { data: enrolled } = await service.from('user_learning_paths').select('user_id').eq('learning_path_id', filters.learning_path_id)
+    const ids = (enrolled ?? []).map(e => e.user_id)
+    if (ids.length === 0) return []
+    query = query.in('id', ids)
+  }
+
+  const { data: candidates } = await query
+  const users = (candidates ?? []) as Array<{ id: string; email: string }>
+  if (users.length === 0) return []
+
+  // notification_preferences keys are content-category based (Build
+  // Prompt 5: recommended_content, product_announcement, etc.), not
+  // channel-based — an admin broadcast is a "system announcement", so the
+  // matching category is 'product_announcement'. A user with that key
+  // explicitly disabled is excluded from every admin broadcast regardless
+  // of channel.
+  const { data: prefs } = await service.from('notification_preferences').select('user_id, enabled').in('user_id', users.map(u => u.id)).eq('key', 'product_announcement')
+  const optedOut = new Set((prefs ?? []).filter(p => !p.enabled).map(p => p.user_id))
+
+  return users.filter(u => !optedOut.has(u.id))
 }
 
 export interface BroadcastState { error?: string; success?: boolean; sentTo?: number }
@@ -81,16 +119,21 @@ export async function broadcastNotificationAction(
       if (customTo)   signup_to   = new Date(customTo).toISOString()
     }
 
+    const engagementStatus = (formData.get('engagement_status') as string) || undefined
+    const learningPathId = (formData.get('learning_path_id') as string) || undefined
+
     const filters: AudienceFilters = {
       job_roles:   jobRoles.length   ? jobRoles   : undefined,
       countries:   countries.length  ? countries  : undefined,
       interests:   interests.length  ? interests  : undefined,
       signup_from,
       signup_to,
+      engagement_status: engagementStatus === 'new' || engagementStatus === 'inactive' ? engagementStatus : undefined,
+      learning_path_id: learningPathId,
     }
 
     const users = await getMatchingUsers(filters)
-    if (users.length === 0) return { error: 'No users match those filters.' }
+    if (users.length === 0) return { error: 'No users match those filters (or all matches opted out of this channel).' }
 
     const { data: notif, error: nErr } = await supabase
       .from('notifications')

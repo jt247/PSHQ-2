@@ -124,4 +124,11 @@ export const trackLeaderboardViewed = (ctx: TrackContext, period: 'weekly' | 'mo
 export const trackAchievementUnlocked = (ctx: TrackContext, achievementKey: string) =>
   track(ctx, 'achievement_unlocked', { metadata: { achievementKey } })
 
+// Epic G — fired at every meaningful admin write (content publish/archive,
+// user suspend/restore, points adjustment, permission change, notification
+// sent, feedback status change) so there's a queryable audit trail in
+// analytics_events alongside the immutable admin_actions_log DB table.
+export const trackAdminAction = (ctx: TrackContext, actionType: string, targetTable: string, targetId?: string | null) =>
+  track(ctx, 'admin_action', { metadata: { actionType, targetTable, targetId: targetId ?? null } })
+
 export type { TrackContext, TrackOptions }

@@ -13,7 +13,62 @@ interface EntryData {
   tags?: string[]
   status?: string
   files?: { id?: string; file_url: string; file_label: string | null; file_type: string | null }[]
+  slug?: string | null
+  logo_url?: string | null
+  industry?: string | null
+  market?: string | null
+  country?: string | null
+  stage?: string | null
+  product?: string | null
+  problem?: string | null
+  target_customer?: string | null
+  market_context?: string | null
+  business_model?: string | null
+  product_strategy?: string | null
+  acquisition?: string | null
+  activation?: string | null
+  retention?: string | null
+  revenue?: string | null
+  distribution?: string | null
+  competitive_advantage?: string | null
+  key_product_decisions?: string | null
+  what_worked?: string | null
+  what_did_not_work?: string | null
+  challenges?: string | null
+  jt_analysis?: string | null
+  what_i_would_do_differently?: string | null
+  key_lessons?: string[]
+  discussion_questions?: string[]
 }
+
+// Sectioned per the case reader's actual layout — Overview, Business Model,
+// Growth Levers, Analysis, Lessons — rather than one flat wall of fields.
+const TEXT_SECTIONS: { heading: string; fields: { name: keyof EntryData; label: string; rows?: number }[] }[] = [
+  { heading: 'Overview', fields: [
+    { name: 'industry', label: 'Industry' }, { name: 'market', label: 'Market' },
+    { name: 'country', label: 'Country' }, { name: 'stage', label: 'Stage' },
+    { name: 'product', label: 'Product', rows: 3 }, { name: 'problem', label: 'Problem', rows: 3 },
+    { name: 'target_customer', label: 'Target customer', rows: 2 },
+  ]},
+  { heading: 'Business model & strategy', fields: [
+    { name: 'market_context', label: 'Market context', rows: 4 },
+    { name: 'business_model', label: 'Business model', rows: 4 },
+    { name: 'product_strategy', label: 'Product strategy', rows: 4 },
+  ]},
+  { heading: 'Growth levers', fields: [
+    { name: 'acquisition', label: 'Acquisition', rows: 3 }, { name: 'activation', label: 'Activation', rows: 3 },
+    { name: 'retention', label: 'Retention', rows: 3 }, { name: 'revenue', label: 'Revenue', rows: 3 },
+    { name: 'distribution', label: 'Distribution', rows: 3 }, { name: 'competitive_advantage', label: 'Competitive advantage', rows: 3 },
+  ]},
+  { heading: 'Analysis', fields: [
+    { name: 'key_product_decisions', label: 'Key product decisions', rows: 4 },
+    { name: 'what_worked', label: 'What worked', rows: 3 },
+    { name: 'what_did_not_work', label: 'What did not work', rows: 3 },
+    { name: 'challenges', label: 'Challenges', rows: 3 },
+    { name: 'jt_analysis', label: "JT's analysis", rows: 5 },
+    { name: 'what_i_would_do_differently', label: 'What I would do differently', rows: 3 },
+  ]},
+]
 
 interface Props {
   entry?: EntryData
@@ -123,6 +178,17 @@ export function CaseEntryForm({ entry, action, backHref }: Props) {
         </div>
       </div>
 
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        <div>
+          <label style={labelStyle}>Slug <span style={{ fontWeight: 400, color: '#9ca3af' }}>(auto from title if left blank)</span></label>
+          <input name="slug" defaultValue={entry?.slug ?? ''} placeholder="e.g. opay" style={inputStyle} />
+        </div>
+        <div>
+          <label style={labelStyle}>Logo URL</label>
+          <input name="logo_url" defaultValue={entry?.logo_url ?? ''} placeholder="https://…" style={inputStyle} />
+        </div>
+      </div>
+
       {/* Description */}
       <div>
         <label style={labelStyle}>Description</label>
@@ -154,6 +220,43 @@ export function CaseEntryForm({ entry, action, backHref }: Props) {
         )}
         <input type="file" accept="image/*" onChange={handleThumbChange} style={{ fontSize: '0.8125rem' }} />
         {thumbUploading && <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', color: '#6b7280' }}>Uploading…</span>}
+      </div>
+
+      {/* Epic G §G.8 — full Epic B analysis field set, sectioned */}
+      {TEXT_SECTIONS.map(section => (
+        <div key={section.heading} style={{ borderTop: '1px solid #f3f4f6', paddingTop: '1rem' }}>
+          <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9ca3af', margin: '0 0 0.75rem' }}>
+            {section.heading}
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {section.fields.map(f => (
+              <div key={f.name}>
+                <label style={labelStyle}>{f.label}</label>
+                {(f.rows ?? 1) > 1 ? (
+                  <textarea name={f.name} rows={f.rows} defaultValue={(entry?.[f.name] as string) ?? ''} style={{ ...inputStyle, resize: 'vertical' }} />
+                ) : (
+                  <input name={f.name} defaultValue={(entry?.[f.name] as string) ?? ''} style={inputStyle} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '1rem' }}>
+        <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9ca3af', margin: '0 0 0.75rem' }}>
+          Lessons
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={labelStyle}>Key lessons <span style={{ fontWeight: 400, color: '#9ca3af' }}>(one per line)</span></label>
+            <textarea name="key_lessons" rows={4} defaultValue={(entry?.key_lessons ?? []).join('\n')} style={{ ...inputStyle, resize: 'vertical' }} />
+          </div>
+          <div>
+            <label style={labelStyle}>Discussion questions <span style={{ fontWeight: 400, color: '#9ca3af' }}>(one per line)</span></label>
+            <textarea name="discussion_questions" rows={4} defaultValue={(entry?.discussion_questions ?? []).join('\n')} style={{ ...inputStyle, resize: 'vertical' }} />
+          </div>
+        </div>
       </div>
 
       {/* File attachments */}

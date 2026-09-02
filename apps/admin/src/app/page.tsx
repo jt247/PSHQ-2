@@ -1,6 +1,11 @@
 import Link from 'next/link'
 import { createServiceClient } from '@pshq/api-client/server'
 
+function totalUsersForPct(total: number | null, part: number | null): number {
+  if (!total) return 0
+  return Math.round(((part ?? 0) / total) * 100)
+}
+
 export default async function AdminPage() {
   const service = createServiceClient()
 
@@ -18,6 +23,13 @@ export default async function AdminPage() {
     topContentRes,
     contentByTypeRes,
     recentUnlocksRes,
+    // Epic G §G.2 additions — additive only, nothing above this line changed.
+    mauRes,
+    onboardingDoneRes,
+    pathStartsRes,
+    contentCompletionsRes,
+    feedbackOpenRes,
+    recentAdminActivityRes,
   ] = await Promise.all([
     service.from('users').select('id', { count: 'exact', head: true }),
     service.from('users').select('id', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
@@ -38,7 +50,22 @@ export default async function AdminPage() {
       .eq('type', 'unlock')
       .order('created_at', { ascending: false })
       .limit(5),
+    // MAU interim approximation: distinct users with an analytics_events
+    // row in the last 30 days. Build Prompt 9 (Epic H §H.4) replaces this
+    // with the exact spec — documented here, not silently assumed.
+    service.from('analytics_events').select('user_id').gte('created_at', thirtyDaysAgo).not('user_id', 'is', null),
+    service.from('users').select('id', { count: 'exact', head: true }).eq('onboarding_done', true),
+    service.from('user_learning_paths').select('id', { count: 'exact', head: true }),
+    service.from('content_progress').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+    service.from('feedback').select('id', { count: 'exact', head: true }).not('status', 'in', '(resolved,closed)'),
+    service.from('admin_actions_log').select('action_type, target_table, created_at, admin:admin_id(full_name, email)').order('created_at', { ascending: false }).limit(8),
   ])
+
+  const mau = new Set((mauRes.data ?? []).map(r => r.user_id)).size
+  const onboardingCompletionPct = totalUsersForPct(usersRes.count, onboardingDoneRes.count)
+  const recentAdminActivity = (recentAdminActivityRes.data ?? []) as unknown as Array<{
+    action_type: string; target_table: string | null; created_at: string; admin: { full_name: string | null; email: string } | null
+  }>
 
   const totalUsers = usersRes.count ?? 0
   const newUsers30d = newUsersRes.count ?? 0
@@ -560,6 +587,45 @@ export default async function AdminPage() {
           </div>
         </section>
       </div>
+
+      {/* Epic G §G.2 additions — MAU/onboarding/path-starts/completions/
+          feedback-open/recent-admin-activity. Interim approximations for
+          MAU are documented above where computed; Build Prompt 9 replaces
+          them without moving where these numbers live. */}
+      <div className="grid-collapse-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', margin: '1.75rem 0' }}>
+        {[
+          { label: 'MAU (30d, interim)', value: mau.toLocaleString() },
+          { label: 'Onboarding complete', value: `${onboardingCompletionPct}%` },
+          { label: 'Learning path starts', value: (pathStartsRes.count ?? 0).toLocaleString() },
+          { label: 'Content completions', value: (contentCompletionsRes.count ?? 0).toLocaleString() },
+          { label: 'Feedback open', value: (feedbackOpenRes.count ?? 0).toLocaleString() },
+        ].map(kpi => (
+          <div key={kpi.label} style={{ background: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', borderRadius: '0.75rem', padding: '1rem 1.25rem' }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.375rem', fontWeight: 800, color: 'var(--color-ink-deep)', margin: '0 0 0.25rem' }}>{kpi.value}</p>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-muted)', margin: 0 }}>{kpi.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <section style={{ background: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', borderRadius: '0.75rem', overflow: 'hidden' }}>
+        <div style={{ padding: '1.25rem 1.5rem 1rem', borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 6%, transparent)' }}>
+          <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-ink-deep)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Recent Admin Activity
+          </h3>
+        </div>
+        <div>
+          {recentAdminActivity.length === 0 ? (
+            <p style={{ padding: '1.5rem', fontFamily: 'var(--font-sans)', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>No admin actions logged yet.</p>
+          ) : recentAdminActivity.map((a, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.625rem 1.5rem', borderBottom: i < recentAdminActivity.length - 1 ? '1px solid color-mix(in srgb, var(--color-tertiary) 5%, transparent)' : 'none' }}>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8125rem', color: 'var(--color-ink-deep)' }}>
+                <strong>{a.admin?.full_name ?? a.admin?.email ?? 'Unknown'}</strong> — {a.action_type.replace(/_/g, ' ')}{a.target_table ? ` (${a.target_table})` : ''}
+              </span>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{timeAgo(a.created_at)}</span>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   )
 }

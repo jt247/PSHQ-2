@@ -126,3 +126,32 @@ export async function createTicketAction(
     return { error: e instanceof Error ? e.message : 'Failed' }
   }
 }
+
+// ── Epic G §G.10 unified Support & Feedback Center ─────────────
+// One workflow across 3 native tables (standing rule 1 — no re-migration).
+// Each source keeps its own status vocabulary on write; the admin UI only
+// ever shows the normalized 6-value display status (see mapping in
+// client.tsx) and these actions translate the chosen display status back
+// to that source's real enum.
+
+export async function updateFeedbackStatusAction(id: string, status: string, adminNotes?: string) {
+  const { supabase, adminId } = await requireAdmin()
+  const { error } = await supabase.from('feedback').update({ status, admin_notes: adminNotes ?? undefined }).eq('id', id)
+  if (error) throw new Error(error.message)
+  await logAdminAction({ admin_id: adminId, action_type: 'feedback_status_update', target_table: 'feedback', target_id: id, metadata: { status } })
+  revalidatePath('/support')
+}
+
+// content_requests uses request_status: open/in_review/planned/completed/declined
+const DISPLAY_TO_REQUEST_STATUS: Record<string, string> = {
+  new: 'open', reviewing: 'in_review', planned: 'planned', in_progress: 'in_review', resolved: 'completed', closed: 'declined',
+}
+
+export async function updateContentRequestStatusAction(id: string, displayStatus: string) {
+  const { supabase, adminId } = await requireAdmin()
+  const status = DISPLAY_TO_REQUEST_STATUS[displayStatus] ?? 'open'
+  const { error } = await supabase.from('content_requests').update({ status }).eq('id', id)
+  if (error) throw new Error(error.message)
+  await logAdminAction({ admin_id: adminId, action_type: 'content_request_status_update', target_table: 'content_requests', target_id: id, metadata: { status } })
+  revalidatePath('/support')
+}

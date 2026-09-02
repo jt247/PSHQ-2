@@ -3,7 +3,9 @@
 import { useState, useTransition } from 'react'
 import { updateContentAction } from '@/app/content/actions'
 
-type ContentType = 'article' | 'ebook' | 'template' | 'course'
+type ContentType = 'article' | 'ebook' | 'template' | 'course' | 'guide' | 'build_note'
+
+interface LookupOption { id: string; name?: string; title?: string }
 
 interface ContentFormProps {
   mode: 'create' | 'edit'
@@ -20,9 +22,31 @@ interface ContentFormProps {
     pricing_type?: 'free' | 'paid'
     selar_url?: string | null
     status?: 'draft' | 'published' | 'archived'
+    // Epic G §G.5 shared metadata
+    domain?: string
+    level?: string
+    resource_category?: string
+    estimated_time_minutes?: number
+    resource_intent?: string[]
+    seo_title?: string
+    seo_description?: string
+    canonical_url?: string
+    og_image_url?: string
+    series_id?: string
+    topic_ids?: string[]
+    goal_ids?: string[]
+    role_ids?: string[]
   }
   createAction?: (formData: FormData) => Promise<void>
+  topics?: LookupOption[]
+  goals?: LookupOption[]
+  roles?: LookupOption[]
+  series?: LookupOption[]
 }
+
+const DOMAINS = ['product', 'growth', 'ai', 'building', 'careers', 'leadership']
+const LEVELS = ['exploring', 'beginner', 'intermediate', 'senior', 'leader']
+const INTENTS = ['Learn', 'Build', 'Plan', 'Evaluate', 'Practice', 'Prepare', 'Get hired', 'Lead', 'Grow']
 
 const CONTENT_TAGS = [
   'Strategy', 'Roadmapping', 'Prioritization', 'Discovery', 'User Research',
@@ -36,7 +60,7 @@ function slugify(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-export function ContentForm({ mode, id, defaultValues = {}, createAction }: ContentFormProps) {
+export function ContentForm({ mode, id, defaultValues = {}, createAction, topics = [], goals = [], roles = [], series = [] }: ContentFormProps) {
   const [title, setTitle]         = useState(defaultValues.title ?? '')
   const [slug, setSlug]           = useState(defaultValues.slug ?? '')
   const [slugEdited, setSlugEdited] = useState(!!defaultValues.slug)
@@ -44,12 +68,22 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
   const [pricingType, setPricing] = useState(defaultValues.pricing_type ?? 'free')
   const [coverUrl, setCoverUrl]   = useState(defaultValues.cover_image_url ?? '')
   const [fileUrl, setFileUrl]     = useState(defaultValues.file_url ?? '')
+  const [ogImageUrl, setOgImageUrl] = useState(defaultValues.og_image_url ?? '')
+  const [uploadingOg, setUploadingOg] = useState(false)
   const [selectedTags, setSelectedTags] = useState<string[]>(defaultValues.tags ?? [])
+  const [selectedIntents, setSelectedIntents] = useState<string[]>(defaultValues.resource_intent ?? [])
+  const [selectedTopics, setSelectedTopics] = useState<string[]>(defaultValues.topic_ids ?? [])
+  const [selectedGoals, setSelectedGoals] = useState<string[]>(defaultValues.goal_ids ?? [])
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(defaultValues.role_ids ?? [])
   const [uploadingThumb, setUploadingThumb] = useState(false)
   const [uploadingFile, setUploadingFile]   = useState(false)
   const [error, setError]         = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [pendingIntent, setPendingIntent] = useState<'draft' | 'publish' | null>(null)
+
+  function toggleFrom(list: string[], setList: (v: string[]) => void, val: string) {
+    setList(list.includes(val) ? list.filter(v => v !== val) : [...list, val])
+  }
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value
@@ -95,8 +129,13 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
       const fd = new FormData(e.currentTarget)
       fd.set('cover_image_url', coverUrl)
       fd.set('file_url', fileUrl)
+      fd.set('og_image_url', ogImageUrl)
       fd.set('tags', selectedTags.join(','))
       fd.set('intent', intent)
+      selectedIntents.forEach(v => fd.append('resource_intent', v))
+      selectedTopics.forEach(v => fd.append('topic_ids', v))
+      selectedGoals.forEach(v => fd.append('goal_ids', v))
+      selectedRoles.forEach(v => fd.append('role_ids', v))
 
       startTransition(async () => {
         try {
@@ -149,6 +188,8 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
             <option value="ebook">Ebook</option>
             <option value="template">Template</option>
             <option value="course">Course</option>
+            <option value="guide">Guide</option>
+            <option value="build_note">Build Note</option>
           </select>
         </div>
         <div className="form-field">
@@ -265,6 +306,118 @@ export function ContentForm({ mode, id, defaultValues = {}, createAction }: Cont
           <span className="hint">Use an unlisted YouTube link. Members will watch it inline in the platform.</span>
         </div>
       )}
+
+      {/* Epic G §G.5 — shared metadata every content type gets */}
+      <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '0.5rem 0' }} />
+      <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9ca3af', margin: 0 }}>
+        Discovery & metadata
+      </p>
+
+      <div className="form-row">
+        <div className="form-field">
+          <label htmlFor="domain">Domain</label>
+          <select id="domain" name="domain" defaultValue={defaultValues.domain ?? ''}>
+            <option value="">—</option>
+            {DOMAINS.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+        <div className="form-field">
+          <label htmlFor="level">Level</label>
+          <select id="level" name="level" defaultValue={defaultValues.level ?? ''}>
+            <option value="">—</option>
+            {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-field">
+          <label htmlFor="resource_category">Resource category</label>
+          <input id="resource_category" name="resource_category" type="text" defaultValue={defaultValues.resource_category ?? ''} placeholder="e.g. framework, teardown" />
+        </div>
+        <div className="form-field">
+          <label htmlFor="estimated_time_minutes">Estimated time (minutes)</label>
+          <input id="estimated_time_minutes" name="estimated_time_minutes" type="number" min="0" defaultValue={defaultValues.estimated_time_minutes ?? ''} />
+        </div>
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="series_id">Series</label>
+        <select id="series_id" name="series_id" defaultValue={defaultValues.series_id ?? ''}>
+          <option value="">— None —</option>
+          {series.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+        </select>
+      </div>
+
+      <div className="form-field">
+        <label>Intent</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginTop: '0.375rem' }}>
+          {INTENTS.map(intent => {
+            const selected = selectedIntents.includes(intent)
+            return (
+              <button key={intent} type="button" onClick={() => toggleFrom(selectedIntents, setSelectedIntents, intent)} style={{
+                padding: '0.25rem 0.625rem', borderRadius: '9999px', fontSize: '0.75rem',
+                fontWeight: selected ? 600 : 400, border: `1px solid ${selected ? '#0E2A47' : '#d1d5db'}`,
+                background: selected ? '#0E2A47' : '#f9fafb', color: selected ? '#fff' : '#374151', cursor: 'pointer',
+              }}>
+                {intent}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {[
+        { label: 'Topics', items: topics, selected: selectedTopics, setSelected: setSelectedTopics },
+        { label: 'Goals', items: goals, selected: selectedGoals, setSelected: setSelectedGoals },
+        { label: 'Roles', items: roles, selected: selectedRoles, setSelected: setSelectedRoles },
+      ].map(group => (
+        <div className="form-field" key={group.label}>
+          <label>{group.label}</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginTop: '0.375rem' }}>
+            {group.items.length === 0 && <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>None configured</span>}
+            {group.items.map(item => {
+              const selected = group.selected.includes(item.id)
+              return (
+                <button key={item.id} type="button" onClick={() => toggleFrom(group.selected, group.setSelected, item.id)} style={{
+                  padding: '0.25rem 0.625rem', borderRadius: '9999px', fontSize: '0.75rem',
+                  fontWeight: selected ? 600 : 400, border: `1px solid ${selected ? '#0E2A47' : '#d1d5db'}`,
+                  background: selected ? '#0E2A47' : '#f9fafb', color: selected ? '#fff' : '#374151', cursor: 'pointer',
+                }}>
+                  {item.name}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+
+      <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#9ca3af', margin: '0.5rem 0 0' }}>
+        SEO
+      </p>
+
+      <div className="form-row">
+        <div className="form-field">
+          <label htmlFor="seo_title">SEO title</label>
+          <input id="seo_title" name="seo_title" type="text" defaultValue={defaultValues.seo_title ?? ''} />
+        </div>
+        <div className="form-field">
+          <label htmlFor="canonical_url">Canonical URL</label>
+          <input id="canonical_url" name="canonical_url" type="url" defaultValue={defaultValues.canonical_url ?? ''} />
+        </div>
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="seo_description">SEO description</label>
+        <textarea id="seo_description" name="seo_description" rows={2} defaultValue={defaultValues.seo_description ?? ''} />
+      </div>
+
+      <div className="form-field">
+        <label>OG image</label>
+        {ogImageUrl && <img src={ogImageUrl} alt="OG preview" className="thumb-preview" />}
+        <input type="file" accept="image/*" disabled={uploadingOg} onChange={e => handleFileUpload(e, 'thumbnails', setOgImageUrl, setUploadingOg)} />
+        {uploadingOg && <span className="uploading-label">Uploading…</span>}
+      </div>
 
       {/* Hidden fields */}
       <input type="hidden" name="cover_image_url" value={coverUrl} />

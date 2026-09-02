@@ -29,6 +29,7 @@ export default async function EditCaseEntryPage({ params }: { params: Promise<{ 
       <div className="admin-card" style={{ padding: '1.5rem' }}>
         <CaseEntryForm
           entry={{
+            ...entry,
             id: entry.id,
             title: entry.title,
             company_name: entry.company_name,
@@ -36,6 +37,8 @@ export default async function EditCaseEntryPage({ params }: { params: Promise<{ 
             thumbnail_url: entry.thumbnail_url,
             tags: entry.tags ?? [],
             status: entry.status,
+            key_lessons: entry.key_lessons ?? [],
+            discussion_questions: entry.discussion_questions ?? [],
             files: (entry.case_library_files ?? []) as { id: string; file_url: string; file_label: string | null; file_type: string | null }[],
           }}
           action={boundAction}

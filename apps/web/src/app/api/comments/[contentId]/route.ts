@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@pshq/api-client/server'
-import { awardContribution, normalizeCommentText, THOUGHTFUL_COMMENT_MIN_LENGTH } from '@pshq/api-client/community'
+import { awardContribution, normalizeCommentText, isLikelySpamComment, THOUGHTFUL_COMMENT_MIN_LENGTH } from '@pshq/api-client/community'
 import { trackContributionScored } from '@pshq/analytics'
 import { getAuthedRequestUser } from '@/lib/api-auth'
 
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     .from('content_comments')
     .select('id, body, is_deleted, created_at, user:users(full_name, email)')
     .eq('content_id', contentId)
+    .eq('is_hidden', false)
     .order('created_at', { ascending: true })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ comments: data ?? [] })
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 
   const service = createServiceClient()
-  const { error } = await service.from('content_comments').insert({ content_id: contentId, user_id: user.id, body })
+  const { error } = await service.from('content_comments').insert({ content_id: contentId, user_id: user.id, body, is_flagged: isLikelySpamComment(body) })
   if (error) return NextResponse.json({ error: 'Failed to post comment. Try again.' }, { status: 500 })
 
   if (body.length >= THOUGHTFUL_COMMENT_MIN_LENGTH) {

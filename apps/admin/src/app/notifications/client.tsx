@@ -31,7 +31,7 @@ function timeAgo(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-export function NotificationsClient({ pastNotifications }: { pastNotifications: PastNotification[] }) {
+export function NotificationsClient({ pastNotifications, learningPaths = [] }: { pastNotifications: PastNotification[]; learningPaths?: { id: string; title: string }[] }) {
   const [state, formAction, isPending] = useActionState(broadcastNotificationAction, initState)
   const [dayRange, setDayRange] = useState('all')
 
@@ -114,6 +114,20 @@ export function NotificationsClient({ pastNotifications }: { pastNotifications: 
               </Field>
             </div>
           )}
+          <Field label="Engagement status">
+            <select name="engagement_status" style={inputStyle} defaultValue="">
+              <option value="">Any</option>
+              <option value="new">New (signed up in last 7 days)</option>
+              <option value="inactive">Inactive (no activity in 30 days)</option>
+            </select>
+          </Field>
+          <Field label="Learning path enrollment">
+            <select name="learning_path_id" style={inputStyle} defaultValue="">
+              <option value="">Any</option>
+              {learningPaths.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+            </select>
+          </Field>
+          <p style={hintStyle}>Respects each member&apos;s notification preferences — anyone who opted out of product announcements is excluded automatically.</p>
         </Card>
 
         <button type="submit" disabled={isPending} style={{ alignSelf: 'flex-start', padding: '0.625rem 1.75rem', background: 'var(--color-ink-deep)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.9375rem', fontWeight: 600, cursor: isPending ? 'not-allowed' : 'pointer', opacity: isPending ? 0.7 : 1 }}>

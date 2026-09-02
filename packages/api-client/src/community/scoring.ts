@@ -39,3 +39,13 @@ export const THOUGHTFUL_COMMENT_MIN_LENGTH = 40
 export function normalizeCommentText(body: string): string {
   return body.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 200)
 }
+
+// Epic G Step 11 — a light heuristic run at post time so the comment
+// moderation queue has a real "flagged" pool to review, not just whatever
+// an admin happens to stumble on. Link spam (2+ URLs) is the cheapest,
+// highest-signal check available without a real spam-detection pipeline;
+// documented as an interim heuristic, not a claim of full spam detection.
+export function isLikelySpamComment(body: string): boolean {
+  const urlMatches = body.match(/https?:\/\/\S+/gi) ?? []
+  return urlMatches.length >= 2
+}

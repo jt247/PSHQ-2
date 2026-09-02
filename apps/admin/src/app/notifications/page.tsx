@@ -28,5 +28,7 @@ export default async function NotificationsPage() {
     sent_at: string | null; created_at: string; audience_filters: Record<string, unknown> | null
   }>)
 
-  return <NotificationsClient pastNotifications={pastNotifications} />
+  const { data: paths } = await service.from('learning_paths').select('id, title').order('title')
+
+  return <NotificationsClient pastNotifications={pastNotifications} learningPaths={paths ?? []} />
 }

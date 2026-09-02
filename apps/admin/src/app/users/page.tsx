@@ -19,7 +19,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
 
   let q = service
     .from('users')
-    .select('id, full_name, first_name, last_name, email, role, job_role, country, areas_of_interest, bio, onboarding_done, created_at, updated_at', { count: 'exact' })
+    .select('id, full_name, first_name, last_name, email, role, job_role, country, areas_of_interest, bio, onboarding_done, suspended_at, suspended_reason, created_at, updated_at', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1)
 
@@ -44,6 +44,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         id: string; full_name: string | null; first_name: string | null; last_name: string | null;
         email: string; role: string; job_role: string | null; country: string | null;
         areas_of_interest: string[]; bio: string | null; onboarding_done: boolean;
+        suspended_at: string | null; suspended_reason: string | null;
         created_at: string; updated_at: string;
       }>}
       count={count ?? 0}

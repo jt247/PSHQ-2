@@ -61,6 +61,11 @@ export interface UserRow {
   // Epic D addition — /profile/[username]. Nullable until set, editable
   // any time from Settings (not locked after first claim).
   username: string | null
+  // Epic G addition — admin suspension. Non-null suspended_at = blocked
+  // from signing in and signed out on next request if already in session.
+  suspended_at: string | null
+  suspended_reason: string | null
+  suspended_by: string | null
   created_at: string
   updated_at: string
 }
@@ -166,9 +171,38 @@ export interface ContentCommentRow {
   parent_id: string | null
   body: string
   is_deleted: boolean
+  // Epic G moderation additions
+  is_hidden: boolean
+  is_flagged: boolean
+  flagged_reason: string | null
+  is_approved: boolean
+  moderated_by: string | null
+  moderated_at: string | null
   created_at: string
   updated_at: string
 }
+
+export type FeedbackCategory = 'bug' | 'feature_suggestion' | 'content_request' | 'something_confusing' | 'something_liked' | 'account_support' | 'other'
+export type FeedbackStatus = 'new' | 'reviewing' | 'planned' | 'in_progress' | 'resolved' | 'closed'
+
+export interface FeedbackRow {
+  id: string
+  user_id: string | null
+  category: FeedbackCategory
+  message: string
+  status: FeedbackStatus
+  url: string | null
+  device: string | null
+  browser: string | null
+  is_logged_in: boolean
+  screenshot_url: string | null
+  admin_notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type FeedbackInsert = Pick<FeedbackRow, 'category' | 'message'> &
+  Partial<Pick<FeedbackRow, 'user_id' | 'url' | 'device' | 'browser' | 'is_logged_in' | 'screenshot_url'>>
 
 export interface ContentUpvoteRow {
   id: string

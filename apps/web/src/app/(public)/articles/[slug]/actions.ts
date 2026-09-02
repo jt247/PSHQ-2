@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
-import { awardContribution, normalizeCommentText, THOUGHTFUL_COMMENT_MIN_LENGTH } from '@pshq/api-client/community'
+import { awardContribution, normalizeCommentText, isLikelySpamComment, THOUGHTFUL_COMMENT_MIN_LENGTH } from '@pshq/api-client/community'
 import { trackContributionScored } from '@pshq/analytics'
 
 // ── Comments ─────────────────────────────────────────────────
@@ -51,6 +51,7 @@ export async function postCommentAction(
     content_id: contentId,
     user_id: user.id,
     body,
+    is_flagged: isLikelySpamComment(body),
   })
   if (error) {
     return { error: 'Failed to post comment. Try again.' }

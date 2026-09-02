@@ -15,6 +15,31 @@ async function getAdminUser() {
   return user
 }
 
+function slugify(text: string) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
+// Every field in Epic B's case content model (§B.11) — was previously only
+// editable by hand-editing the migration/Supabase directly, since the form
+// only ever exposed title/company/description/tags/status/thumbnail/files.
+const ANALYSIS_FIELDS = [
+  'slug', 'logo_url', 'industry', 'market', 'country', 'stage', 'product', 'problem',
+  'target_customer', 'market_context', 'business_model', 'product_strategy', 'acquisition',
+  'activation', 'retention', 'revenue', 'distribution', 'competitive_advantage',
+  'key_product_decisions', 'what_worked', 'what_did_not_work', 'challenges', 'jt_analysis',
+  'what_i_would_do_differently',
+] as const
+
+function analysisFields(formData: FormData) {
+  const out: Record<string, string | null> = {}
+  for (const f of ANALYSIS_FIELDS) out[f] = (formData.get(f) as string) || null
+  return out
+}
+
+function arrayField(formData: FormData, key: string) {
+  return ((formData.get(key) as string) || '').split('\n').map(s => s.trim()).filter(Boolean)
+}
+
 export async function createCaseEntryAction(formData: FormData) {
   const user = await getAdminUser()
   const service = createServiceClient()
@@ -22,8 +47,11 @@ export async function createCaseEntryAction(formData: FormData) {
   const tags = (formData.get('tags') as string || '')
     .split(',').map(t => t.trim()).filter(Boolean)
 
+  const titleValue = formData.get('title') as string
+  const rawSlug = (formData.get('slug') as string) || slugify(titleValue)
+
   const entryPayload = {
-    title:         formData.get('title') as string,
+    title:         titleValue,
     company_name:  formData.get('company_name') as string,
     description:   (formData.get('description') as string) || null,
     thumbnail_url: (formData.get('thumbnail_url') as string) || null,
@@ -31,6 +59,10 @@ export async function createCaseEntryAction(formData: FormData) {
     status:        (formData.get('status') as 'published' | 'draft') ?? 'draft',
     published_at:  formData.get('status') === 'published' ? new Date().toISOString() : null,
     created_by:    user.id,
+    ...analysisFields(formData),
+    slug:                   rawSlug,
+    key_lessons:            arrayField(formData, 'key_lessons'),
+    discussion_questions:   arrayField(formData, 'discussion_questions'),
   }
 
   const { data: entry, error } = await service
@@ -90,6 +122,10 @@ export async function updateCaseEntryAction(id: string, formData: FormData) {
     tags,
     status:        newStatus,
     published_at,
+    ...analysisFields(formData),
+    slug:                 (formData.get('slug') as string) || slugify(formData.get('title') as string),
+    key_lessons:          arrayField(formData, 'key_lessons'),
+    discussion_questions: arrayField(formData, 'discussion_questions'),
   }
 
   const { error } = await service.from('case_library_entries').update(entryPayload).eq('id', id)

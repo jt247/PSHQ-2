@@ -42,10 +42,13 @@ export async function createContentAction(formData: FormData) {
     pricing_type:    pricingType || 'free',
     selar_url:       pricingType === 'paid' ? ((formData.get('selar_url') as string) || null) : null,
     author_id:       user.id,
+    ...metadataFields(formData),
   }
 
   const { data, error } = await supabase.from('content').insert(payload).select('id').single()
   if (error) throw new Error(error.message)
+
+  await syncContentTaxonomy(supabase, data.id, formData)
 
   await logAdminAction({ admin_id: user.id, action_type: 'content_create', target_table: 'content', target_id: data.id, metadata: { title: payload.title, type: payload.type } })
 
@@ -55,6 +58,49 @@ export async function createContentAction(formData: FormData) {
 
   revalidatePath('/content')
   redirect(`/content/${data.id}/edit`)
+}
+
+// ─── Epic G §G.5 shared metadata fields ───────────────────────────────────────
+// Broken out since both create and update need the exact same parsing.
+function metadataFields(formData: FormData) {
+  const estMinutes = formData.get('estimated_time_minutes') as string
+  return {
+    domain:                 (formData.get('domain') as string) || null,
+    level:                  (formData.get('level') as string) || null,
+    resource_category:      (formData.get('resource_category') as string) || null,
+    estimated_time_minutes: estMinutes ? parseInt(estMinutes, 10) : null,
+    resource_intent:        formData.getAll('resource_intent').map(String),
+    seo_title:              (formData.get('seo_title') as string) || null,
+    seo_description:        (formData.get('seo_description') as string) || null,
+    canonical_url:          (formData.get('canonical_url') as string) || null,
+    og_image_url:           (formData.get('og_image_url') as string) || null,
+    series_id:              (formData.get('series_id') as string) || null,
+  }
+}
+
+// content_topics/content_goals/content_roles are many-to-many join tables
+// (Epic B) — the simplest correct sync for a form-driven multi-select is
+// delete-all-then-reinsert-selected, scoped to this one content row.
+async function syncContentTaxonomy(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  contentId: string,
+  formData: FormData
+) {
+  const topicIds = formData.getAll('topic_ids').map(String).filter(Boolean)
+  const goalIds  = formData.getAll('goal_ids').map(String).filter(Boolean)
+  const roleIds  = formData.getAll('role_ids').map(String).filter(Boolean)
+
+  await Promise.all([
+    supabase.from('content_topics').delete().eq('content_id', contentId),
+    supabase.from('content_goals').delete().eq('content_id', contentId),
+    supabase.from('content_roles').delete().eq('content_id', contentId),
+  ])
+
+  await Promise.all([
+    topicIds.length ? supabase.from('content_topics').insert(topicIds.map(topic_id => ({ content_id: contentId, topic_id }))) : null,
+    goalIds.length  ? supabase.from('content_goals').insert(goalIds.map(goal_id => ({ content_id: contentId, goal_id })))    : null,
+    roleIds.length  ? supabase.from('content_roles').insert(roleIds.map(role_id => ({ content_id: contentId, role_id })))    : null,
+  ])
 }
 
 // ─── Update ──────────────────────────────────────────────────────────────────
@@ -80,10 +126,13 @@ export async function updateContentAction(id: string, formData: FormData) {
     tags:            ((formData.get('tags') as string) || '').split(',').map(t => t.trim()).filter(Boolean),
     pricing_type:    pricingType || 'free',
     selar_url:       pricingType === 'paid' ? ((formData.get('selar_url') as string) || null) : null,
+    ...metadataFields(formData),
   }
 
   const { error } = await supabase.from('content').update(payload).eq('id', id)
   if (error) throw new Error(error.message)
+
+  await syncContentTaxonomy(supabase, id, formData)
 
   await logAdminAction({ admin_id: user.id, action_type: 'content_update', target_table: 'content', target_id: id, metadata: { title: payload.title } })
 

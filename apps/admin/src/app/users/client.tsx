@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { updateUserRoleAction } from './actions'
+import { useState, useTransition, useEffect } from 'react'
+import { updateUserRoleAction, suspendUserAction, restoreUserAction, adjustUserPointsAction, getUserDetailAction, type UserDetail } from './actions'
 
 type UserRole = 'user' | 'admin' | 'super_admin'
 
@@ -9,6 +9,7 @@ interface User {
   id: string; full_name: string | null; first_name: string | null; last_name: string | null;
   email: string; role: string; job_role: string | null; country: string | null;
   areas_of_interest: string[]; bio: string | null; onboarding_done: boolean;
+  suspended_at: string | null; suspended_reason: string | null;
   created_at: string; updated_at: string;
 }
 
@@ -83,6 +84,162 @@ function RoleSelector({ userId, currentRole }: { userId: string; currentRole: st
   )
 }
 
+function SuspendControl({ user }: { user: User }) {
+  const [isPending, startTransition] = useTransition()
+  const [showReasonInput, setShowReasonInput] = useState(false)
+  const [reason, setReason] = useState('')
+  const [suspended, setSuspended] = useState(!!user.suspended_at)
+
+  if (suspended) {
+    return (
+      <div>
+        <p style={{ ...valueStyle, color: '#b91c1c', marginBottom: '0.5rem' }}>
+          Suspended{user.suspended_reason ? `: ${user.suspended_reason}` : ''}
+        </p>
+        <button
+          disabled={isPending}
+          onClick={() => startTransition(async () => { await restoreUserAction(user.id); setSuspended(false) })}
+          className="btn-ghost"
+          style={{ fontSize: '0.8125rem', padding: '0.3125rem 0.75rem' }}
+        >
+          {isPending ? 'Restoring…' : 'Restore account'}
+        </button>
+      </div>
+    )
+  }
+
+  if (showReasonInput) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <input
+          value={reason} onChange={e => setReason(e.target.value)}
+          placeholder="Reason (shown only to admins)"
+          style={{ fontSize: '0.8125rem', padding: '0.375rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
+        />
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            disabled={isPending}
+            onClick={() => startTransition(async () => { await suspendUserAction(user.id, reason); setSuspended(true) })}
+            style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.3125rem 0.75rem', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}
+          >
+            {isPending ? 'Suspending…' : 'Confirm suspend'}
+          </button>
+          <button onClick={() => setShowReasonInput(false)} className="btn-ghost" style={{ fontSize: '0.75rem', padding: '0.3125rem 0.75rem' }}>Cancel</button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <button onClick={() => setShowReasonInput(true)} className="btn-ghost" style={{ fontSize: '0.8125rem', padding: '0.3125rem 0.75rem', color: '#b91c1c', borderColor: '#fca5a5' }}>
+      Suspend account
+    </button>
+  )
+}
+
+function PointsAdjuster({ userId }: { userId: string }) {
+  const [isPending, startTransition] = useTransition()
+  const [delta, setDelta] = useState('')
+  const [note, setNote] = useState('')
+  const [done, setDone] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function submit() {
+    setError(null)
+    const n = parseInt(delta, 10)
+    if (!n) { setError('Enter a non-zero whole number.'); return }
+    startTransition(async () => {
+      try {
+        await adjustUserPointsAction(userId, n, note)
+        setDone(true)
+        setDelta(''); setNote('')
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed')
+      }
+    })
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <input
+          value={delta} onChange={e => setDelta(e.target.value)} placeholder="+10 or -5"
+          style={{ width: '90px', fontSize: '0.8125rem', padding: '0.375rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
+        />
+        <input
+          value={note} onChange={e => setNote(e.target.value)} placeholder="Reason (logged)"
+          style={{ flex: 1, fontSize: '0.8125rem', padding: '0.375rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem' }}
+        />
+        <button disabled={isPending} onClick={submit} className="btn-primary" style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}>
+          {isPending ? '…' : 'Apply'}
+        </button>
+      </div>
+      {done && <p style={{ fontSize: '0.75rem', color: '#15803d', margin: 0 }}>Adjustment applied and logged.</p>}
+      {error && <p style={{ fontSize: '0.75rem', color: '#dc2626', margin: 0 }}>{error}</p>}
+    </div>
+  )
+}
+
+function UserDetailPanel({ userId }: { userId: string }) {
+  const [detail, setDetail] = useState<UserDetail | null>(null)
+
+  useEffect(() => {
+    getUserDetailAction(userId).then(setDetail).catch(() => setDetail(null))
+  }, [userId])
+
+  if (!detail) return <p style={{ ...valueStyle, color: '#9ca3af' }}>Loading…</p>
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+        {[
+          { label: 'Content done', value: detail.contentCompleted },
+          { label: 'Cases done', value: detail.casesCompleted },
+          { label: 'Modules done', value: detail.modulesCompleted },
+          { label: 'Paths started', value: detail.learningPathsStarted },
+          { label: 'Paths done', value: detail.learningPathsCompleted },
+          { label: 'Points', value: detail.totalScore },
+        ].map(s => (
+          <div key={s.label} style={{ background: '#f9fafb', borderRadius: '0.375rem', padding: '0.5rem', textAlign: 'center' }}>
+            <p style={{ fontWeight: 800, fontSize: '1.125rem', margin: 0 }}>{s.value}</p>
+            <p style={{ fontSize: '0.625rem', color: '#9ca3af', textTransform: 'uppercase', margin: 0 }}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <DrawerField label="Achievements">
+        {detail.achievements.length === 0 ? <span style={valueStyle}>None yet</span> : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+            {detail.achievements.map(a => <span key={a.key} style={{ ...badge, background: '#fef3c7', color: '#92400e' }}>{a.title}</span>)}
+          </div>
+        )}
+      </DrawerField>
+
+      <DrawerField label="Feedback submitted">
+        {detail.feedback.length === 0 ? <span style={valueStyle}>None</span> : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+            {detail.feedback.map(f => (
+              <div key={f.id} style={{ fontSize: '0.8125rem', color: '#374151', borderLeft: '2px solid #e5e7eb', paddingLeft: '0.5rem' }}>
+                <strong style={{ textTransform: 'capitalize' }}>{f.category.replace(/_/g, ' ')}</strong> · {f.status} — {f.message.slice(0, 80)}
+              </div>
+            ))}
+          </div>
+        )}
+      </DrawerField>
+
+      <DrawerField label="Recent activity">
+        {detail.recentActivity.length === 0 ? <span style={valueStyle}>No completions yet</span> : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            {detail.recentActivity.map((a, i) => (
+              <span key={i} style={{ fontSize: '0.8125rem', color: '#374151' }}>Completed “{a.label}” · {timeAgo(a.created_at)}</span>
+            ))}
+          </div>
+        )}
+      </DrawerField>
+    </div>
+  )
+}
+
 function UserDrawer({ user, onClose }: { user: User; onClose: () => void }) {
   return (
     <div
@@ -140,6 +297,17 @@ function UserDrawer({ user, onClose }: { user: User; onClose: () => void }) {
           <DrawerField label="Joined"><span style={valueStyle}>{new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span></DrawerField>
           <DrawerField label="Last updated"><span style={valueStyle}>{timeAgo(user.updated_at)}</span></DrawerField>
           <DrawerField label="User ID"><span style={{ ...valueStyle, fontFamily: 'monospace', fontSize: '0.6875rem', wordBreak: 'break-all' }}>{user.id}</span></DrawerField>
+
+          <hr style={{ border: 'none', borderTop: '1px solid #f3f4f6', margin: '0.25rem 0' }} />
+
+          <DrawerField label="Account status"><SuspendControl user={user} /></DrawerField>
+          <DrawerField label="Adjust contribution points"><PointsAdjuster userId={user.id} /></DrawerField>
+
+          <hr style={{ border: 'none', borderTop: '1px solid #f3f4f6', margin: '0.25rem 0' }} />
+
+          <DrawerField label="Activity, progress & achievements">
+            <UserDetailPanel userId={user.id} />
+          </DrawerField>
         </div>
       </div>
     </div>
@@ -249,7 +417,10 @@ export function UsersClient({ users, count, totalPages, page, roleFilter, query,
                           {initials}
                         </div>
                         <div style={{ minWidth: 0 }}>
-                          <p style={{ fontWeight: 600, color: 'var(--color-ink-deep)', margin: '0 0 0.125rem', whiteSpace: 'nowrap' }}>{u.full_name ?? '—'}</p>
+                          <p style={{ fontWeight: 600, color: 'var(--color-ink-deep)', margin: '0 0 0.125rem', whiteSpace: 'nowrap' }}>
+                            {u.full_name ?? '—'}
+                            {u.suspended_at && <span style={{ ...badge, marginLeft: '0.375rem', background: '#fee2e2', color: '#b91c1c' }}>Suspended</span>}
+                          </p>
                           <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0, whiteSpace: 'nowrap' }}>{u.email}</p>
                         </div>
                       </div>

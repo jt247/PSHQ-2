@@ -1,30 +1,34 @@
 'use client'
 
-import { useState, useActionState } from 'react'
+import { useState, useActionState, useTransition } from 'react'
 import Link from 'next/link'
-import { createTicketAction, type CreateTicketState } from './actions'
+import { createTicketAction, type CreateTicketState, updateFeedbackStatusAction, updateContentRequestStatusAction } from './actions'
 
-interface TicketRow {
-  id: string; ticket_number: number; subject: string; status: string; priority: string;
-  created_at: string; updated_at: string; email: string | null;
-  user: { full_name: string | null; email: string } | null
+export interface UnifiedRow {
+  id: string
+  source: 'support' | 'content_request' | 'feedback'
+  title: string
+  category: string | null
+  status: string
+  contactName: string
+  contactEmail: string | null
+  created_at: string
+  updated_at: string
+  detailHref: string | null
 }
 
 interface Props {
-  rows: TicketRow[]
+  rows: UnifiedRow[]
   currentStatus?: string
-  currentType?: string
-  statusColors: Record<string, string>
+  currentSource?: string
+  currentCategory?: string
+  openCount: number
 }
 
-const STATUSES = ['open', 'in_progress', 'resolved', 'closed']
-
-const PRIORITY_STYLE: Record<string, { bg: string; text: string }> = {
-  low:    { bg: '#f0fdf4', text: '#15803d' },
-  medium: { bg: '#fef9c3', text: '#a16207' },
-  high:   { bg: '#ffedd5', text: '#c2410c' },
-  urgent: { bg: '#fee2e2', text: '#b91c1c' },
-}
+const DISPLAY_STATUSES = ['new', 'reviewing', 'planned', 'in_progress', 'resolved', 'closed']
+const SOURCE_LABEL: Record<string, string> = { support: 'Support ticket', content_request: 'Content request', feedback: 'Feedback' }
+const SOURCE_COLOR: Record<string, string> = { support: '#dbeafe', content_request: '#f3e8ff', feedback: '#dcfce7' }
+const STATUS_COLOR: Record<string, string> = { new: '#1d4ed8', reviewing: '#a16207', planned: '#7c3aed', in_progress: '#c2410c', resolved: '#15803d', closed: '#6b7280' }
 
 function timeAgo(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
@@ -39,6 +43,36 @@ function buildHref(params: Record<string, string | undefined>) {
   return q ? `?${q}` : '/support'
 }
 
+function StatusSelect({ row }: { row: UnifiedRow }) {
+  const [isPending, startTransition] = useTransition()
+  const [status, setStatus] = useState(row.status)
+
+  if (row.source === 'support') {
+    // Ticket status changes happen on its own detail page (real reply
+    // thread lives there) — link through instead of duplicating the flow.
+    return (
+      <span style={{ display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize', background: `${STATUS_COLOR[status]}18`, color: STATUS_COLOR[status] }}>
+        {status.replace('_', ' ')}
+      </span>
+    )
+  }
+
+  return (
+    <select
+      value={status}
+      disabled={isPending}
+      onChange={e => {
+        const next = e.target.value
+        setStatus(next)
+        startTransition(() => row.source === 'feedback' ? updateFeedbackStatusAction(row.id, next) : updateContentRequestStatusAction(row.id, next))
+      }}
+      style={{ fontSize: '0.75rem', padding: '0.125rem 0.375rem', borderRadius: '0.25rem', border: '1px solid #d1d5db', color: STATUS_COLOR[status], fontWeight: 600 }}
+    >
+      {DISPLAY_STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+    </select>
+  )
+}
+
 function CreateSlideOver({ onClose }: { onClose: () => void }) {
   const initState: CreateTicketState = {}
   const [state, formAction, isPending] = useActionState(createTicketAction, initState)
@@ -50,9 +84,7 @@ function CreateSlideOver({ onClose }: { onClose: () => void }) {
           <p style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827', marginBottom: '0.5rem' }}>Ticket created</p>
           <p style={{ color: '#6b7280', fontSize: '0.9375rem', marginBottom: '1.5rem' }}>The inquiry has been logged successfully.</p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-            {state.id && (
-              <Link href={`/support/${state.id}`} style={btnPrimary}>View ticket</Link>
-            )}
+            {state.id && <Link href={`/support/${state.id}`} style={btnPrimary}>View ticket</Link>}
             <button onClick={onClose} style={btnSecondary}>Close</button>
           </div>
         </div>
@@ -119,108 +151,71 @@ function SlideOver({ children, onClose }: { children: React.ReactNode; onClose: 
   )
 }
 
-export function SupportClient({ rows, currentStatus, currentType, statusColors }: Props) {
+export function SupportClient({ rows, currentStatus, currentSource, currentCategory, openCount }: Props) {
   const [showCreate, setShowCreate] = useState(false)
 
   return (
     <div className="admin-main-inner">
       {showCreate && <CreateSlideOver onClose={() => setShowCreate(false)} />}
 
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--color-accent-warm)', marginBottom: '0.25rem' }}>
             Tactical Operations Center
           </p>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-ink-deep)', margin: 0 }}>
-            Support
+            Support & Feedback
           </h1>
+          <p style={{ fontSize: '0.8125rem', color: '#9ca3af', margin: '0.25rem 0 0' }}>{openCount} open across all sources</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary">
-          + New inquiry
-        </button>
+        <button onClick={() => setShowCreate(true)} className="btn-primary">+ New inquiry</button>
       </div>
 
-      {/* Type filter */}
       <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-        <a href={buildHref({ status: currentStatus })} style={typePill(!currentType)}>All</a>
-        <a href={buildHref({ type: 'member', status: currentStatus })} style={typePill(currentType === 'member')}>
-          Member tickets
-        </a>
-        <a href={buildHref({ type: 'contact', status: currentStatus })} style={typePill(currentType === 'contact')}>
-          Contact inquiries
-        </a>
-      </div>
-
-      {/* Status filter */}
-      <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-        <a href={buildHref({ type: currentType })} style={statusPill(!currentStatus)}>All status</a>
-        {STATUSES.map(s => (
-          <a key={s} href={buildHref({ status: s, type: currentType })} style={statusPill(currentStatus === s)}>
-            {s.replace('_', ' ')}
-          </a>
+        <a href={buildHref({ status: currentStatus, category: currentCategory })} style={typePill(!currentSource)}>All sources</a>
+        {(['support', 'content_request', 'feedback'] as const).map(s => (
+          <a key={s} href={buildHref({ source: s, status: currentStatus, category: currentCategory })} style={typePill(currentSource === s)}>{SOURCE_LABEL[s]}</a>
         ))}
       </div>
 
-      {/* Table */}
+      <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+        <a href={buildHref({ source: currentSource, category: currentCategory })} style={statusPill(!currentStatus)}>All status</a>
+        {DISPLAY_STATUSES.map(s => (
+          <a key={s} href={buildHref({ status: s, source: currentSource, category: currentCategory })} style={statusPill(currentStatus === s)}>{s.replace('_', ' ')}</a>
+        ))}
+      </div>
+
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', overflow: 'hidden' }}>
         <table className="admin-table">
           <thead>
-            <tr>
-              {['#', 'Source', 'Contact', 'Subject', 'Status', 'Priority', 'Updated'].map(h => (
-                <th key={h}>{h}</th>
-              ))}
-            </tr>
+            <tr>{['Source', 'Contact', 'Subject / Message', 'Status', 'Updated'].map(h => <th key={h}>{h}</th>)}</tr>
           </thead>
           <tbody>
-            {rows.map(t => {
-              const isMember = t.user !== null
-              const color = statusColors[t.status] ?? '#374151'
-              const pri = PRIORITY_STYLE[t.priority] ?? { bg: '#f3f4f6', text: '#374151' }
-              const displayName = t.user?.full_name ?? t.email ?? '—'
-              const displayEmail = t.user?.email ?? t.email ?? '—'
-
-              return (
-                <tr key={t.id}>
-                  <td style={{ color: '#9ca3af', fontSize: '0.8125rem' }}>#{t.ticket_number}</td>
-                  <td>
-                    <span style={{
-                      display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: '0.2rem',
-                      fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-                      background: isMember ? '#dbeafe' : '#f3f4f6',
-                      color: isMember ? '#1d4ed8' : '#374151',
-                    }}>
-                      {isMember ? 'Member' : 'Contact'}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>{displayName}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{displayEmail}</div>
-                  </td>
-                  <td>
-                    <Link href={`/support/${t.id}`} style={{ color: '#111827', fontWeight: 500, textDecoration: 'none' }}>
-                      {t.subject}
-                    </Link>
-                  </td>
-                  <td>
-                    <span style={{ display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize', background: `${color}18`, color }}>
-                      {t.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td>
-                    <span style={{ display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize', background: pri.bg, color: pri.text }}>
-                      {t.priority}
-                    </span>
-                  </td>
-                  <td style={{ fontSize: '0.8125rem', color: '#9ca3af' }}>{timeAgo(t.updated_at)}</td>
-                </tr>
-              )
-            })}
+            {rows.map(r => (
+              <tr key={`${r.source}-${r.id}`}>
+                <td>
+                  <span style={{ display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: '0.2rem', fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', background: SOURCE_COLOR[r.source], color: '#374151' }}>
+                    {SOURCE_LABEL[r.source]}{r.category ? ` · ${r.category.replace(/_/g, ' ')}` : ''}
+                  </span>
+                </td>
+                <td>
+                  <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>{r.contactName}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{r.contactEmail ?? '—'}</div>
+                </td>
+                <td>
+                  {r.detailHref ? (
+                    <Link href={r.detailHref} style={{ color: '#111827', fontWeight: 500, textDecoration: 'none' }}>{r.title}</Link>
+                  ) : (
+                    <span style={{ color: '#111827' }}>{r.title}</span>
+                  )}
+                </td>
+                <td><StatusSelect row={r} /></td>
+                <td style={{ fontSize: '0.8125rem', color: '#9ca3af' }}>{timeAgo(r.updated_at)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
-        {rows.length === 0 && (
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#9ca3af' }}>No tickets found.</div>
-        )}
+        {rows.length === 0 && <div style={{ padding: '3rem', textAlign: 'center', color: '#9ca3af' }}>Nothing here.</div>}
       </div>
     </div>
   )
