@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
-import { trackEmailVerified } from '@pshq/analytics'
+import { trackEmailVerified, trackSignupCompleted } from '@pshq/analytics'
 import type { UserRow } from '@pshq/database'
 import { adminUrl } from '@/lib/admin-url'
 
@@ -72,6 +72,20 @@ export async function GET(request: NextRequest) {
       // represents "a user just verified their email."
       if (data.user.app_metadata?.provider === 'email') {
         await trackEmailVerified({ supabase, source: 'web', userId })
+      }
+
+      // Epic H discovery — this route (the Google OAuth path, the primary
+      // signup option on the sign-in page) never fired signup_completed at
+      // all, only email/password did. That meant the funnel was
+      // systematically undercounting real signups. auth.users.created_at
+      // within the last minute of this callback is the standard signal for
+      // "this OAuth exchange just created a brand-new account" — an
+      // existing user signing back in has a created_at from long before.
+      if (data.user.app_metadata?.provider !== 'email') {
+        const createdAt = new Date(data.user.created_at).getTime()
+        if (Date.now() - createdAt < 60_000) {
+          await trackSignupCompleted({ supabase, source: 'web', userId })
+        }
       }
 
       const { data: profileRaw } = await supabase

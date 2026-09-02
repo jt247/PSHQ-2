@@ -35,6 +35,7 @@ export default async function PlatformAnalyticsPage({ searchParams }: PageProps)
     topViewedContent,
     topUnlockedContent,
     dailySignups,
+    signupsStartedRes,
     totalViewsRes,
     uniqueSessionsRes,
     newUsersRes,
@@ -45,6 +46,10 @@ export default async function PlatformAnalyticsPage({ searchParams }: PageProps)
     getTopContent('view', 5),
     getTopContent('unlock', 5),
     getDailySignups(days),
+    // Epic H — real count, replaces the fabricated `signups * 1.4` estimate
+    // that stood in for this before Build Prompt 8's signup_started event
+    // existed to query. A real small number here is correct, not a bug.
+    supabase.from('analytics_events').select('id', { count: 'exact', head: true }).eq('event_name', 'signup_started').gte('created_at', daysAgo(days)),
     // total views in period
     supabase.from('content_interactions')
       .select('id', { count: 'exact', head: true })
@@ -103,7 +108,7 @@ export default async function PlatformAnalyticsPage({ searchParams }: PageProps)
     },
     funnel: [
       { label: 'Total visits', value: views },
-      { label: 'Signups started', value: Math.round(signups * 1.4) },
+      { label: 'Signups started', value: signupsStartedRes.count ?? 0 },
       { label: 'Signup completed', value: signups },
       { label: 'First unlock', value: unlocks },
       { label: 'Selar link clicks', value: selarClicks },

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
 import { awardContribution, normalizeCommentText, isLikelySpamComment, THOUGHTFUL_COMMENT_MIN_LENGTH } from '@pshq/api-client/community'
-import { trackContributionScored } from '@pshq/analytics'
+import { trackContributionScored, trackContentUpvoted, trackContentUnupvoted, trackCommentPosted, trackRatingSubmitted } from '@pshq/analytics'
 
 // ── Comments ─────────────────────────────────────────────────
 
@@ -68,6 +68,8 @@ export async function postCommentAction(
     if (scored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'thoughtful_comment', 4, contentId)
   }
 
+  await trackCommentPosted({ supabase, source: 'web', userId: user.id }, { contentId })
+
   revalidatePath(`/articles`)
   return { success: true }
 }
@@ -97,11 +99,13 @@ export async function toggleUpvoteAction(contentId: string, currentlyUpvoted: bo
       .eq('content_id', contentId)
       .eq('user_id', user.id)
     if (error) return { error: 'Failed to remove upvote.' }
+    await trackContentUnupvoted({ supabase, source: 'web', userId: user.id }, { contentId })
   } else {
     const { error } = await service
       .from('content_upvotes')
       .insert({ content_id: contentId, user_id: user.id })
     if (error) return { error: 'Failed to upvote.' }
+    await trackContentUpvoted({ supabase, source: 'web', userId: user.id }, { contentId })
   }
 
   // The detail pages themselves were never revalidated — only the index
@@ -157,6 +161,8 @@ export async function submitRatingAction(
   // upsert path above) never re-scores, only the first rating ever does.
   const scored = await awardContribution(supabase, 'rating', contentId, contentId)
   if (scored) await trackContributionScored({ supabase, source: 'web', userId: user.id }, 'rating', 1, contentId)
+
+  await trackRatingSubmitted({ supabase, source: 'web', userId: user.id }, { contentId, metadata: { rating } })
 
   revalidatePath(`/articles`)
   revalidatePath(`/content`)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { logListenAction } from '@/app/(public)/content/[slug]/actions'
+import { logListenAction, logListenCompleteAction } from '@/app/(public)/content/[slug]/actions'
 
 interface Props {
   text: string
@@ -69,7 +69,7 @@ export function ListenButton({ text, contentId }: Props) {
     synth.cancel()
     logListenAction(contentId).catch(() => {})
     const utterance = new SpeechSynthesisUtterance(toSpeechText(text))
-    utterance.onend = () => setStatus('idle')
+    utterance.onend = () => { setStatus('idle'); logListenCompleteAction(contentId).catch(() => {}) }
     utterance.onerror = () => setStatus('idle')
     synth.speak(utterance)
     setStatus('playing')

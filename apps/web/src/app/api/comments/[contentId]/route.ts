@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@pshq/api-client/server'
 import { awardContribution, normalizeCommentText, isLikelySpamComment, THOUGHTFUL_COMMENT_MIN_LENGTH } from '@pshq/api-client/community'
-import { trackContributionScored } from '@pshq/analytics'
+import { trackContributionScored, trackCommentPosted } from '@pshq/analytics'
 import { getAuthedRequestUser } from '@/lib/api-auth'
 
 interface Params { params: Promise<{ contentId: string }> }
@@ -57,6 +57,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     const scored = await awardContribution(supabase, 'thoughtful_comment', contentId, normalized)
     if (scored) await trackContributionScored({ supabase, source: 'mobile', userId: user.id }, 'thoughtful_comment', 4, contentId)
   }
+
+  await trackCommentPosted({ supabase, source: 'mobile', userId: user.id }, { contentId })
 
   return NextResponse.json({ success: true })
 }

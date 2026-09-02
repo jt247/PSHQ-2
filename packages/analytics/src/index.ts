@@ -63,7 +63,35 @@ export const trackContentProgress = (ctx: TrackContext, opts: TrackOptions & { m
 export const trackContentCompleted = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'content_completed', opts)
 export const trackResourceDownloaded = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'resource_downloaded', opts)
 export const trackResourceSaved = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'resource_saved', opts)
+export const trackResourceUnsaved = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'resource_unsaved', opts)
 export const trackResourceShared = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'resource_shared', opts)
+// Epic H §H.1 — closes the gap Build Prompt 9 discovery found: no upvote,
+// listen, or related-content-click event existed as a typed analytics_events
+// row (upvote/listen were only ever content_interactions rows, which the
+// admin analytics layer also reads, but a real analytics_events row lets
+// these show up in the funnel/rate calculations that query that table).
+export const trackContentUpvoted = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'content_upvoted', opts)
+export const trackContentUnupvoted = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'content_unupvoted', opts)
+export const trackRatingSubmitted = (ctx: TrackContext, opts: TrackOptions & { metadata: { rating: number } }) =>
+  track(ctx, 'rating_submitted', opts)
+export const trackCommentPosted = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'comment_posted', opts)
+export const trackListenStarted = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'listen_started', opts)
+export const trackListenCompleted = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'listen_completed', opts)
+export const trackRelatedContentClicked = (ctx: TrackContext, opts: TrackOptions & { metadata: { fromContentId: string } }) =>
+  track(ctx, 'related_content_clicked', opts)
+// Ebook/template-specific (Epic H §H.2): the moment /api/view actually
+// renders the file inline, distinct from trackContentOpened (the metadata
+// page) and from resource_downloaded (a save-to-disk). Read-percentage
+// milestones (25/50/75/100%) are NOT implemented — see SIDENOTES.md: a
+// native browser PDF viewer embedded via <embed>/<iframe> doesn't expose
+// scroll position to the host page, so any percentage here would be
+// fabricated, not measured. Reader-opened is real and load-bearing enough
+// on its own for the read-rate calculation in §H.3.
+export const trackReaderOpened = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'reader_opened', opts)
+// Fired when the /read wrapper page itself is reached — the real "clicked
+// Read" intent signal, a step before trackReaderOpened (which only fires
+// once the iframe's /api/view request actually succeeds).
+export const trackReadButtonClicked = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'read_button_clicked', opts)
 
 // ── Learning (Epic B builds the features these describe) ───────────────
 export const trackLearningPathStarted = (ctx: TrackContext, opts: TrackOptions) => track(ctx, 'learning_path_started', opts)

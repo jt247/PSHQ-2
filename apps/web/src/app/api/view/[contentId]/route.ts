@@ -4,6 +4,7 @@ import { createClient, createServiceClient } from '@pshq/api-client/server'
 import { isOnboarded } from '@pshq/api-client/onboarding'
 import { renderSpreadsheetAsHtml } from '@/lib/spreadsheet-viewer'
 import { isViewableInline } from '@/lib/viewable'
+import { trackReaderOpened } from '@pshq/analytics'
 
 const r2 = new S3Client({
   region: 'auto',
@@ -108,6 +109,7 @@ export async function GET(
   try {
     await service.from('content_interactions').insert({ content_id: contentId, user_id: user.id, type: 'read', metadata: {} })
   } catch { /* non-fatal — reports as 0 reads until the migration adding this enum value runs */ }
+  await trackReaderOpened({ supabase, source: 'web', userId: user.id }, { contentId })
 
   const object = await r2.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }))
   const bytes = await object.Body!.transformToByteArray()

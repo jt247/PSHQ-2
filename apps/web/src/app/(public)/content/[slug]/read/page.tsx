@@ -6,6 +6,7 @@ import { isOnboarded } from '@pshq/api-client/onboarding'
 import { ShareButton } from '@/components/content/ShareButton'
 import { absoluteUrl } from '@/lib/seo/constants'
 import { isViewableInline } from '@/lib/viewable'
+import { trackReadButtonClicked } from '@pshq/analytics'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -44,6 +45,8 @@ export default async function ReadContentPage({ params }: Props) {
   // reader to send them to — the detail page never links here in that
   // case, but a typed-in URL is guarded the same way.
   if (item.pricing_type !== 'free' || !isViewableInline(item.file_url)) redirect(`/content/${slug}`)
+
+  await trackReadButtonClicked({ supabase, source: 'web', userId: user.id }, { contentId: item.id })
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-paper-darker)' }}>

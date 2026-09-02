@@ -395,7 +395,7 @@ export default async function ArticlePage({ params }: Props) {
             isLoggedIn={!!user}
           />
 
-          <ContinueFromHereSection items={continueFromHere} />
+          <ContinueFromHereSection items={continueFromHere} fromContentId={rawItem.id} />
         </article>
       </main>
     </div>

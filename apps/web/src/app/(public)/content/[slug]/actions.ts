@@ -2,7 +2,7 @@
 
 import { createClient, createServiceClient } from '@pshq/api-client/server'
 import { awardContribution } from '@pshq/api-client/community'
-import { trackExerciseCompleted, trackContentCompleted, trackContentMarkedComplete, trackContributionScored } from '@pshq/analytics'
+import { trackExerciseCompleted, trackContentCompleted, trackContentMarkedComplete, trackContributionScored, trackResourceSaved, trackResourceUnsaved, trackRatingSubmitted, trackListenStarted, trackListenCompleted, trackResourceShared } from '@pshq/analytics'
 
 // Fire-and-forget analytics only — the actual share (native sheet or
 // clipboard copy) already happened client-side by the time this runs.
@@ -23,10 +23,15 @@ export async function logShareAction(contentId: string): Promise<void> {
       metadata: {},
     })
   } catch { /* non-fatal */ }
+
+  await trackResourceShared({ supabase, source: 'web', userId: user?.id ?? null }, { contentId })
 }
 
 // Same fire-and-forget pattern as logShareAction. Logged once per fresh
 // playback start (not on resume) — see ListenButton's status transition.
+// Epic H §H.1 — also fires the typed listen_started event on analytics_events
+// (the content_interactions row above predates this epic and stays for its
+// existing consumers; this epic's analytics layer reads the typed event).
 export async function logListenAction(contentId: string): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -40,6 +45,17 @@ export async function logListenAction(contentId: string): Promise<void> {
       metadata: {},
     })
   } catch { /* non-fatal */ }
+
+  await trackListenStarted({ supabase, source: 'web', userId: user?.id ?? null }, { contentId })
+}
+
+// Fired when TTS playback reaches the natural end of the text (not on pause
+// or navigating away) — the real signal for "listen completed" vs. just
+// "listen started."
+export async function logListenCompleteAction(contentId: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  await trackListenCompleted({ supabase, source: 'web', userId: user?.id ?? null }, { contentId })
 }
 
 // Favorites are private to the user (RLS: self read/insert/delete), so this
@@ -56,6 +72,7 @@ export async function toggleFavoriteAction(contentId: string, isFavorited: boole
       .eq('content_id', contentId)
       .eq('user_id', user.id)
     if (error) return { error: error.message }
+    await trackResourceUnsaved({ supabase, source: 'web', userId: user.id }, { contentId })
     return {}
   }
 
@@ -63,6 +80,7 @@ export async function toggleFavoriteAction(contentId: string, isFavorited: boole
     .from('content_favorites')
     .insert({ content_id: contentId, user_id: user.id })
   if (error) return { error: error.message }
+  await trackResourceSaved({ supabase, source: 'web', userId: user.id }, { contentId })
 
   // §F.2 +1, deduped on content_id (§F.3: "favoriting and unfavoriting the
   // same item repeatedly must not repeatedly score" — this only ever

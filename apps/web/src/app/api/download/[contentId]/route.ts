@@ -3,6 +3,7 @@ import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
 import { isOnboarded } from '@pshq/api-client/onboarding'
+import { trackResourceDownloaded } from '@pshq/analytics'
 
 const r2 = new S3Client({
   region: 'auto',
@@ -80,6 +81,8 @@ export async function GET(
       metadata: {},
     })
   } catch { /* non-fatal */ }
+
+  await trackResourceDownloaded({ supabase, source: 'web', userId: user.id }, { contentId })
 
   // Generate a presigned URL valid for 1 hour. ResponseContentDisposition
   // forces a real save-to-disk on this path — without it, R2 returns

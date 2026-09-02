@@ -30,6 +30,11 @@ const NAV_ITEMS: (null | { href: string; label: string })[] = [
   { href: '/analytics/platform', label: 'Platform Analytics' },
   { href: '/analytics/product',  label: 'Product Analytics' },
   { href: '/analytics/growth',   label: 'Growth Analytics' },
+  { href: '/analytics/funnel',   label: 'Product Funnel' },
+  { href: '/analytics/content',  label: 'Content Analytics' },
+  { href: '/analytics/search',   label: 'Search Analytics' },
+  { href: '/analytics/users',    label: 'User Analytics' },
+  { href: '/analytics/learning', label: 'Learning Analytics' },
   null,
   { href: '/team', label: 'Team' },
 ]

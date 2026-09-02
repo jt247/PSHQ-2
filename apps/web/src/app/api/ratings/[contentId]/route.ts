@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { awardContribution } from '@pshq/api-client/community'
-import { trackContributionScored } from '@pshq/analytics'
+import { trackContributionScored, trackRatingSubmitted } from '@pshq/analytics'
 import { getAuthedRequestUser } from '@/lib/api-auth'
 
 interface Params { params: Promise<{ contentId: string }> }
@@ -32,6 +32,8 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const scored = await awardContribution(supabase, 'rating', contentId, contentId)
   if (scored) await trackContributionScored({ supabase, source: 'mobile', userId: user.id }, 'rating', 1, contentId)
+
+  await trackRatingSubmitted({ supabase, source: 'mobile', userId: user.id }, { contentId, metadata: { rating: parsed } })
 
   return NextResponse.json({ success: true })
 }

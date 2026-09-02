@@ -12,6 +12,7 @@ import { digitalDocumentSchema, breadcrumbSchema } from '@/lib/seo/schema'
 import { AUTHOR, DEFAULT_OG_IMAGE, absoluteUrl } from '@/lib/seo/constants'
 import { isViewableInline } from '@/lib/viewable'
 import { isOnboarded } from '@pshq/api-client/onboarding'
+import { trackContentImpression, trackContentOpened } from '@pshq/analytics'
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -83,6 +84,14 @@ export default async function ContentDetailPage({ params }: Props) {
       metadata: {},
     })
   } catch { /* non-fatal */ }
+
+  // Epic H §H.1/§H.2 — this page (ebooks/templates/courses) never emitted
+  // the typed analytics_events impression/open pair at all, only the
+  // legacy content_interactions 'view' row above. Both now fire; the new
+  // analytics layer reads the typed events, existing consumers of
+  // content_interactions are untouched.
+  await trackContentImpression({ supabase, source: 'web', userId: user?.id ?? null }, { contentId: rawItem.id, contentType: rawItem.type as 'ebook' | 'template' | 'course' | 'article' })
+  await trackContentOpened({ supabase, source: 'web', userId: user?.id ?? null }, { contentId: rawItem.id, contentType: rawItem.type as 'ebook' | 'template' | 'course' | 'article' })
 
   const { data: upvoteRow } = user
     ? await supabase

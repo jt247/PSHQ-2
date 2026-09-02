@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createServiceClient } from '@pshq/api-client/server'
+import { getActivationStats, getWeeklyEngagedLearners } from '@pshq/api-client/analytics'
 
 function totalUsersForPct(total: number | null, part: number | null): number {
   if (!total) return 0
@@ -63,6 +64,16 @@ export default async function AdminPage() {
 
   const mau = new Set((mauRes.data ?? []).map(r => r.user_id)).size
   const onboardingCompletionPct = totalUsersForPct(usersRes.count, onboardingDoneRes.count)
+
+  // Epic H §H.4/§H.6 — real activation and Weekly Engaged Learners,
+  // replacing the fact that Build Prompt 8 never actually shipped these
+  // two metrics under these names (verified in discovery: only MAU/
+  // onboarding%/path-starts/completions/feedback-open existed before this).
+  // Both come from the one shared calculation in packages/api-client/src/analytics.ts.
+  const [activation, weeklyEngagedLearners] = await Promise.all([
+    getActivationStats(),
+    getWeeklyEngagedLearners(),
+  ])
   const recentAdminActivity = (recentAdminActivityRes.data ?? []) as unknown as Array<{
     action_type: string; target_table: string | null; created_at: string; admin: { full_name: string | null; email: string } | null
   }>
@@ -588,11 +599,32 @@ export default async function AdminPage() {
         </section>
       </div>
 
+      {/* Epic H §H.4/§H.6 — the real North Star metric and activation
+          calculation, computed by the shared analytics layer, not an
+          inline approximation. */}
+      <div className="grid-collapse-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', margin: '1.75rem 0 1rem' }}>
+        <div style={{ background: 'var(--color-ink-deep)', borderRadius: '0.75rem', padding: '1.25rem', borderTop: '3px solid var(--color-accent-warm)' }}>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.875rem', fontWeight: 800, color: '#fff', margin: '0 0 0.25rem' }}>{weeklyEngagedLearners.toLocaleString()}</p>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)', margin: 0 }}>Weekly Engaged Learners (North Star)</p>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.6875rem', color: 'var(--color-accent-warm)', margin: '0.375rem 0 0' }}>≥2 meaningful learning activities, rolling 7 days</p>
+        </div>
+        <div style={{ background: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', borderRadius: '0.75rem', padding: '1.25rem' }}>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.875rem', fontWeight: 800, color: 'var(--color-ink-deep)', margin: '0 0 0.25rem' }}>{activation.activatedUsers.toLocaleString()}</p>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-muted)', margin: 0 }}>Activated Users</p>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.6875rem', color: 'var(--color-text-muted)', margin: '0.375rem 0 0' }}>onboarded + consumed + acted</p>
+        </div>
+        <div style={{ background: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', borderRadius: '0.75rem', padding: '1.25rem' }}>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.875rem', fontWeight: 800, color: 'var(--color-ink-deep)', margin: '0 0 0.25rem' }}>{activation.activationRate}%</p>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-muted)', margin: 0 }}>Activation Rate</p>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.6875rem', color: 'var(--color-text-muted)', margin: '0.375rem 0 0' }}>of {activation.totalUsers.toLocaleString()} total members</p>
+        </div>
+      </div>
+
       {/* Epic G §G.2 additions — MAU/onboarding/path-starts/completions/
           feedback-open/recent-admin-activity. Interim approximations for
           MAU are documented above where computed; Build Prompt 9 replaces
           them without moving where these numbers live. */}
-      <div className="grid-collapse-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', margin: '1.75rem 0' }}>
+      <div className="grid-collapse-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', margin: '0 0 1.75rem' }}>
         {[
           { label: 'MAU (30d, interim)', value: mau.toLocaleString() },
           { label: 'Onboarding complete', value: `${onboardingCompletionPct}%` },

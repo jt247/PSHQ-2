@@ -7,6 +7,7 @@
     "./client": "./src/supabase/client.ts",
     "./storage": "./src/supabase/storage.ts",
     "./queries": "./src/queries.ts",
+    "./analytics": "./src/analytics.ts",
     "./recommendations": "./src/recommendations.ts",
     "./dashboard": "./src/dashboard.ts",
     "./ai": "./src/ai/index.ts",
