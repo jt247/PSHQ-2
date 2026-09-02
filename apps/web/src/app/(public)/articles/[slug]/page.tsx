@@ -152,7 +152,7 @@ export default async function ArticlePage({ params }: Props) {
     // full_name/email are selected and the page never exposes raw email.
     createServiceClient()
       .from('content_comments')
-      .select('id, body, is_deleted, created_at, user:users(full_name, email)')
+      .select('id, body, is_deleted, created_at, user:users!content_comments_user_id_fkey(full_name, email)')
       .eq('content_id', rawItem.id)
       .eq('is_hidden', false)
       .order('created_at', { ascending: true }),
