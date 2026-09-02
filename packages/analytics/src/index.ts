@@ -159,4 +159,15 @@ export const trackAchievementUnlocked = (ctx: TrackContext, achievementKey: stri
 export const trackAdminAction = (ctx: TrackContext, actionType: string, targetTable: string, targetId?: string | null) =>
   track(ctx, 'admin_action', { metadata: { actionType, targetTable, targetId: targetId ?? null } })
 
+// Epic I §I.6/offline — push delivery and offline-download events. Sent
+// fires server-side (packages/api-client/src/push.ts, one call site for
+// every push category); opened fires on-device when the user taps a
+// notification (apps/mobile's notification response listener).
+export const trackPushNotificationSent = (ctx: TrackContext, opts: { metadata: { category: string } }) =>
+  track(ctx, 'push_notification_sent', opts)
+export const trackPushNotificationOpened = (ctx: TrackContext, opts: { metadata: { category: string } }) =>
+  track(ctx, 'push_notification_opened', opts)
+export const trackEbookDownloadedOffline = (ctx: TrackContext, opts: TrackOptions) =>
+  track(ctx, 'ebook_downloaded_offline', opts)
+
 export type { TrackContext, TrackOptions }

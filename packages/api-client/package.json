@@ -8,6 +8,8 @@
     "./storage": "./src/supabase/storage.ts",
     "./queries": "./src/queries.ts",
     "./analytics": "./src/analytics.ts",
+    "./push": "./src/push.ts",
+    "./content-actions": "./src/content-actions.ts",
     "./recommendations": "./src/recommendations.ts",
     "./dashboard": "./src/dashboard.ts",
     "./ai": "./src/ai/index.ts",
@@ -16,6 +18,7 @@
     "./mobile": "./src/supabase/mobile.ts"
   },
   "dependencies": {
+    "@pshq/analytics": "workspace:*",
     "@pshq/database": "workspace:*",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2"

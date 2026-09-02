@@ -4,6 +4,8 @@ import { useLocalSearchParams, Stack } from 'expo-router'
 import { trackContentOpened } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
+import { ReaderControls } from '@/components/reader-controls'
+import { useReaderFontScale } from '@/hooks/use-reader-font-scale'
 import { supabase } from '@/lib/supabase'
 
 interface BuildNote { id: string; title: string; summary: string | null; body: string | null }
@@ -12,6 +14,9 @@ export default function BuildNoteReaderScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>()
   const [loading, setLoading] = useState(true)
   const [item, setItem] = useState<BuildNote | null>(null)
+  const [initialFavorited, setInitialFavorited] = useState(false)
+  const [initialComplete, setInitialComplete] = useState(false)
+  const { scale } = useReaderFontScale()
 
   useEffect(() => {
     async function load() {
@@ -20,6 +25,15 @@ export default function BuildNoteReaderScreen() {
       if (data) {
         const { data: { user } } = await supabase.auth.getUser()
         await trackContentOpened({ supabase, source: 'mobile', userId: user?.id ?? null }, { contentId: data.id, contentType: 'article' })
+
+        if (user) {
+          const [{ data: fav }, { data: progress }] = await Promise.all([
+            supabase.from('content_favorites').select('content_id').eq('content_id', data.id).eq('user_id', user.id).maybeSingle(),
+            supabase.from('content_progress').select('status').eq('content_id', data.id).eq('user_id', user.id).maybeSingle(),
+          ])
+          setInitialFavorited(!!fav)
+          setInitialComplete(progress?.status === 'completed')
+        }
       }
       setLoading(false)
     }
@@ -34,8 +48,15 @@ export default function BuildNoteReaderScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <ThemedText type="title" style={styles.title}>{item.title}</ThemedText>
         {item.summary && <ThemedText type="default" style={styles.summary}>{item.summary}</ThemedText>}
+        <ReaderControls
+          contentId={item.id}
+          shareTitle={item.title}
+          listenText={item.body ?? undefined}
+          initialFavorited={initialFavorited}
+          initialComplete={initialComplete}
+        />
         {(item.body ?? '').split(/\n\n+/).filter(Boolean).map((p, i) => (
-          <ThemedText key={i} type="default" style={styles.paragraph}>{p.trim()}</ThemedText>
+          <ThemedText key={i} type="default" style={[styles.paragraph, { fontSize: 15 * scale, lineHeight: 24 * scale }]}>{p.trim()}</ThemedText>
         ))}
       </ScrollView>
     </ThemedView>

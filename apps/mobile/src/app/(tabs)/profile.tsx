@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text'
 import { ContentRow } from '@/components/content-row'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
+import { callApi } from '@/lib/api'
 
 interface ProfileData {
   full_name: string | null
@@ -176,7 +177,13 @@ export default function ProfileScreen() {
         checkAndAwardAchievements(supabase),
         checkAndAwardStreakBonus(supabase),
       ])
-      for (const key of newlyEarnedKeys) await trackAchievementUnlocked({ supabase, source: 'mobile', userId: user.id }, key)
+      for (const key of newlyEarnedKeys) {
+        await trackAchievementUnlocked({ supabase, source: 'mobile', userId: user.id }, key)
+        // Epic I §I.6 — the one real automatic push in this epic, fired at
+        // the exact moment an achievement is earned. Fire-and-forget: a
+        // failed push must never block the rest of this screen loading.
+        callApi('/api/push/achievement', { method: 'POST', body: JSON.stringify({ achievementKey: key }) }).catch(() => {})
+      }
       if (streakBonusAwarded) await trackContributionScored({ supabase, source: 'mobile', userId: user.id }, 'streak_bonus', 5)
       setAchievements(await getMyAchievements(supabase, user.id))
     }
@@ -316,6 +323,10 @@ export default function ProfileScreen() {
 
         <Pressable style={styles.secondaryButton} onPress={() => router.push('/notification-preferences')}>
           <ThemedText style={styles.secondaryButtonText}>Notification Preferences</ThemedText>
+        </Pressable>
+
+        <Pressable style={styles.secondaryButton} onPress={() => router.push('/feedback' as never)}>
+          <ThemedText style={styles.secondaryButtonText}>Give Feedback</ThemedText>
         </Pressable>
 
         <Pressable style={styles.signOutButton} onPress={handleSignOut}>

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { FlatList, Pressable, StyleSheet, ActivityIndicator, ScrollView, Linking, Alert } from 'react-native'
+import { FlatList, Pressable, StyleSheet, ActivityIndicator, ScrollView } from 'react-native'
 import { router } from 'expo-router'
-import { trackResourceDownloaded } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { supabase } from '@/lib/supabase'
@@ -19,14 +18,14 @@ interface ContentRow {
 const TYPES = ['all', 'article', 'ebook', 'template', 'guide', 'build_note'] as const
 const TYPE_LABELS: Record<string, string> = { all: 'All', article: 'Articles', ebook: 'Ebooks', template: 'Templates', guide: 'Guides', build_note: 'Build Notes' }
 
-// Articles/Build Notes have a native in-app reader (real screen routes).
-// Ebooks/Templates are PDFs — no in-app PDF viewer exists on mobile yet,
-// so those open in the system browser/PDF viewer instead of dead-ending
-// on a "coming soon" placeholder. Real, working action either way.
-function itemAction(item: ContentRow): { kind: 'route'; href: string } | { kind: 'file'; url: string } | null {
+// Articles/Build Notes have a native in-app reader; ebooks/templates/guides
+// route to /content/[slug] (Epic I — real in-app detail screen with
+// favorite/AI/offline-download, replacing the old direct-to-external-viewer
+// link that was Step 0's biggest MVP gap finding).
+function itemAction(item: ContentRow): { kind: 'route'; href: string } | null {
   if (item.type === 'article') return { kind: 'route', href: `/articles/${item.slug}` }
   if (item.type === 'build_note') return { kind: 'route', href: `/build-notes/${item.slug}` }
-  if (item.file_url) return { kind: 'file', url: item.file_url }
+  if (item.file_url) return { kind: 'route', href: `/content/${item.slug}` }
   return null
 }
 
@@ -47,23 +46,9 @@ export default function LibraryScreen() {
     load()
   }, [type])
 
-  async function handlePress(item: ContentRow) {
+  function handlePress(item: ContentRow) {
     const action = itemAction(item)
-    if (!action) return
-
-    if (action.kind === 'route') {
-      router.push(action.href as never)
-      return
-    }
-
-    const canOpen = await Linking.canOpenURL(action.url)
-    if (!canOpen) {
-      Alert.alert('Could not open file', 'This resource could not be opened on your device.')
-      return
-    }
-    const { data: { user } } = await supabase.auth.getUser()
-    await trackResourceDownloaded({ supabase, source: 'mobile', userId: user?.id ?? null }, { contentId: item.id, contentType: item.type === 'ebook' ? 'ebook' : 'template' })
-    await Linking.openURL(action.url)
+    if (action) router.push(action.href as never)
   }
 
   return (
@@ -89,7 +74,6 @@ export default function LibraryScreen() {
           ListEmptyComponent={<ThemedText style={styles.empty}>Nothing here yet.</ThemedText>}
           renderItem={({ item }) => {
             const action = itemAction(item)
-            const isFile = action?.kind === 'file'
             return (
               <Pressable
                 onPress={() => handlePress(item)}
@@ -99,7 +83,6 @@ export default function LibraryScreen() {
                 <ThemedText type="smallBold" style={styles.cardType}>{TYPE_LABELS[item.type] ?? item.type}</ThemedText>
                 <ThemedText type="default" style={styles.cardTitle}>{item.title}</ThemedText>
                 {item.summary && <ThemedText type="small" style={styles.cardSummary}>{item.summary}</ThemedText>}
-                {isFile && <ThemedText type="small" style={styles.openHint}>Opens in your device's viewer →</ThemedText>}
                 {!action && <ThemedText type="small" style={styles.comingSoon}>No file attached yet</ThemedText>}
               </Pressable>
             )

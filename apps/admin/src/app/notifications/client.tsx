@@ -47,6 +47,7 @@ export function NotificationsClient({ pastNotifications, learningPaths = [] }: {
       {state.success && (
         <div style={{ background: '#dcfce7', border: '1px solid #16a34a', borderRadius: '8px', padding: '0.875rem 1rem', marginBottom: '1.25rem', color: '#15803d', fontSize: '0.875rem' }}>
           Broadcast sent! {state.sentTo != null && `Reached ${state.sentTo} members.`}
+          {state.pushSent != null && ` ${state.pushSent} push notification${state.pushSent === 1 ? '' : 's'} delivered.`}
         </div>
       )}
       {state.error && (
@@ -71,6 +72,16 @@ export function NotificationsClient({ pastNotifications, learningPaths = [] }: {
               <option value="email">Email only</option>
               <option value="both">Both (in-app + email)</option>
             </select>
+          </Field>
+          <Field label="Push notification (Epic I)">
+            <select name="push_category" style={inputStyle} defaultValue="">
+              <option value="">Don&apos;t send push</option>
+              <option value="learning_progress">Learning reminder</option>
+              <option value="recommended_content">New recommended content</option>
+              <option value="product_lab_reminder">Product Lab</option>
+              <option value="weekly_digest_prompt">Weekly digest prompt</option>
+            </select>
+            <span style={hintStyle}>Sent to every registered mobile device for matching members who haven&apos;t disabled that category. &quot;New achievement&quot; pushes fire automatically on unlock and aren&apos;t sent from here.</span>
           </Field>
         </Card>
 

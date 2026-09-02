@@ -2,9 +2,12 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { sendPushToUsers, type PushCategory } from '@pshq/api-client/push'
 import { resend } from '@/lib/resend/client'
 import { logAdminAction } from '@/lib/admin/log'
 import type { UserRow, NotificationType } from '@pshq/database'
+
+const PUSH_CATEGORIES: PushCategory[] = ['learning_progress', 'recommended_content', 'product_lab_reminder', 'weekly_digest_prompt']
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -80,7 +83,7 @@ async function getMatchingUsers(filters: AudienceFilters): Promise<Array<{ id: s
   return users.filter(u => !optedOut.has(u.id))
 }
 
-export interface BroadcastState { error?: string; success?: boolean; sentTo?: number }
+export interface BroadcastState { error?: string; success?: boolean; sentTo?: number; pushSent?: number }
 
 export async function broadcastNotificationAction(
   _prev: BroadcastState,
@@ -163,10 +166,24 @@ export async function broadcastNotificationAction(
       }
     }
 
-    await logAdminAction({ admin_id: adminId, action_type: 'notification_broadcast', target_table: 'notifications', target_id: notif.id, metadata: { title, channel, sentTo: users.length } })
+    let pushSent: number | undefined
+    const pushCategoryRaw = (formData.get('push_category') as string) || ''
+    if (PUSH_CATEGORIES.includes(pushCategoryRaw as PushCategory)) {
+      const pushCategory = pushCategoryRaw as PushCategory
+      const service = createServiceClient()
+      const result = await sendPushToUsers(service, {
+        userIds: users.map(u => u.id),
+        category: pushCategory,
+        title,
+        body: message,
+      })
+      pushSent = result.sent
+    }
+
+    await logAdminAction({ admin_id: adminId, action_type: 'notification_broadcast', target_table: 'notifications', target_id: notif.id, metadata: { title, channel, sentTo: users.length, pushCategory: pushCategoryRaw || null, pushSent } })
 
     revalidatePath('/notifications')
-    return { success: true, sentTo: users.length }
+    return { success: true, sentTo: users.length, pushSent }
   } catch (e: unknown) {
     return { error: e instanceof Error ? e.message : 'Failed' }
   }
