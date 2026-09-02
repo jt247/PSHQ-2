@@ -259,8 +259,8 @@ export async function getProductFunnel(days: Days = 30): Promise<FunnelStage[]> 
   const [
     visitorsRes, signupStartedRes, signupCompletedRes, emailVerifiedRes,
     onboardingStartedRes, onboardingCompletedRes, firstOpenRes,
-    activation, secondSessionRes, pathStartedRes, wel, retainedRes,
-    contributorRes,
+    activation, secondSessionRes, pathStartedRes, wel, activeLast7Res,
+    olderSignupsRes, contributorRes,
   ] = await Promise.all([
     service.from('content_interactions').select('session_id, user_id').eq('type', 'view').gte('created_at', since),
     service.from('analytics_events').select('id', { count: 'exact', head: true }).eq('event_name', 'signup_started').gte('created_at', since),
@@ -273,8 +273,21 @@ export async function getProductFunnel(days: Days = 30): Promise<FunnelStage[]> 
     service.from('analytics_events').select('user_id, created_at').eq('event_name', 'dashboard_viewed').not('user_id', 'is', null).gte('created_at', since),
     service.from('user_learning_paths').select('user_id', { count: 'exact', head: true }).gte('started_at', since),
     getWeeklyEngagedLearners(),
-    service.from('contribution_events').select('user_id').gte('created_at', daysAgo(7)),
-    service.from('contribution_events').select('user_id', { count: 'exact', head: true }).gte('created_at', since),
+    // "Retained Learner (7d)" — real returning-user count: active (any
+    // analytics_events) in the last 7 days AND signed up more than 7 days
+    // ago, so a brand-new signup being trivially active this week doesn't
+    // count as "retained." Found live during this sweep: the prior version
+    // read contribution_events, which measures weekly contributors, not
+    // retention — a real-data-but-wrong-metric bug, distinct from this
+    // page's separate cohort-based "Day 7 retention" supporting metric.
+    service.from('analytics_events').select('user_id').not('user_id', 'is', null).gte('created_at', daysAgo(7)),
+    service.from('users').select('id').eq('role', 'user').lte('created_at', daysAgo(7)),
+    // "Contributor" — distinct contributing users, not a raw contribution_events
+    // row count. Found live during this sweep: a head-count query returns
+    // total events (one user contributing 12 times over 30 days showed as
+    // "12 Contributors"), which broke the funnel's narrowing shape outright
+    // (this stage exceeded every stage above it).
+    service.from('contribution_events').select('user_id').gte('created_at', since),
   ])
 
   const visitorSet = new Set<string>()
@@ -292,7 +305,14 @@ export async function getProductFunnel(days: Days = 30): Promise<FunnelStage[]> 
   }
   const secondSessionCount = Array.from(sessionDays.values()).filter(s => s.size >= 2).length
 
-  const retainedLearnerCount = new Set((retainedRes.data ?? []).map(r => r.user_id as string)).size
+  const olderSignupIds = new Set((olderSignupsRes.data ?? []).map(r => r.id as string))
+  const retainedLearnerCount = new Set(
+    ((activeLast7Res.data ?? []) as Array<{ user_id: string }>)
+      .map(r => r.user_id)
+      .filter(id => olderSignupIds.has(id))
+  ).size
+
+  const contributorCount = new Set((contributorRes.data ?? []).map(r => r.user_id as string)).size
 
   return [
     { label: 'Visitor', count: visitorSet.size },
@@ -308,7 +328,7 @@ export async function getProductFunnel(days: Days = 30): Promise<FunnelStage[]> 
     { label: 'Learning Path Started', count: pathStartedRes.count ?? 0 },
     { label: 'Weekly Active Learner', count: wel },
     { label: 'Retained Learner (7d)', count: retainedLearnerCount },
-    { label: 'Contributor', count: contributorRes.count ?? 0 },
+    { label: 'Contributor', count: contributorCount },
     { label: 'Advocate', count: 0 }, // no referral/advocacy mechanism exists yet — honest zero, not fabricated
   ]
 }

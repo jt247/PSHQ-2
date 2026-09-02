@@ -59,43 +59,52 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const isSuperAdmin = profile.role === 'super_admin'
 
+  // Found during the Epic G/H verification sweep — this root layout was
+  // missing the <html>/<body> wrapper Next.js requires (Next 16 surfaces it
+  // as a runtime error; older/production builds may have tolerated it
+  // silently). Pre-existing, not introduced by Epic G or H — neither epic
+  // touched anything but NAV_ITEMS in this file.
   return (
-    <div className="admin-layout">
-      <aside className="admin-sidebar">
-        <div className="admin-logo">
-          <Link href="/">Product Slice HQ</Link>
-          <p style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-            Tactical Ops
-            {isSuperAdmin && (
-              <span style={{
-                fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em',
-                textTransform: 'uppercase', background: 'oklch(55% 0.14 85)',
-                color: '#fff', padding: '0.1rem 0.375rem', borderRadius: '0.2rem',
-              }}>
-                Super Admin
-              </span>
-            )}
-          </p>
+    <html lang="en">
+      <body>
+        <div className="admin-layout">
+          <aside className="admin-sidebar">
+            <div className="admin-logo">
+              <Link href="/">Product Slice HQ</Link>
+              <p style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                Tactical Ops
+                {isSuperAdmin && (
+                  <span style={{
+                    fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em',
+                    textTransform: 'uppercase', background: 'oklch(55% 0.14 85)',
+                    color: '#fff', padding: '0.1rem 0.375rem', borderRadius: '0.2rem',
+                  }}>
+                    Super Admin
+                  </span>
+                )}
+              </p>
+            </div>
+            <nav className="admin-nav">
+              {NAV_ITEMS.map((item, i) =>
+                item === null
+                  ? <hr key={i} style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '0.5rem 0' }} />
+                  : <Link key={item.href} href={item.href} className="admin-nav-link">{item.label}</Link>
+              )}
+            </nav>
+            <div className="admin-sidebar-footer">
+              <a href={`${webUrl()}/dashboard`} className="admin-nav-link">← Dashboard</a>
+              <form action={signOutAction}>
+                <button type="submit" className="admin-signout">Sign out</button>
+              </form>
+            </div>
+          </aside>
+          <header className="admin-mobile-topbar">
+            <MobileNavToggle openBodyClass="admin-nav-open" color="var(--color-ink-deep)" />
+            <span className="admin-mobile-topbar-label">Tactical Ops</span>
+          </header>
+          <main className="admin-main">{children}</main>
         </div>
-        <nav className="admin-nav">
-          {NAV_ITEMS.map((item, i) =>
-            item === null
-              ? <hr key={i} style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '0.5rem 0' }} />
-              : <Link key={item.href} href={item.href} className="admin-nav-link">{item.label}</Link>
-          )}
-        </nav>
-        <div className="admin-sidebar-footer">
-          <a href={`${webUrl()}/dashboard`} className="admin-nav-link">← Dashboard</a>
-          <form action={signOutAction}>
-            <button type="submit" className="admin-signout">Sign out</button>
-          </form>
-        </div>
-      </aside>
-      <header className="admin-mobile-topbar">
-        <MobileNavToggle openBodyClass="admin-nav-open" color="var(--color-ink-deep)" />
-        <span className="admin-mobile-topbar-label">Tactical Ops</span>
-      </header>
-      <main className="admin-main">{children}</main>
-    </div>
+      </body>
+    </html>
   )
 }
