@@ -10,6 +10,8 @@
     "./analytics": "./src/analytics.ts",
     "./push": "./src/push.ts",
     "./content-actions": "./src/content-actions.ts",
+    "./cohorts": "./src/cohorts.ts",
+    "./digest": "./src/digest.ts",
     "./recommendations": "./src/recommendations.ts",
     "./dashboard": "./src/dashboard.ts",
     "./ai": "./src/ai/index.ts",

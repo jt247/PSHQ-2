@@ -138,6 +138,15 @@ export function NotificationsClient({ pastNotifications, learningPaths = [] }: {
               {learningPaths.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
             </select>
           </Field>
+          <Field label="Cohort (Epic J)">
+            <select name="cohort" style={inputStyle} defaultValue="">
+              <option value="">Any</option>
+              <option value="zero">Cohort Zero</option>
+              <option value="a">Cohort A</option>
+              <option value="b">Cohort B</option>
+              <option value="c">Cohort C</option>
+            </select>
+          </Field>
           <p style={hintStyle}>Respects each member&apos;s notification preferences — anyone who opted out of product announcements is excluded automatically.</p>
         </Card>
 

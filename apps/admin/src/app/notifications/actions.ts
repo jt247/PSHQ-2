@@ -27,6 +27,7 @@ interface AudienceFilters {
   signup_to?: string
   engagement_status?: 'new' | 'inactive'
   learning_path_id?: string
+  cohort?: 'zero' | 'a' | 'b' | 'c'
 }
 
 // Epic G §G.10 — respects notification_preferences (Build Prompt 5's
@@ -63,6 +64,16 @@ async function getMatchingUsers(filters: AudienceFilters): Promise<Array<{ id: s
   if (filters.learning_path_id) {
     const { data: enrolled } = await service.from('user_learning_paths').select('user_id').eq('learning_path_id', filters.learning_path_id)
     const ids = (enrolled ?? []).map(e => e.user_id)
+    if (ids.length === 0) return []
+    query = query.in('id', ids)
+  }
+
+  // Epic J §J.1-J.4 — cohort-scoped sends (in-app/email/push all respect
+  // this the same way) so Cohort A/B/C rollout communications can go
+  // through the exact same Communications Center flow, not a separate one.
+  if (filters.cohort) {
+    const { data: cohortRows } = await service.from('cohort_memberships').select('user_id').eq('cohort', filters.cohort)
+    const ids = (cohortRows ?? []).map(r => r.user_id)
     if (ids.length === 0) return []
     query = query.in('id', ids)
   }
@@ -124,6 +135,7 @@ export async function broadcastNotificationAction(
 
     const engagementStatus = (formData.get('engagement_status') as string) || undefined
     const learningPathId = (formData.get('learning_path_id') as string) || undefined
+    const cohortRaw = (formData.get('cohort') as string) || undefined
 
     const filters: AudienceFilters = {
       job_roles:   jobRoles.length   ? jobRoles   : undefined,
@@ -133,6 +145,7 @@ export async function broadcastNotificationAction(
       signup_to,
       engagement_status: engagementStatus === 'new' || engagementStatus === 'inactive' ? engagementStatus : undefined,
       learning_path_id: learningPathId,
+      cohort: cohortRaw === 'zero' || cohortRaw === 'a' || cohortRaw === 'b' || cohortRaw === 'c' ? cohortRaw : undefined,
     }
 
     const users = await getMatchingUsers(filters)

@@ -65,3 +65,4 @@ SECURITY-FINDINGS.md
 # intended file set; this pattern also covers any future root-level .md.
 /*.md
 !/README.md
+.impeccable/

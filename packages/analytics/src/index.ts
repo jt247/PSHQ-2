@@ -170,4 +170,18 @@ export const trackPushNotificationOpened = (ctx: TrackContext, opts: { metadata:
 export const trackEbookDownloadedOffline = (ctx: TrackContext, opts: TrackOptions) =>
   track(ctx, 'ebook_downloaded_offline', opts)
 
+// Epic J §J.1-J.6 — cohort rollout tooling and the Weekly ProductSlice
+// Digest. digest_* events use metadata.digestIssueId rather than a new
+// TrackOptions field since a digest issue isn't a `content` row.
+export const trackCohortAssigned = (ctx: TrackContext, cohort: string) =>
+  track(ctx, 'cohort_assigned', { metadata: { cohort } })
+export const trackDigestSent = (ctx: TrackContext, digestIssueId: string) =>
+  track(ctx, 'digest_sent', { metadata: { digestIssueId } })
+export const trackDigestOpened = (ctx: TrackContext, digestIssueId: string) =>
+  track(ctx, 'digest_opened', { metadata: { digestIssueId } })
+export const trackDigestClicked = (ctx: TrackContext, digestIssueId: string, linkType: string) =>
+  track(ctx, 'digest_clicked', { metadata: { digestIssueId, linkType } })
+export const trackDigestReturnedToProductSlice = (ctx: TrackContext, digestIssueId: string) =>
+  track(ctx, 'digest_returned_to_productslice', { metadata: { digestIssueId } })
+
 export type { TrackContext, TrackOptions }

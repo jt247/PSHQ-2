@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
-import { trackEmailVerified, trackSignupCompleted } from '@pshq/analytics'
+import { trackEmailVerified, trackSignupCompleted, trackCohortAssigned } from '@pshq/analytics'
 import type { UserRow } from '@pshq/database'
 import { adminUrl } from '@/lib/admin-url'
 
@@ -58,6 +58,20 @@ export async function GET(request: NextRequest) {
             .from('admin_invites')
             .update({ used_at: new Date().toISOString() })
             .eq('id', invite.id)
+        }
+      }
+
+      // Epic J §J.1-J.4 — consumes any real cohort_invites row queued for
+      // this email (an admin pasted it in before this person signed up)
+      // and converts it into a real cohort_memberships row. Every call
+      // here operates on a real just-created account; nothing is
+      // fabricated. Safe to call on every login, not just signup — it's a
+      // no-op once an invite is already consumed.
+      if (data.user.email) {
+        const service = createServiceClient()
+        const { data: newlyAssigned } = await service.rpc('consume_cohort_invites', { p_user_id: userId, p_email: data.user.email })
+        for (const cohort of (newlyAssigned ?? []) as string[]) {
+          await trackCohortAssigned({ supabase, source: 'web', userId }, cohort)
         }
       }
 
