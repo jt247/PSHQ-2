@@ -13,6 +13,7 @@ import { CommentsAndRating } from '@/components/comments-and-rating'
 import { ReaderControls } from '@/components/reader-controls'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
+import { callApi } from '@/lib/api'
 
 interface ContentItem {
   id: string; title: string; summary: string | null; type: string
@@ -40,7 +41,6 @@ export default function ContentDetailScreen() {
   const [item, setItem] = useState<ContentItem | null>(null)
   const [continueFromHere, setContinueFromHere] = useState<ContinueFromHereItem[]>([])
   const [initialFavorited, setInitialFavorited] = useState(false)
-  const [initialComplete, setInitialComplete] = useState(false)
   const [downloaded, setDownloaded] = useState(false)
   const [downloading, setDownloading] = useState(false)
 
@@ -68,12 +68,8 @@ export default function ContentDetailScreen() {
         setDownloaded(localFileFor(row.id).exists)
 
         if (user) {
-          const [{ data: fav }, { data: progress }] = await Promise.all([
-            supabase.from('content_favorites').select('content_id').eq('content_id', row.id).eq('user_id', user.id).maybeSingle(),
-            supabase.from('content_progress').select('status').eq('content_id', row.id).eq('user_id', user.id).maybeSingle(),
-          ])
+          const { data: fav } = await supabase.from('content_favorites').select('content_id').eq('content_id', row.id).eq('user_id', user.id).maybeSingle()
           setInitialFavorited(!!fav)
-          setInitialComplete(progress?.status === 'completed')
         }
       }
       setLoading(false)
@@ -81,15 +77,35 @@ export default function ContentDetailScreen() {
     load()
   }, [slug])
 
+  // Real bug fixed live: this screen used to open/download content.file_url
+  // directly — the raw, unsigned R2 object URL. The bucket is private, so
+  // that failed 100% of the time with a Cloudflare "InvalidArgumentAuthorization"
+  // error, not intermittently. /api/download now hands mobile back a real
+  // signed URL as JSON (same signing logic web's download button already
+  // used, just reached over Bearer auth instead of cookies).
+  async function getSignedFileUrl(): Promise<string | null> {
+    if (!item) return null
+    try {
+      const res = await callApi(`/api/download/${item.id}`)
+      if (!res.ok) return null
+      const json = await res.json()
+      return json.url ?? null
+    } catch {
+      return null
+    }
+  }
+
   async function handleDownloadOffline() {
-    if (!item?.file_url || downloading) return
+    if (!item || downloading) return
     setDownloading(true)
     try {
+      const signedUrl = await getSignedFileUrl()
+      if (!signedUrl) throw new Error('Could not get a download link.')
       if (!OFFLINE_DIR.exists) OFFLINE_DIR.create({ intermediates: true })
       const dest = localFileFor(item.id)
       // Downloading straight to `dest` (a File, not a Directory) keeps our
       // stable content-id filename regardless of what the URL is named.
-      await File.downloadFileAsync(item.file_url, dest, { idempotent: true })
+      await File.downloadFileAsync(signedUrl, dest, { idempotent: true })
       setDownloaded(true)
       await trackEbookDownloadedOffline({ supabase, source: 'mobile', userId: session?.user.id ?? null }, { contentId: item.id, contentType: item.type === 'ebook' ? 'ebook' : 'template' })
     } catch {
@@ -113,11 +129,12 @@ export default function ContentDetailScreen() {
       const canShare = await Sharing.isAvailableAsync()
       if (canShare) { await Sharing.shareAsync(file.uri, { dialogTitle: item.title }); return }
     }
-    if (!item.file_url) return
-    const canOpen = await Linking.canOpenURL(item.file_url)
+    const signedUrl = await getSignedFileUrl()
+    if (!signedUrl) { Alert.alert('Could not open file', 'This resource could not be opened on your device.'); return }
+    const canOpen = await Linking.canOpenURL(signedUrl)
     if (!canOpen) { Alert.alert('Could not open file', 'This resource could not be opened on your device.'); return }
     await trackResourceDownloaded({ supabase, source: 'mobile', userId: session?.user.id ?? null }, { contentId: item.id, contentType: item.type === 'ebook' ? 'ebook' : 'template' })
-    await Linking.openURL(item.file_url)
+    await Linking.openURL(signedUrl)
   }
 
   if (loading || !item) return <ThemedView style={styles.center}><ActivityIndicator /></ThemedView>
@@ -136,9 +153,12 @@ export default function ContentDetailScreen() {
           contentId={item.id}
           shareTitle={item.title}
           initialFavorited={initialFavorited}
-          initialComplete={initialComplete}
+          showFontSize={false}
         />
 
+        {/* Open is the primary action; "Save for offline" (download) stays
+         * last in the row per live feedback — favorite/share (above), then
+         * open, then offline save. */}
         <View style={styles.fileActions}>
           <Pressable style={styles.primaryButton} onPress={handleOpen}>
             <ThemedText style={styles.primaryButtonText}>{downloaded ? 'Open (saved offline)' : 'Open'}</ThemedText>
@@ -156,14 +176,17 @@ export default function ContentDetailScreen() {
           )}
         </View>
 
+        {/* Rating/comments before Continue From Here — people should be
+         * able to act on the resource they're on before we push the next
+         * recommendation at them (live feedback, reordered). */}
+        <CommentsAndRating contentId={item.id} />
+
         {continueFromHere.length > 0 && (
           <>
             <ThemedText type="smallBold" style={styles.continueHeading}>Continue From Here</ThemedText>
             {continueFromHere.map(c => <ContentRow key={c.id} id={c.id} type={c.type} slug={c.slug} title={c.title} />)}
           </>
         )}
-
-        <CommentsAndRating contentId={item.id} />
       </ScrollView>
     </ThemedView>
   )

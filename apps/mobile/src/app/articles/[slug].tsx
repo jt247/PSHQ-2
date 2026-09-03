@@ -23,7 +23,6 @@ export default function ArticleReaderScreen() {
   const [item, setItem] = useState<Article | null>(null)
   const [continueFromHere, setContinueFromHere] = useState<ContinueFromHereItem[]>([])
   const [initialFavorited, setInitialFavorited] = useState(false)
-  const [initialComplete, setInitialComplete] = useState(false)
   const { scale } = useReaderFontScale()
   const autoCompletedRef = useRef(false)
 
@@ -46,7 +45,6 @@ export default function ArticleReaderScreen() {
             supabase.from('content_progress').select('status').eq('content_id', data.id).eq('user_id', user.id).maybeSingle(),
           ])
           setInitialFavorited(!!fav)
-          setInitialComplete(progress?.status === 'completed')
           autoCompletedRef.current = progress?.status === 'completed'
         }
       }
@@ -84,12 +82,15 @@ export default function ArticleReaderScreen() {
           shareTitle={item.title}
           listenText={item.body ?? undefined}
           initialFavorited={initialFavorited}
-          initialComplete={initialComplete}
         />
 
         {(item.body ?? '').split(/\n\n+/).filter(Boolean).map((p, i) => (
           <ThemedText key={i} type="default" style={[styles.paragraph, { fontSize: 15 * scale, lineHeight: 22 * scale }]}>{p.trim()}</ThemedText>
         ))}
+
+        {/* Rating/comments before Continue From Here — act on this
+         * resource before we push the next recommendation (live feedback). */}
+        <CommentsAndRating contentId={item.id} />
 
         {continueFromHere.length > 0 && (
           <>
@@ -97,8 +98,6 @@ export default function ArticleReaderScreen() {
             {continueFromHere.map(c => <ContentRow key={c.id} id={c.id} type={c.type} slug={c.slug} title={c.title} />)}
           </>
         )}
-
-        <CommentsAndRating contentId={item.id} />
       </ScrollView>
     </ThemedView>
   )

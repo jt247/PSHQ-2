@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { createClient, createServiceClient } from '@pshq/api-client/server'
+import { createServiceClient } from '@pshq/api-client/server'
 import { isOnboarded } from '@pshq/api-client/onboarding'
 import { trackResourceDownloaded } from '@pshq/analytics'
+import { getAuthedRequestUser } from '@/lib/api-auth'
 
 const r2 = new S3Client({
   region: 'auto',
@@ -32,17 +33,24 @@ function extractKey(fileUrl: string): string | null {
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ contentId: string }> }
 ) {
   const { contentId } = await params
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
+  // Real bug fixed live: apps/mobile was opening content.file_url — the raw,
+  // unsigned R2 object URL — directly via Linking.openURL/downloadFileAsync.
+  // The bucket is private, so that failed 100% of the time with R2's
+  // "InvalidArgumentAuthorization", not intermittently. Mobile has no
+  // cookie session, so it needs this same route's real signed URL back as
+  // JSON instead of a redirect — same auth/signing logic either way, per
+  // Standing Rule 2 (shared logic, not a parallel mobile-only path).
+  const auth = await getAuthedRequestUser(req)
+  if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const { user, supabase } = auth
+  const isMobile = req.headers.get('authorization')?.toLowerCase().startsWith('bearer ') ?? false
 
   // Downloads are gated behind completed onboarding (Epic A.3) — the UI
   // already hides this behind a "complete your profile" CTA, this is the
@@ -82,7 +90,7 @@ export async function GET(
     })
   } catch { /* non-fatal */ }
 
-  await trackResourceDownloaded({ supabase, source: 'web', userId: user.id }, { contentId })
+  await trackResourceDownloaded({ supabase, source: isMobile ? 'mobile' : 'web', userId: user.id }, { contentId })
 
   // Generate a presigned URL valid for 1 hour. ResponseContentDisposition
   // forces a real save-to-disk on this path — without it, R2 returns
@@ -105,6 +113,11 @@ export async function GET(
     }),
     { expiresIn: 3600 }
   )
+
+  // Mobile can't follow a redirect the way a browser tab does — Linking.
+  // openURL and File.downloadFileAsync both need the actual signed URL as
+  // data, not a Location header — so a Bearer-authed call gets it as JSON.
+  if (isMobile) return NextResponse.json({ url: signedUrl })
 
   return NextResponse.redirect(signedUrl)
 }

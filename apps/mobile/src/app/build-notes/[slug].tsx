@@ -15,7 +15,6 @@ export default function BuildNoteReaderScreen() {
   const [loading, setLoading] = useState(true)
   const [item, setItem] = useState<BuildNote | null>(null)
   const [initialFavorited, setInitialFavorited] = useState(false)
-  const [initialComplete, setInitialComplete] = useState(false)
   const { scale } = useReaderFontScale()
 
   useEffect(() => {
@@ -27,12 +26,8 @@ export default function BuildNoteReaderScreen() {
         await trackContentOpened({ supabase, source: 'mobile', userId: user?.id ?? null }, { contentId: data.id, contentType: 'article' })
 
         if (user) {
-          const [{ data: fav }, { data: progress }] = await Promise.all([
-            supabase.from('content_favorites').select('content_id').eq('content_id', data.id).eq('user_id', user.id).maybeSingle(),
-            supabase.from('content_progress').select('status').eq('content_id', data.id).eq('user_id', user.id).maybeSingle(),
-          ])
+          const { data: fav } = await supabase.from('content_favorites').select('content_id').eq('content_id', data.id).eq('user_id', user.id).maybeSingle()
           setInitialFavorited(!!fav)
-          setInitialComplete(progress?.status === 'completed')
         }
       }
       setLoading(false)
@@ -53,7 +48,6 @@ export default function BuildNoteReaderScreen() {
           shareTitle={item.title}
           listenText={item.body ?? undefined}
           initialFavorited={initialFavorited}
-          initialComplete={initialComplete}
         />
         {(item.body ?? '').split(/\n\n+/).filter(Boolean).map((p, i) => (
           <ThemedText key={i} type="default" style={[styles.paragraph, { fontSize: 15 * scale, lineHeight: 24 * scale }]}>{p.trim()}</ThemedText>
