@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { supabase } from '@/lib/supabase'
 
-const LINK_FIELDS: Array<[key: 'linkedinUrl' | 'portfolioUrl' | 'websiteUrl' | 'githubUrl' | 'xUrl', label: string]> = [
+const LINK_FIELDS: [key: 'linkedinUrl' | 'portfolioUrl' | 'websiteUrl' | 'githubUrl' | 'xUrl', label: string][] = [
   ['linkedinUrl', 'LinkedIn'], ['portfolioUrl', 'Portfolio'], ['websiteUrl', 'Website'],
   ['githubUrl', 'GitHub'], ['xUrl', 'X'],
 ]

@@ -53,12 +53,12 @@ export default function ProfileScreen() {
   const [position, setPosition] = useState<CommunityPosition | null>(null)
   const [achievements, setAchievements] = useState<EarnedAchievement[]>([])
   const [counts, setCounts] = useState<Counts>(EMPTY_COUNTS)
-  const [continueLearning, setContinueLearning] = useState<Array<{ id: string; type: string; slug: string; title: string }>>([])
+  const [continueLearning, setContinueLearning] = useState<{ id: string; type: string; slug: string; title: string }[]>([])
   const [learningPaths, setLearningPaths] = useState<LearningPathRow[]>([])
   const [recommended, setRecommended] = useState<DashboardContentItem[]>([])
   const [newForYou, setNewForYou] = useState<DashboardContentItem[]>([])
-  const [saved, setSaved] = useState<Array<{ id: string; type: string; slug: string; title: string }>>([])
-  const [recentlyViewed, setRecentlyViewed] = useState<Array<{ id: string; type: string; slug: string; title: string }>>([])
+  const [saved, setSaved] = useState<{ id: string; type: string; slug: string; title: string }[]>([])
+  const [recentlyViewed, setRecentlyViewed] = useState<{ id: string; type: string; slug: string; title: string }[]>([])
 
   useFocusEffect(useCallback(() => {
     let cancelled = false
@@ -116,7 +116,7 @@ export default function ProfileScreen() {
       if (ulps.length > 0) {
         const { data: moduleCounts } = await supabase.from('learning_path_modules').select('learning_path_id').in('learning_path_id', ulps.map(u => u.path!.id))
         pathModuleTotals = new Map()
-        for (const m of ((moduleCounts ?? []) as Array<{ learning_path_id: string }>)) {
+        for (const m of ((moduleCounts ?? []) as { learning_path_id: string }[])) {
           pathModuleTotals.set(m.learning_path_id, (pathModuleTotals.get(m.learning_path_id) ?? 0) + 1)
         }
       }
@@ -131,7 +131,7 @@ export default function ProfileScreen() {
       // Continue Learning: last article/ebook not completed + last case
       // viewed but not completed.
       const seenTypes = new Set<string>()
-      const continueItems: Array<{ id: string; type: string; slug: string; title: string }> = []
+      const continueItems: { id: string; type: string; slug: string; title: string }[] = []
       for (const i of interactions) {
         const c = i.content
         if (!c || completedContentIds.has(c.id)) continue

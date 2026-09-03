@@ -74,11 +74,11 @@ export default function OnboardingScreen() {
       const profile = profileRes.data as Record<string, unknown> | null
       const progress = progressRes.data as Record<string, unknown> | null
       const primaryRoleName = (primaryRes.data as unknown as { roles: { name: string } | null } | null)?.roles?.name ?? null
-      const secondaryNames = ((secondaryRes.data ?? []) as unknown as Array<{ role: { name: string } | null }>)
+      const secondaryNames = ((secondaryRes.data ?? []) as unknown as { role: { name: string } | null }[])
         .map(r => r.role?.name).filter((n): n is string => !!n)
-      const goalNames = ((goalsRes.data ?? []) as unknown as Array<{ goal: { name: string } | null }>)
+      const goalNames = ((goalsRes.data ?? []) as unknown as { goal: { name: string } | null }[])
         .map(g => g.goal?.name).filter((n): n is string => !!n)
-      const topicNames = ((topicsRes.data ?? []) as unknown as Array<{ topic: { name: string } | null }>)
+      const topicNames = ((topicsRes.data ?? []) as unknown as { topic: { name: string } | null }[])
         .map(t => t.topic?.name).filter((n): n is string => !!n)
 
       setValues({

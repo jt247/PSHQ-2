@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { Modal, View, Pressable, ScrollView, ActivityIndicator, StyleSheet } from 'react-native'
 import { ThemedText } from '@/components/themed-text'
-import { ThemedView } from '@/components/themed-view'
 import { callApi } from '@/lib/api'
 
 type AssistanceAction = 'key_takeaways' | 'action_checklist' | 'reflection_questions'
 type TabKey = 'summary' | AssistanceAction
 
-const TABS: Array<{ key: TabKey; label: string }> = [
+const TABS: { key: TabKey; label: string }[] = [
   { key: 'summary', label: 'Summary' },
   { key: 'key_takeaways', label: 'Takeaways' },
   { key: 'action_checklist', label: 'Checklist' },

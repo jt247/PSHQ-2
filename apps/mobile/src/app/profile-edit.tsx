@@ -58,8 +58,8 @@ export default function ProfileEditScreen() {
       ])
       setTopicOptions((allTopics ?? []).map(t => t.name))
       setGoalOptions((allGoals ?? []).map(g => g.name))
-      setTopics(((userTopics ?? []) as unknown as Array<{ topic: { name: string } | null }>).map(t => t.topic?.name).filter((n): n is string => !!n))
-      setGoals(((userGoals ?? []) as unknown as Array<{ goal: { name: string } | null }>).map(g => g.goal?.name).filter((n): n is string => !!n))
+      setTopics(((userTopics ?? []) as unknown as { topic: { name: string } | null }[]).map(t => t.topic?.name).filter((n): n is string => !!n))
+      setGoals(((userGoals ?? []) as unknown as { goal: { name: string } | null }[]).map(g => g.goal?.name).filter((n): n is string => !!n))
 
       if (data) {
         const row = data as Record<string, unknown>

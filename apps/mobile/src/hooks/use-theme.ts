@@ -14,9 +14,10 @@
  * this JS-level fix is the one that's immediately reliable everywhere.
  *
  * If real dark mode support becomes a deliberate, designed feature later,
- * swap the hardcoded 'light' below for useColorScheme() again — every
- * screen already reads colors through this one hook, so that's a one-line
- * change, not a re-audit.
+ * swap the hardcoded Colors.light below for `import { useColorScheme }
+ * from 'react-native'` (the unused wrapper hooks this replaced were
+ * deleted as dead code) — every screen already reads colors through this
+ * one hook, so that's a one-line change, not a re-audit.
  */
 import { Colors } from '@/constants/theme';
 

@@ -54,8 +54,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (session) refreshProfile()
-    else { setOnboardingDone(false); setProfileLoading(false) }
+    let cancelled = false
+    async function run() {
+      if (cancelled) return
+      if (session) await refreshProfile()
+      else { setOnboardingDone(false); setProfileLoading(false) }
+    }
+    void run()
+    return () => { cancelled = true }
+    // Deliberately session?.user.id, not session — a token refresh swaps
+    // the whole session object without changing the user, and re-running
+    // this profile fetch on every refresh would be wasted work, not a bug.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user.id])
 
   // Sets the foreground notification display handler once. push-notifications.ts

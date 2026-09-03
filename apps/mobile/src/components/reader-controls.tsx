@@ -26,7 +26,7 @@ interface Props {
 // each grow their own copy of this logic, per Standing Rule 2.
 export function ReaderControls({ contentId, shareTitle, shareUrl, listenText, initialFavorited, initialComplete }: Props) {
   const { session } = useAuth()
-  const { scale, index, maxIndex, setScaleIndex } = useReaderFontScale()
+  const { index, maxIndex, setScaleIndex } = useReaderFontScale()
   const [favorited, setFavorited] = useState(initialFavorited)
   const [complete, setComplete] = useState(initialComplete)
   const [speaking, setSpeaking] = useState(false)

@@ -50,7 +50,7 @@ export default function CreateLearningPathScreen() {
         setRoleName((profile as { job_role: string | null }).job_role ?? '')
       }
       setTopicOptions((allTopics ?? []).map(t => t.name))
-      setTopics(((userTopics ?? []) as unknown as Array<{ topic: { name: string } | null }>).map(t => t.topic?.name).filter((n): n is string => !!n))
+      setTopics(((userTopics ?? []) as unknown as { topic: { name: string } | null }[]).map(t => t.topic?.name).filter((n): n is string => !!n))
       setRemaining(capRes.remaining ?? 3)
       setLoading(false)
     }

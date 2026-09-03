@@ -55,7 +55,8 @@ export default function NotificationPreferencesScreen() {
     const wasEnabled = !disabled.has(key)
     setDisabled(prev => {
       const next = new Set(prev)
-      wasEnabled ? next.add(key) : next.delete(key)
+      if (wasEnabled) next.add(key)
+      else next.delete(key)
       return next
     })
 
@@ -70,7 +71,8 @@ export default function NotificationPreferencesScreen() {
     } else {
       setDisabled(prev => {
         const next = new Set(prev)
-        wasEnabled ? next.delete(key) : next.add(key)
+        if (wasEnabled) next.delete(key)
+        else next.add(key)
         return next
       })
     }
