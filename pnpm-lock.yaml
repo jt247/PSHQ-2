@@ -278,9 +278,6 @@ importers:
 
   packages/analytics:
     dependencies:
-      '@pshq/api-client':
-        specifier: workspace:*
-        version: link:../api-client
       '@supabase/supabase-js':
         specifier: ^2.108.2
         version: 2.108.2
