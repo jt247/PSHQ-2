@@ -1,8 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { Redirect, Tabs } from 'expo-router'
 
-import { Colors } from '@/constants/theme'
-import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useAuth } from '@/lib/auth-context'
 
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -13,9 +11,13 @@ const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   profile: 'person-outline',
 }
 
+// #3c87f7 is the app's one established accent (themed-text.tsx's
+// linkPrimary) — used here instead of the system-dark-mode-driven text
+// color this used to read, both for a real branded active-tab color and
+// to stop pulling in system dark mode through a second, separate path.
+const ACTIVE_TINT = '#3c87f7'
+
 export default function TabsLayout() {
-  const scheme = useColorScheme()
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light']
   const { session, loading, onboardingDone, profileLoading } = useAuth()
 
   // The tab navigator itself is the gate (Epic A.3): no session → sign in;
@@ -29,7 +31,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.text,
+        tabBarActiveTintColor: ACTIVE_TINT,
         tabBarIcon: ({ color, size }) => (
           <Ionicons name={ICONS[route.name]} size={size} color={color} />
         ),

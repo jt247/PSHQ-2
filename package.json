@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "turbo run dev --filter=web",
     "dev:admin": "turbo run dev --filter=admin",
-    "dev:mobile": "pnpm --filter mobile start",
+    "dev:mobile": "pnpm --filter mobile dev",
     "build": "turbo run build --filter=web",
     "build:admin": "turbo run build --filter=admin",
     "build:all": "turbo run build",
