@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { View, Pressable, StyleSheet, Share, Alert } from 'react-native'
 import * as Speech from 'expo-speech'
 import { ThemedText } from '@/components/themed-text'
-import { toggleFavorite, toggleContentComplete, logShare } from '@pshq/api-client/content-actions'
+import { toggleFavorite, logShare } from '@pshq/api-client/content-actions'
 import { trackListenStarted, trackListenCompleted } from '@pshq/analytics'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
@@ -18,17 +18,26 @@ interface Props {
    * renders at all rather than a disabled or fake one. */
   listenText?: string
   initialFavorited: boolean
-  initialComplete: boolean
+  /** Font size control only makes sense for reflowable text (articles) —
+   * a PDF ebook/template can't be resized by the app at all, so this row
+   * was showing on every content type before, including where it did
+   * nothing. Defaults true for the article reader; the ebook/template
+   * screen passes false. */
+  showFontSize?: boolean
 }
 
-// Epic I §I.4 — one shared control row (font size, save, share, mark
-// complete, listen) so the article reader and the new ebook screen don't
-// each grow their own copy of this logic, per Standing Rule 2.
-export function ReaderControls({ contentId, shareTitle, shareUrl, listenText, initialFavorited, initialComplete }: Props) {
+// Epic I §I.4 — one shared control row (save, share, listen) so the
+// article reader and the ebook screen don't each grow their own copy of
+// this logic, per Standing Rule 2. Mark Complete was removed everywhere
+// (real live feedback: manual completion marking added no real value and
+// cluttered every content screen) — content_progress completion is not
+// currently set from mobile at all; an automatic detection mechanism
+// (matching web's scroll/dwell detection) is a real, separate gap, not
+// something faked here with a button that doesn't actually track anything.
+export function ReaderControls({ contentId, shareTitle, shareUrl, listenText, initialFavorited, showFontSize = true }: Props) {
   const { session } = useAuth()
   const { index, maxIndex, setScaleIndex } = useReaderFontScale()
   const [favorited, setFavorited] = useState(initialFavorited)
-  const [complete, setComplete] = useState(initialComplete)
   const [speaking, setSpeaking] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -41,16 +50,6 @@ export function ReaderControls({ contentId, shareTitle, shareUrl, listenText, in
     setFavorited(next) // optimistic
     const { error } = await toggleFavorite(supabase, 'mobile', userId, contentId, favorited)
     if (error) { setFavorited(!next); Alert.alert('Could not save', error) }
-    setBusy(false)
-  }
-
-  async function handleComplete() {
-    if (!userId || busy) return
-    setBusy(true)
-    const next = !complete
-    setComplete(next) // optimistic
-    const { error } = await toggleContentComplete(supabase, 'mobile', userId, contentId, next)
-    if (error) { setComplete(!next); Alert.alert('Could not update progress', error) }
     setBusy(false)
   }
 
@@ -82,19 +81,20 @@ export function ReaderControls({ contentId, shareTitle, shareUrl, listenText, in
       <View style={styles.row}>
         <ActionButton label={favorited ? '★ Saved' : '☆ Save'} active={favorited} onPress={handleFavorite} disabled={!userId} />
         <ActionButton label="Share" onPress={handleShare} />
-        <ActionButton label={complete ? '✓ Complete' : 'Mark Complete'} active={complete} onPress={handleComplete} disabled={!userId} />
         {listenText && <ActionButton label={speaking ? '⏸ Stop' : '🔊 Listen'} active={speaking} onPress={handleListen} />}
       </View>
 
-      <View style={styles.fontRow}>
-        <ThemedText type="small" style={styles.fontLabel}>Text size</ThemedText>
-        <Pressable onPress={() => setScaleIndex(index - 1)} disabled={index === 0} style={styles.fontButton}>
-          <ThemedText style={styles.fontButtonText}>A-</ThemedText>
-        </Pressable>
-        <Pressable onPress={() => setScaleIndex(index + 1)} disabled={index === maxIndex} style={styles.fontButton}>
-          <ThemedText style={[styles.fontButtonText, { fontSize: 18 }]}>A+</ThemedText>
-        </Pressable>
-      </View>
+      {showFontSize && (
+        <View style={styles.fontRow}>
+          <ThemedText type="small" style={styles.fontLabel}>Text size</ThemedText>
+          <Pressable onPress={() => setScaleIndex(index - 1)} disabled={index === 0} style={styles.fontButton}>
+            <ThemedText style={styles.fontButtonText}>A-</ThemedText>
+          </Pressable>
+          <Pressable onPress={() => setScaleIndex(index + 1)} disabled={index === maxIndex} style={styles.fontButton}>
+            <ThemedText style={[styles.fontButtonText, { fontSize: 18 }]}>A+</ThemedText>
+          </Pressable>
+        </View>
+      )}
     </View>
   )
 }
