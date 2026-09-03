@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
 import { ScrollView, View, Switch, StyleSheet, ActivityIndicator, Pressable, Linking } from 'react-native'
 import { Stack } from 'expo-router'
-import * as Notifications from 'expo-notifications'
 import { trackNotificationPreferenceUpdated } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { supabase } from '@/lib/supabase'
-import { registerForPushNotifications } from '@/lib/push-notifications'
-import { isExpoGoAndroid } from '@/lib/is-expo-go'
+import { registerForPushNotifications, getPushPermissionStatus, type PushPermissionStatus } from '@/lib/push-notifications'
 
 // Same types as web's NotificationPreferences.tsx — kept as one literal
 // list per platform rather than a shared package export, since it's UI
@@ -31,7 +29,7 @@ const NOTIFICATION_TYPES = [
 export default function NotificationPreferencesScreen() {
   const [loading, setLoading] = useState(true)
   const [disabled, setDisabled] = useState<Set<string>>(new Set())
-  const [pushStatus, setPushStatus] = useState<Notifications.PermissionStatus | null>(null)
+  const [pushStatus, setPushStatus] = useState<PushPermissionStatus | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -39,20 +37,18 @@ export default function NotificationPreferencesScreen() {
       if (!user) return
       const { data } = await supabase.from('notification_preferences').select('key, enabled').eq('user_id', user.id)
       setDisabled(new Set((data ?? []).filter(p => !p.enabled).map(p => p.key)))
-      // Android + Expo Go can't do push at all (see push-notifications.ts) —
-      // 'denied' renders the same "off" banner without touching the API.
-      setPushStatus(isExpoGoAndroid() ? Notifications.PermissionStatus.DENIED : (await Notifications.getPermissionsAsync()).status)
+      setPushStatus(await getPushPermissionStatus())
       setLoading(false)
     }
     load()
   }, [])
 
   async function enablePush() {
-    if (isExpoGoAndroid()) return // banner already explains this — see below
+    if (pushStatus === 'unavailable') return // banner already explains this — see below
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     await registerForPushNotifications(supabase, user.id)
-    setPushStatus((await Notifications.getPermissionsAsync()).status)
+    setPushStatus(await getPushPermissionStatus())
   }
 
   async function toggle(key: string) {
@@ -89,14 +85,14 @@ export default function NotificationPreferencesScreen() {
         {pushStatus !== 'granted' && (
           <Pressable
             style={styles.pushBanner}
-            disabled={isExpoGoAndroid()}
+            disabled={pushStatus === 'unavailable'}
             onPress={() => (pushStatus === 'denied' ? Linking.openSettings() : enablePush())}
           >
             <ThemedText type="smallBold">
-              {isExpoGoAndroid() ? "Push isn't available in this preview build" : pushStatus === 'denied' ? 'Push notifications are off' : 'Turn on push notifications'}
+              {pushStatus === 'unavailable' ? "Push isn't available in this preview build" : pushStatus === 'denied' ? 'Push notifications are off' : 'Turn on push notifications'}
             </ThemedText>
             <ThemedText type="small" style={styles.pushBannerHint}>
-              {isExpoGoAndroid()
+              {pushStatus === 'unavailable'
                 ? "Android push needs a real installed build, not Expo Go — it'll work once you install the app properly. Your category choices below are still saved."
                 : pushStatus === 'denied'
                 ? 'Open Settings to allow notifications for these categories.'

@@ -1,12 +1,10 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import * as WebBrowser from 'expo-web-browser'
 import * as Linking from 'expo-linking'
-import * as Notifications from 'expo-notifications'
 import type { Session } from '@supabase/supabase-js'
 import { trackPushNotificationOpened } from '@pshq/analytics'
 import { supabase } from './supabase'
-import { registerForPushNotifications } from './push-notifications'
-import { isExpoGoAndroid } from './is-expo-go'
+import { registerForPushNotifications, addNotificationOpenedListener, setupNotificationHandler } from './push-notifications'
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -60,6 +58,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else { setOnboardingDone(false); setProfileLoading(false) }
   }, [session?.user.id])
 
+  // Sets the foreground notification display handler once. push-notifications.ts
+  // only ever touches `expo-notifications` via a dynamic import gated on
+  // isExpoGoAndroid() — see that file's comment for why: a plain static
+  // import of the module crashes the whole app on that one platform+client
+  // combination (confirmed by reading the actual installed package source).
+  useEffect(() => {
+    setupNotificationHandler()
+  }, [])
+
   // Epic I §I.6 — register this device's push token once per signed-in
   // session. Fire-and-forget: registerForPushNotifications already
   // swallows its own errors (permission denied, simulator, network).
@@ -70,18 +77,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Tapping a delivered push notification opens the app here — record it
   // regardless of which screen the tap lands on (deep-linking into the
   // specific content is a future refinement, not required for the event
-  // to fire correctly). Skipped on Android inside Expo Go — see
-  // push-notifications.ts's module comment: no remote push can ever
-  // arrive there to be tapped, and the API itself isn't safe to touch.
+  // to fire correctly).
   useEffect(() => {
-    if (isExpoGoAndroid()) return
-    const sub = Notifications.addNotificationResponseReceivedListener(response => {
-      const category = response.notification.request.content.data?.category
-      if (typeof category === 'string' && session?.user.id) {
+    let unsubscribe: (() => void) | undefined
+    let cancelled = false
+    addNotificationOpenedListener(category => {
+      if (session?.user.id) {
         trackPushNotificationOpened({ supabase, source: 'mobile', userId: session.user.id }, { metadata: { category } })
       }
-    })
-    return () => sub.remove()
+    }).then(unsub => { if (!cancelled) unsubscribe = unsub; else unsub() })
+    return () => { cancelled = true; unsubscribe?.() }
   }, [session?.user.id])
 
   async function signInWithPassword(email: string, password: string) {

@@ -54,7 +54,7 @@ export function ChipMultiSelect({ options, value, onChange, max, exclude }: Mult
 const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1, borderColor: '#d1d5db' },
-  chipSelected: { backgroundColor: '#111827', borderColor: '#111827' },
+  chipSelected: { backgroundColor: '#3c87f7', borderColor: '#3c87f7' },
   chipDisabled: { opacity: 0.4 },
   chipText: { fontSize: 13 },
   chipTextSelected: { fontSize: 13, color: '#fff' },

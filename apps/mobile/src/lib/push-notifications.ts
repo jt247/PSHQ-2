@@ -1,4 +1,3 @@
-import * as Notifications from 'expo-notifications'
 import * as Device from 'expo-device'
 import Constants from 'expo-constants'
 import { Platform } from 'react-native'
@@ -11,12 +10,34 @@ import { isExpoGoAndroid } from './is-expo-go'
 // duplicated here beyond what's inherently on-device (permission prompt,
 // token retrieval, foreground display config).
 //
-// Real crash reported live: on Android inside Expo Go, expo-notifications'
-// remote-push functionality was removed in SDK 53 — even setting the
-// notification handler here crashed the whole app on that specific
-// platform+client combo. Guarded below; iOS Expo Go and any real Android
-// dev build both still get the real handler.
-if (!isExpoGoAndroid()) {
+// Real crash reported live, root-caused by reading the actual installed
+// package: expo-notifications' own DevicePushTokenAutoRegistration.fx.js
+// calls addPushTokenListener() at MODULE TOP LEVEL (not inside any
+// function), which calls warnOfExpoGoPushUsage(), which does
+// `if (Platform.OS === 'android') throw new Error(...)` unconditionally
+// when running in Expo Go. A static `import ... from 'expo-notifications'`
+// evaluates that file immediately — guarding function CALLS (the first
+// fix attempt) does nothing, because the crash happens at import time,
+// before any of this file's own code runs. The only real fix: never
+// statically import the module on this platform+client combination —
+// dynamic `import()` only, gated by isExpoGoAndroid() BEFORE the import
+// statement executes.
+type NotificationsModule = typeof import('expo-notifications')
+let cached: NotificationsModule | null = null
+async function loadNotifications(): Promise<NotificationsModule | null> {
+  if (isExpoGoAndroid()) return null
+  if (!cached) cached = await import('expo-notifications')
+  return cached
+}
+
+/**
+ * Sets the foreground notification handler. Call once, early (e.g. from
+ * the root layout) — safe to call multiple times, and a clean no-op on
+ * Android inside Expo Go.
+ */
+export async function setupNotificationHandler(): Promise<void> {
+  const Notifications = await loadNotifications()
+  if (!Notifications) return
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowBanner: true,
@@ -31,12 +52,14 @@ if (!isExpoGoAndroid()) {
  * Requests permission (if not already granted/denied) and upserts the
  * device's Expo push token for the signed-in user. Silently no-ops on a
  * simulator/emulator (no push credentials there), on Android inside Expo
- * Go (unsupported — see isExpoGoAndroid), or if the user declines — push
- * is additive, never a blocker for the rest of the app.
+ * Go (unsupported — see module comment above), or if the user declines —
+ * push is additive, never a blocker for the rest of the app.
  */
 export async function registerForPushNotifications(supabase: SupabaseClient, userId: string): Promise<void> {
   if (!Device.isDevice) return // simulators/emulators have no push token
-  if (isExpoGoAndroid()) return // would crash — see module comment above
+
+  const Notifications = await loadNotifications()
+  if (!Notifications) return
 
   try {
     const existing = await Notifications.getPermissionsAsync()
@@ -66,3 +89,37 @@ export async function registerForPushNotifications(supabase: SupabaseClient, use
     // Push registration is never allowed to break sign-in/app startup.
   }
 }
+
+export type PushPermissionStatus = 'granted' | 'denied' | 'undetermined' | 'unavailable'
+
+/**
+ * Current OS push-permission status, without prompting. 'unavailable'
+ * means this platform+client combo can't do push at all (Android + Expo
+ * Go) — never a real OS permission state, so callers should show a
+ * "not available here" message instead of an "open Settings" one.
+ */
+export async function getPushPermissionStatus(): Promise<PushPermissionStatus> {
+  const Notifications = await loadNotifications()
+  if (!Notifications) return 'unavailable'
+  return (await Notifications.getPermissionsAsync()).status
+}
+
+/**
+ * Subscribes to notification-tap events. Returns an unsubscribe function
+ * (always safe to call, even when the underlying subscription never
+ * happened because this platform+client combo can't support it).
+ */
+export async function addNotificationOpenedListener(
+  onOpened: (category: string) => void
+): Promise<() => void> {
+  const Notifications = await loadNotifications()
+  if (!Notifications) return () => {}
+
+  const sub = Notifications.addNotificationResponseReceivedListener(response => {
+    const category = response.notification.request.content.data?.category
+    if (typeof category === 'string') onOpened(category)
+  })
+  return () => sub.remove()
+}
+
+export type { NotificationsModule }

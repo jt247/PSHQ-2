@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedTextInput } from '@/components/themed-text-input'
 import { useAuth } from '@/lib/auth-context'
+import { useTheme } from '@/hooks/use-theme'
 
 export default function SignUpScreen() {
   const { signUpWithPassword } = useAuth()
+  const theme = useTheme()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -29,7 +31,7 @@ export default function SignUpScreen() {
 
   if (success) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <ThemedText type="title" style={styles.title}>Check your email</ThemedText>
         <ThemedText style={{ textAlign: 'center' }}>We sent a confirmation link to {email}. Verify it, then come back and sign in.</ThemedText>
         <Link href="/sign-in" style={styles.link}><ThemedText type="link">Back to sign in</ThemedText></Link>
@@ -68,7 +70,7 @@ const styles = StyleSheet.create({
   content: { padding: 24, gap: 12, justifyContent: 'center', flexGrow: 1 },
   title: { marginBottom: 12, textAlign: 'center' },
   input: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, padding: 14, fontSize: 16 },
-  button: { backgroundColor: '#111827', borderRadius: 8, padding: 14, alignItems: 'center' },
+  button: { backgroundColor: '#3c87f7', borderRadius: 8, padding: 14, alignItems: 'center' },
   buttonText: { color: '#fff', fontWeight: '600' },
   error: { color: '#dc2626', textAlign: 'center' },
   link: { alignSelf: 'center', marginTop: 8 },

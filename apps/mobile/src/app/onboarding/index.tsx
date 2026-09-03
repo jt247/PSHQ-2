@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   brand: { fontSize: 20, marginBottom: 24 },
   progressRow: { flexDirection: 'row', gap: 6, marginBottom: 8 },
   progressSegment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: '#e5e7eb' },
-  progressSegmentActive: { backgroundColor: '#111827' },
+  progressSegmentActive: { backgroundColor: '#3c87f7' },
   stepLabel: { marginBottom: 20, opacity: 0.6 },
   heading: { marginBottom: 8 },
   subheading: { marginBottom: 16, opacity: 0.7 },
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   mt: { marginTop: 16 },
   input: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 16 },
   error: { color: '#dc2626', marginTop: 12 },
-  submit: { backgroundColor: '#111827', borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 24 },
+  submit: { backgroundColor: '#3c87f7', borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 24 },
   submitDisabled: { opacity: 0.6 },
   submitText: { color: '#fff', fontWeight: '600' },
 })

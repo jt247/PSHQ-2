@@ -106,6 +106,6 @@ const styles = StyleSheet.create({
   articleLink: { marginBottom: 8, fontWeight: '600' },
   card: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, padding: 16, marginBottom: 20 },
   cardSummary: { opacity: 0.7, marginTop: 4 },
-  submit: { backgroundColor: '#111827', borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  submit: { backgroundColor: '#3c87f7', borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
   submitText: { color: '#fff', fontWeight: '600' },
 })
