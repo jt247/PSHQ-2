@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ScrollView, View, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
+import { ScrollView, View, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { router, Stack } from 'expo-router'
 import { trackProfileUpdated } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
+import { ThemedTextInput } from '@/components/themed-text-input'
 import { ChipMultiSelect } from '@/components/chip-select'
 import { supabase } from '@/lib/supabase'
 
@@ -145,22 +146,22 @@ export default function ProfileEditScreen() {
       <Stack.Screen options={{ title: 'Edit Profile', headerShown: true }} />
       <ScrollView contentContainerStyle={styles.container}>
         <Field label="Username">
-          <TextInput style={styles.input} value={form.username} onChangeText={v => set('username', v)} placeholder="ada_lovelace" autoCapitalize="none" />
+          <ThemedTextInput style={styles.input} value={form.username} onChangeText={v => set('username', v)} placeholder="ada_lovelace" autoCapitalize="none" />
         </Field>
-        <Field label="First name"><TextInput style={styles.input} value={form.first_name} onChangeText={v => set('first_name', v)} /></Field>
-        <Field label="Last name"><TextInput style={styles.input} value={form.last_name} onChangeText={v => set('last_name', v)} /></Field>
-        <Field label="Headline"><TextInput style={styles.input} value={form.headline} onChangeText={v => set('headline', v)} placeholder="Senior PM building AI-native products" /></Field>
-        <Field label="Current role"><TextInput style={styles.input} value={form.job_role} onChangeText={v => set('job_role', v)} /></Field>
-        <Field label="Company"><TextInput style={styles.input} value={form.company} onChangeText={v => set('company', v)} /></Field>
-        <Field label="Country"><TextInput style={styles.input} value={form.country} onChangeText={v => set('country', v)} /></Field>
-        <Field label="State / region"><TextInput style={styles.input} value={form.region} onChangeText={v => set('region', v)} /></Field>
-        <Field label="Bio"><TextInput style={[styles.input, styles.multiline]} value={form.bio} onChangeText={v => set('bio', v)} multiline numberOfLines={3} /></Field>
-        <Field label="Skills (comma separated)"><TextInput style={styles.input} value={form.skills} onChangeText={v => set('skills', v)} /></Field>
-        <Field label="LinkedIn"><TextInput style={styles.input} value={form.linkedin_url} onChangeText={v => set('linkedin_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
-        <Field label="Portfolio"><TextInput style={styles.input} value={form.portfolio_url} onChangeText={v => set('portfolio_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
-        <Field label="Website"><TextInput style={styles.input} value={form.website_url} onChangeText={v => set('website_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
-        <Field label="GitHub"><TextInput style={styles.input} value={form.github_url} onChangeText={v => set('github_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
-        <Field label="X (Twitter)"><TextInput style={styles.input} value={form.x_url} onChangeText={v => set('x_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
+        <Field label="First name"><ThemedTextInput style={styles.input} value={form.first_name} onChangeText={v => set('first_name', v)} /></Field>
+        <Field label="Last name"><ThemedTextInput style={styles.input} value={form.last_name} onChangeText={v => set('last_name', v)} /></Field>
+        <Field label="Headline"><ThemedTextInput style={styles.input} value={form.headline} onChangeText={v => set('headline', v)} placeholder="Senior PM building AI-native products" /></Field>
+        <Field label="Current role"><ThemedTextInput style={styles.input} value={form.job_role} onChangeText={v => set('job_role', v)} /></Field>
+        <Field label="Company"><ThemedTextInput style={styles.input} value={form.company} onChangeText={v => set('company', v)} /></Field>
+        <Field label="Country"><ThemedTextInput style={styles.input} value={form.country} onChangeText={v => set('country', v)} /></Field>
+        <Field label="State / region"><ThemedTextInput style={styles.input} value={form.region} onChangeText={v => set('region', v)} /></Field>
+        <Field label="Bio"><ThemedTextInput style={[styles.input, styles.multiline]} value={form.bio} onChangeText={v => set('bio', v)} multiline numberOfLines={3} /></Field>
+        <Field label="Skills (comma separated)"><ThemedTextInput style={styles.input} value={form.skills} onChangeText={v => set('skills', v)} /></Field>
+        <Field label="LinkedIn"><ThemedTextInput style={styles.input} value={form.linkedin_url} onChangeText={v => set('linkedin_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
+        <Field label="Portfolio"><ThemedTextInput style={styles.input} value={form.portfolio_url} onChangeText={v => set('portfolio_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
+        <Field label="Website"><ThemedTextInput style={styles.input} value={form.website_url} onChangeText={v => set('website_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
+        <Field label="GitHub"><ThemedTextInput style={styles.input} value={form.github_url} onChangeText={v => set('github_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
+        <Field label="X (Twitter)"><ThemedTextInput style={styles.input} value={form.x_url} onChangeText={v => set('x_url', v)} autoCapitalize="none" keyboardType="url" /></Field>
 
         <Field label="Topics">
           <ChipMultiSelect options={topicOptions} value={topics} onChange={setTopics} />

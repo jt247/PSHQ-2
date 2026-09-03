@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { ScrollView, View, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
+import { ScrollView, View, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { router, Stack } from 'expo-router'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
+import { ThemedTextInput } from '@/components/themed-text-input'
 import { ChipMultiSelect, ChipSingleSelect } from '@/components/chip-select'
 import { supabase } from '@/lib/supabase'
 import { callApi } from '@/lib/api'
@@ -108,25 +109,25 @@ export default function CreateLearningPathScreen() {
       <Stack.Screen options={{ title: 'Create My Learning Path', headerShown: true }} />
       <ScrollView contentContainerStyle={styles.container}>
         <Field label="What are you trying to achieve?">
-          <TextInput style={[styles.input, styles.multiline]} value={goalText} onChangeText={setGoalText} multiline numberOfLines={3} placeholder="e.g. Move from associate PM to senior PM" />
+          <ThemedTextInput style={[styles.input, styles.multiline]} value={goalText} onChangeText={setGoalText} multiline numberOfLines={3} placeholder="e.g. Move from associate PM to senior PM" />
         </Field>
         <Field label="Current role">
-          <TextInput style={styles.input} value={roleName} onChangeText={setRoleName} placeholder="Product Manager" />
+          <ThemedTextInput style={styles.input} value={roleName} onChangeText={setRoleName} placeholder="Product Manager" />
         </Field>
         <Field label="Current experience level">
           <ChipSingleSelect options={EXPERIENCE_LEVELS} value={level} onChange={setLevel} labels={LEVEL_LABELS} />
         </Field>
         <Field label="Existing skills (comma separated)">
-          <TextInput style={styles.input} value={skills} onChangeText={setSkills} placeholder="Roadmapping, SQL, User Research" />
+          <ThemedTextInput style={styles.input} value={skills} onChangeText={setSkills} placeholder="Roadmapping, SQL, User Research" />
         </Field>
         <Field label="Weekly time commitment (minutes)">
-          <TextInput style={styles.input} value={weeklyMinutes} onChangeText={setWeeklyMinutes} keyboardType="number-pad" />
+          <ThemedTextInput style={styles.input} value={weeklyMinutes} onChangeText={setWeeklyMinutes} keyboardType="number-pad" />
         </Field>
         <Field label="Priority areas">
           <ChipMultiSelect options={topicOptions} value={topics} onChange={setTopics} />
         </Field>
         <Field label="Target timeline (weeks)">
-          <TextInput style={styles.input} value={targetTimelineWeeks} onChangeText={setTargetTimelineWeeks} keyboardType="number-pad" />
+          <ThemedTextInput style={styles.input} value={targetTimelineWeeks} onChangeText={setTargetTimelineWeeks} keyboardType="number-pad" />
         </Field>
 
         {insufficientMessage && (

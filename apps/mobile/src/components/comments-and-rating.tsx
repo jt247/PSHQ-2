@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { View, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import { ThemedText } from '@/components/themed-text'
+import { ThemedTextInput } from '@/components/themed-text-input'
 import { callApi } from '@/lib/api'
 
 interface Comment {
@@ -90,7 +91,7 @@ export function CommentsAndRating({ contentId }: { contentId: string }) {
 
       <ThemedText type="smallBold" style={styles.heading}>Comments ({comments.filter(c => !c.is_deleted).length})</ThemedText>
 
-      <TextInput
+      <ThemedTextInput
         style={styles.input}
         value={draft}
         onChangeText={setDraft}

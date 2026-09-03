@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import { Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ThemedText } from '@/components/themed-text'
+import { ThemedTextInput } from '@/components/themed-text-input'
 import { useAuth } from '@/lib/auth-context'
 
 export default function SignUpScreen() {
@@ -42,10 +43,10 @@ export default function SignUpScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <ThemedText type="title" style={styles.title}>Create your space</ThemedText>
 
-          <TextInput style={styles.input} placeholder="First name" value={firstName} onChangeText={setFirstName} />
-          <TextInput style={styles.input} placeholder="Last name" value={lastName} onChangeText={setLastName} />
-          <TextInput style={styles.input} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
-          <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
+          <ThemedTextInput style={styles.input} placeholder="First name" value={firstName} onChangeText={setFirstName} />
+          <ThemedTextInput style={styles.input} placeholder="Last name" value={lastName} onChangeText={setLastName} />
+          <ThemedTextInput style={styles.input} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
+          <ThemedTextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
 
           {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 

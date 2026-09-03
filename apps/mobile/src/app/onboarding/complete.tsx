@@ -59,8 +59,26 @@ export default function OnboardingCompleteScreen() {
         {recs.template && <RecCard label="Template" title={recs.template.title} summary={recs.template.summary} />}
         {recs.collection && <RecCard label="Relevant Collection" title={recs.collection.title} summary={recs.collection.summary} />}
 
-        <Pressable onPress={async () => { await refreshProfile(); router.replace('/') }} style={styles.submit}>
-          <ThemedText style={styles.submitText}>Start Learning →</ThemedText>
+        {/* Reported live: landing on the Home tab (a public browse/landing
+            screen) right after onboarding left a first-time user with no
+            clear next step, AND the bottom tab bar itself didn't render
+            until a further tap — a known Expo Router/react-native-screens
+            timing issue when replace() crosses from a screen outside the
+            (tabs) group into one inside it, before the new Tabs navigator
+            has had a layout pass. requestAnimationFrame defers the
+            navigation to the next frame, after this screen's own render
+            (including refreshProfile's state update) has committed. Going
+            straight to the Profile tab also means a first-time user lands
+            on their own dashboard, not a page that reads like marketing
+            copy. */}
+        <Pressable
+          onPress={async () => {
+            await refreshProfile()
+            requestAnimationFrame(() => router.replace('/profile'))
+          }}
+          style={styles.submit}
+        >
+          <ThemedText style={styles.submitText}>Continue Learning →</ThemedText>
         </Pressable>
       </ScrollView>
     </ThemedView>

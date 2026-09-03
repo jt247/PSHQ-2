@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { ScrollView, View, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
+import { ScrollView, View, Pressable, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native'
 import { Stack, router } from 'expo-router'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
+import { ThemedTextInput } from '@/components/themed-text-input'
 import { callApi } from '@/lib/api'
 
 const CATEGORIES = [
@@ -75,7 +76,7 @@ export default function FeedbackScreen() {
           </View>
 
           <ThemedText type="smallBold" style={styles.label}>What&apos;s on your mind?</ThemedText>
-          <TextInput
+          <ThemedTextInput
             style={styles.input}
             value={message}
             onChangeText={setMessage}

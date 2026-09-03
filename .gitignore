@@ -66,3 +66,5 @@ SECURITY-FINDINGS.md
 /*.md
 !/README.md
 .impeccable/
+package-lock.json
+node_modules/.package-lock.json

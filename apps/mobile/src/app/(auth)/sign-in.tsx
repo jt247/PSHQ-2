@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { View, TextInput, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { View, Pressable, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import { Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ThemedText } from '@/components/themed-text'
+import { ThemedTextInput } from '@/components/themed-text-input'
 import { useAuth } from '@/lib/auth-context'
 
 export default function SignInScreen() {
@@ -41,7 +42,7 @@ export default function SignInScreen() {
             <ThemedText style={styles.googleButtonText}>Continue with Google</ThemedText>
           </Pressable>
 
-          <TextInput
+          <ThemedTextInput
             style={styles.input}
             placeholder="Email"
             autoCapitalize="none"
@@ -49,7 +50,7 @@ export default function SignInScreen() {
             value={email}
             onChangeText={setEmail}
           />
-          <TextInput
+          <ThemedTextInput
             style={styles.input}
             placeholder="Password"
             secureTextEntry

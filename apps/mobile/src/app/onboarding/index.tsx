@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ScrollView, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import { ScrollView, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
 import { router } from 'expo-router'
 import {
   PRIMARY_ROLES, GOALS, TOPICS, EXPERIENCE_LEVELS, EXPERIENCE_LEVEL_LABELS, MAX_GOALS,
@@ -8,7 +8,10 @@ import { trackOnboardingStarted, trackOnboardingStepCompleted, trackOnboardingCo
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { ChipSingleSelect, ChipMultiSelect } from '@/components/chip-select'
+import { ThemedTextInput } from '@/components/themed-text-input'
 import { supabase } from '@/lib/supabase'
+
+const MAX_TOPICS = 10 // no confirmed topic count yet — revisit once packages/api-client's TOPICS list grows
 
 type Step = 'about_you' | 'role' | 'experience' | 'goals' | 'topics'
 const STEPS: Step[] = ['about_you', 'role', 'experience', 'goals', 'topics']
@@ -190,6 +193,7 @@ export default function OnboardingScreen() {
 
     // topics — final step
     if (values.topics.length === 0) { setError('Select at least one topic.'); return }
+    if (values.topics.length > MAX_TOPICS) { setError(`Select up to ${MAX_TOPICS} topics.`); return }
     setSaving(true)
     const { data: topicRows } = await supabase.from('topics').select('id, name').in('name', values.topics)
     await supabase.from('user_topics').delete().eq('user_id', userId)
@@ -275,8 +279,8 @@ export default function OnboardingScreen() {
         {step === 'topics' && (
           <>
             <ThemedText type="subtitle" style={styles.heading}>Pick your topics</ThemedText>
-            <ThemedText type="small" style={styles.subheading}>You can change these later from account settings.</ThemedText>
-            <ChipMultiSelect options={TOPICS} value={values.topics} onChange={v => setValues(vs => ({ ...vs, topics: v }))} />
+            <ThemedText type="small" style={styles.subheading}>Pick up to {MAX_TOPICS}. You can change these later from account settings.</ThemedText>
+            <ChipMultiSelect options={TOPICS} value={values.topics} max={MAX_TOPICS} onChange={v => setValues(vs => ({ ...vs, topics: v }))} />
           </>
         )}
 
@@ -294,7 +298,7 @@ function Field({ label, value, onChangeText, placeholder }: { label: string; val
   return (
     <ThemedView style={styles.fieldWrap}>
       <ThemedText type="smallBold" style={styles.fieldLabel}>{label}</ThemedText>
-      <TextInput value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor="#9ca3af" style={styles.input} />
+      <ThemedTextInput value={value} onChangeText={onChangeText} placeholder={placeholder} style={styles.input} />
     </ThemedView>
   )
 }
