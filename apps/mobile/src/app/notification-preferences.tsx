@@ -7,6 +7,7 @@ import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
 import { supabase } from '@/lib/supabase'
 import { registerForPushNotifications } from '@/lib/push-notifications'
+import { isExpoGoAndroid } from '@/lib/is-expo-go'
 
 // Same types as web's NotificationPreferences.tsx — kept as one literal
 // list per platform rather than a shared package export, since it's UI
@@ -38,13 +39,16 @@ export default function NotificationPreferencesScreen() {
       if (!user) return
       const { data } = await supabase.from('notification_preferences').select('key, enabled').eq('user_id', user.id)
       setDisabled(new Set((data ?? []).filter(p => !p.enabled).map(p => p.key)))
-      setPushStatus((await Notifications.getPermissionsAsync()).status)
+      // Android + Expo Go can't do push at all (see push-notifications.ts) —
+      // 'denied' renders the same "off" banner without touching the API.
+      setPushStatus(isExpoGoAndroid() ? Notifications.PermissionStatus.DENIED : (await Notifications.getPermissionsAsync()).status)
       setLoading(false)
     }
     load()
   }, [])
 
   async function enablePush() {
+    if (isExpoGoAndroid()) return // banner already explains this — see below
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     await registerForPushNotifications(supabase, user.id)
@@ -85,13 +89,16 @@ export default function NotificationPreferencesScreen() {
         {pushStatus !== 'granted' && (
           <Pressable
             style={styles.pushBanner}
+            disabled={isExpoGoAndroid()}
             onPress={() => (pushStatus === 'denied' ? Linking.openSettings() : enablePush())}
           >
             <ThemedText type="smallBold">
-              {pushStatus === 'denied' ? 'Push notifications are off' : 'Turn on push notifications'}
+              {isExpoGoAndroid() ? "Push isn't available in this preview build" : pushStatus === 'denied' ? 'Push notifications are off' : 'Turn on push notifications'}
             </ThemedText>
             <ThemedText type="small" style={styles.pushBannerHint}>
-              {pushStatus === 'denied'
+              {isExpoGoAndroid()
+                ? "Android push needs a real installed build, not Expo Go — it'll work once you install the app properly. Your category choices below are still saved."
+                : pushStatus === 'denied'
                 ? 'Open Settings to allow notifications for these categories.'
                 : 'Get notified for the categories you enable below.'}
             </ThemedText>

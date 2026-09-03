@@ -6,6 +6,7 @@ import type { Session } from '@supabase/supabase-js'
 import { trackPushNotificationOpened } from '@pshq/analytics'
 import { supabase } from './supabase'
 import { registerForPushNotifications } from './push-notifications'
+import { isExpoGoAndroid } from './is-expo-go'
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -69,8 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Tapping a delivered push notification opens the app here — record it
   // regardless of which screen the tap lands on (deep-linking into the
   // specific content is a future refinement, not required for the event
-  // to fire correctly).
+  // to fire correctly). Skipped on Android inside Expo Go — see
+  // push-notifications.ts's module comment: no remote push can ever
+  // arrive there to be tapped, and the API itself isn't safe to touch.
   useEffect(() => {
+    if (isExpoGoAndroid()) return
     const sub = Notifications.addNotificationResponseReceivedListener(response => {
       const category = response.notification.request.content.data?.category
       if (typeof category === 'string' && session?.user.id) {
