@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { createClient } from '@pshq/api-client/server'
 import { FavoriteButton } from '@/components/content/FavoriteButton'
 import { ShareButton } from '@/components/content/ShareButton'
-import { MarkCompleteButton } from '@/components/content/MarkCompleteButton'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { trackContentOpened } from '@pshq/analytics'
@@ -39,14 +38,9 @@ export default async function BuildNoteDetailPage({ params }: { params: Promise<
 
   const { data: { user } } = await supabase.auth.getUser()
   let isFavorited = false
-  let isCompleted = false
   if (user) {
-    const [{ data: fav }, { data: progress }] = await Promise.all([
-      supabase.from('content_favorites').select('id').eq('content_id', item.id).eq('user_id', user.id).maybeSingle(),
-      supabase.from('content_progress').select('status').eq('content_id', item.id).eq('user_id', user.id).maybeSingle(),
-    ])
+    const { data: fav } = await supabase.from('content_favorites').select('id').eq('content_id', item.id).eq('user_id', user.id).maybeSingle()
     isFavorited = !!fav
-    isCompleted = progress?.status === 'completed'
   }
 
   await trackContentOpened({ supabase, source: 'web', userId: user?.id ?? null }, { contentId: item.id, contentType: 'article' })
@@ -73,7 +67,6 @@ export default async function BuildNoteDetailPage({ params }: { params: Promise<
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid color-mix(in srgb, var(--color-tertiary) 12%, transparent)' }}>
           <FavoriteButton contentId={item.id} initialFavorited={isFavorited} isLoggedIn={!!user} />
           <ShareButton contentId={item.id} title={item.title} url={absoluteUrl(`/build-notes/${item.slug}`)} />
-          <MarkCompleteButton contentId={item.id} initialComplete={isCompleted} isLoggedIn={!!user} />
         </div>
       </main>
 
