@@ -6,7 +6,6 @@ import { trackContentOpened } from '@pshq/analytics'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { CaseFavoriteButton } from '@/components/content/CaseFavoriteButton'
-import { CaseCompleteButton } from '@/components/content/CaseCompleteButton'
 
 interface CaseDetail {
   id: string
@@ -82,14 +81,9 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ slu
   await trackContentOpened({ supabase, source: 'web', userId: user?.id ?? null }, { contentId: item.id, contentType: 'article' })
 
   let isFavorited = false
-  let isCompleted = false
   if (user) {
-    const [{ data: fav }, { data: progress }] = await Promise.all([
-      supabase.from('case_favorites').select('id').eq('case_id', item.id).eq('user_id', user.id).maybeSingle(),
-      supabase.from('case_progress').select('status').eq('case_id', item.id).eq('user_id', user.id).maybeSingle(),
-    ])
+    const { data: fav } = await supabase.from('case_favorites').select('id').eq('case_id', item.id).eq('user_id', user.id).maybeSingle()
     isFavorited = !!fav
-    isCompleted = progress?.status === 'completed'
 
     // Real "opened" signal for Continue Learning / Recently Viewed — see
     // migration 20260901000028 for why this can't just be
@@ -123,7 +117,6 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ slu
 
         <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem' }}>
           <CaseFavoriteButton caseId={item.id} initialFavorited={isFavorited} isLoggedIn={!!user} />
-          <CaseCompleteButton caseId={item.id} initialComplete={isCompleted} isLoggedIn={!!user} />
         </div>
 
         {/* Quick facts */}

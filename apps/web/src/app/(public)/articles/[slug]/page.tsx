@@ -8,7 +8,6 @@ import { ListenButton } from '@/components/article/ListenButton'
 import { CommentsSection } from '@/components/article/CommentsSection'
 import { RatingWidget } from '@/components/article/RatingWidget'
 import { ExercisesSection } from '@/components/content/ExercisesSection'
-import { MarkCompleteButton } from '@/components/content/MarkCompleteButton'
 import { AutoCompleteTracker } from '@/components/content/AutoCompleteTracker'
 import { ShareButton } from '@/components/content/ShareButton'
 import { FavoriteButton } from '@/components/content/FavoriteButton'
@@ -337,11 +336,6 @@ export default async function ArticlePage({ params }: Props) {
               <FavoriteButton
                 contentId={rawItem.id}
                 initialFavorited={hasFavorited}
-                isLoggedIn={!!user}
-              />
-              <MarkCompleteButton
-                contentId={rawItem.id}
-                initialComplete={hasCompleted}
                 isLoggedIn={!!user}
               />
               <AutoCompleteTracker
