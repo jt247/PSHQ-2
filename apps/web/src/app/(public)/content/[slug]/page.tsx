@@ -5,7 +5,6 @@ import { createClient, createServiceClient } from '@pshq/api-client/server'
 import { SelarButton } from '@/components/content/SelarButton'
 import { ShareButton } from '@/components/content/ShareButton'
 import { FavoriteButton } from '@/components/content/FavoriteButton'
-import { MarkCompleteButton } from '@/components/content/MarkCompleteButton'
 import { UpvoteButton } from '@/components/article/UpvoteButton'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { digitalDocumentSchema, breadcrumbSchema } from '@/lib/seo/schema'
@@ -113,16 +112,6 @@ export default async function ContentDetailPage({ params }: Props) {
     : { data: null }
   const hasFavorited = !!favoriteRow
 
-  const { data: progressRow } = user
-    ? await supabase
-        .from('content_progress')
-        .select('status')
-        .eq('content_id', rawItem.id)
-        .eq('user_id', user.id)
-        .maybeSingle()
-    : { data: null }
-  const hasCompleted = progressRow?.status === 'completed'
-
   // Free content: any signed-in, onboarded user has access (Epic A.3 —
   // templates/ebooks/downloads are gated behind completed onboarding;
   // articles deliberately are not, see the articles/[slug] page instead).
@@ -224,11 +213,6 @@ export default async function ContentDetailPage({ params }: Props) {
               <FavoriteButton
                 contentId={rawItem.id as string}
                 initialFavorited={hasFavorited}
-                isLoggedIn={!!user}
-              />
-              <MarkCompleteButton
-                contentId={rawItem.id as string}
-                initialComplete={hasCompleted}
                 isLoggedIn={!!user}
               />
             </div>
