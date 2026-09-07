@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
 import { PublicNav } from '@/components/layout/PublicNav'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { ContentCard } from '@/components/content/ContentCard'
 import { SectionTracker } from '@/components/home/SectionTracker'
+import { DirectionPicker } from '@/components/home/DirectionPicker'
 import { CtaLink } from '@/components/home/CtaLink'
 import { TestimonialCarousel } from '@/components/home/TestimonialCarousel'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -19,13 +21,18 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
 
+// Design Brief §4.2 — one illustration + one accent hue per card instead
+// of plain text, so a visitor can tell the six apart at a glance instead
+// of reading every label. Illustrations are the same 8-piece AI-generated
+// set built for mobile (apps/mobile/assets/illustrations), copied into
+// public/illustrations rather than regenerated — one system, one place.
 const DOMAINS = [
-  { slug: 'product', label: 'Product' },
-  { slug: 'growth', label: 'Growth' },
-  { slug: 'ai', label: 'AI' },
-  { slug: 'building', label: 'Building' },
-  { slug: 'careers', label: 'Careers' },
-  { slug: 'leadership', label: 'Leadership' },
+  { slug: 'product', label: 'Product', image: '/illustrations/direction-product.jpg', accent: '#4A6FA5' },
+  { slug: 'growth', label: 'Growth', image: '/illustrations/direction-growth.jpg', accent: '#3F8F5F' },
+  { slug: 'ai', label: 'AI', image: '/illustrations/direction-ai.jpg', accent: '#7A5AA6' },
+  { slug: 'building', label: 'Building', image: '/illustrations/direction-building.jpg', accent: '#C9702E' },
+  { slug: 'careers', label: 'Careers', image: '/illustrations/direction-careers.jpg', accent: '#B5473F' },
+  { slug: 'leadership', label: 'Leadership', image: '/illustrations/direction-leadership.jpg', accent: '#16233F' },
 ] as const
 
 export default async function HomePage() {
@@ -122,15 +129,27 @@ export default async function HomePage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '1rem' }}>
               {DOMAINS.map(d => (
                 <Link key={d.slug} href={`/explore/${d.slug}`} style={{
-                  display: 'block', padding: '1.75rem 1.25rem', borderRadius: '0.5rem', textDecoration: 'none',
+                  display: 'block', borderRadius: '0.5rem', textDecoration: 'none', overflow: 'hidden',
                   background: 'var(--color-paper-base)', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
-                  transition: 'transform 200ms',
+                  borderTop: `3px solid ${d.accent}`, transition: 'transform 200ms',
                 }} className="bento-feature-card">
-                  <p className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>{d.label}</p>
-                  <span className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', marginTop: '0.5rem', display: 'inline-block' }}>Explore →</span>
+                  <Image src={d.image} alt="" width={400} height={90} style={{ width: '100%', height: '90px', objectFit: 'cover', display: 'block' }} />
+                  <div style={{ padding: '1.25rem 1.25rem 1.5rem' }}>
+                    <p className="text-headline-md" style={{ color: 'var(--color-ink-deep)', margin: 0 }}>{d.label}</p>
+                    <span className="text-label-sm" style={{ color: 'var(--color-on-primary-container)', marginTop: '0.5rem', display: 'inline-block' }}>Explore →</span>
+                  </div>
                 </Link>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ── 3.2b Which Direction Fits You — Design Brief §4, optional
+             interactive picker. Client component, self-contained (no new
+             content, routes to the same six real directions above). ── */}
+        <section style={{ padding: '4rem var(--spacing-margin-edge) 5rem', background: 'var(--color-paper-base)' }}>
+          <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+            <DirectionPicker />
           </div>
         </section>
 
@@ -188,6 +207,17 @@ export default async function HomePage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '1.25rem' }}>
                 {cases.map(c => (
                   <Link key={c.id} href={`/cases/${c.slug}`} style={{ display: 'block', textDecoration: 'none', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', background: 'var(--color-paper-base)' }}>
+                    {/* Design Brief §4.6 — these were sourced specifically for
+                        this flagship section (Build Prompt 3) but never
+                        rendered here; fetched, unused. eslint-disable is for
+                        the plain <img>, matching the case detail page's own
+                        pattern for the same field — an arbitrary external
+                        logo URL, not a domain Next's Image optimizer is
+                        configured to allow. */}
+                    {c.logo_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={c.logo_url} alt={c.company_name} width={40} height={40} style={{ borderRadius: '0.375rem', objectFit: 'contain', marginBottom: '0.75rem' }} />
+                    )}
                     <p className="text-label-sm" style={{ color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>{c.company_name}</p>
                     <p className="text-body-lg" style={{ fontWeight: 700, color: 'var(--color-ink-deep)', marginBottom: '0.5rem' }}>{c.title}</p>
                     {c.description && <p className="text-body-sm" style={{ color: 'var(--color-text-muted)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } as React.CSSProperties}>{c.description}</p>}
