@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { View, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedTextInput } from '@/components/themed-text-input'
 import { callApi } from '@/lib/api'
@@ -84,7 +85,7 @@ export function CommentsAndRating({ contentId }: { contentId: string }) {
       <View style={styles.stars}>
         {[1, 2, 3, 4, 5].map(n => (
           <Pressable key={n} onPress={() => submitRating(n)} disabled={ratingSaving}>
-            <ThemedText style={[styles.star, n <= rating && styles.starActive]}>★</ThemedText>
+            <Ionicons name={n <= rating ? 'star' : 'star-outline'} size={24} color={n <= rating ? '#f59e0b' : '#d1d5db'} />
           </Pressable>
         ))}
       </View>
@@ -124,8 +125,6 @@ const styles = StyleSheet.create({
   container: { marginTop: 24 },
   heading: { marginBottom: 10, marginTop: 16 },
   stars: { flexDirection: 'row', gap: 4, marginBottom: 4 },
-  star: { fontSize: 24, color: '#d1d5db' },
-  starActive: { color: '#f59e0b' },
   input: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, padding: 10, minHeight: 70, textAlignVertical: 'top', fontSize: 14 },
   error: { color: '#dc2626', marginTop: 4 },
   postButton: { backgroundColor: '#111827', borderRadius: 8, paddingVertical: 10, alignItems: 'center', marginTop: 8, marginBottom: 16 },

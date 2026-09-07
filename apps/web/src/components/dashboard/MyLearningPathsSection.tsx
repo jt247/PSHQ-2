@@ -19,7 +19,7 @@ export interface MyLearningPathItem {
 // module_progress — nothing here is estimated.
 export function MyLearningPathsSection({ paths }: { paths: MyLearningPathItem[] }) {
   return (
-    <SectionCard title="🧭 My Learning Paths" action={<SeeAllLink href="/dashboard/learning-paths/create" label="Create My Learning Path →" />}>
+    <SectionCard title="My Learning Paths" action={<SeeAllLink href="/dashboard/learning-paths/create" label="Create My Learning Path →" />}>
       {paths.length === 0 ? (
         <EmptyState>
           You haven&apos;t started a learning path yet. <Link href="/learning-paths" style={{ color: 'var(--color-ink-deep)', fontWeight: 600 }}>Browse paths →</Link> or <Link href="/dashboard/learning-paths/create" style={{ color: 'var(--color-ink-deep)', fontWeight: 600 }}>create your own →</Link>

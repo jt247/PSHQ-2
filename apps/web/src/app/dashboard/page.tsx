@@ -268,7 +268,7 @@ export default async function DashboardPage() {
 
       <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
         <ContentListSection
-          title="✨ Recommended for You"
+          title="Recommended for You"
           items={recommended}
           emptyText="Set your topics and goals in Settings for personalized picks."
           seeAllHref={{ href: '/library', label: 'Browse library →' }}
@@ -295,7 +295,7 @@ export default async function DashboardPage() {
           seeAllHref={{ href: '/dashboard/library', label: 'View all →' }}
         />
         <ContentListSection
-          title="🕐 Recently Viewed"
+          title="Recently Viewed"
           items={recentlyViewed}
           emptyText="What you read or open will show up here."
         />
@@ -318,14 +318,14 @@ export default async function DashboardPage() {
 
       {(trendingEbooks.length > 0 || trendingTemplates.length > 0) && (
         <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
-          <ContentListSection title="📖 E-books" items={trendingEbooks.map(e => ({ id: e.id, title: e.title, type: 'ebook', slug: e.slug, tags: e.tags ?? [] }))} emptyText="No e-books yet." seeAllHref={{ href: '/library?type=ebook', label: 'All →' }} />
-          <ContentListSection title="📋 Templates" items={trendingTemplates.map(t => ({ id: t.id, title: t.title, type: 'template', slug: t.slug, tags: t.tags ?? [] }))} emptyText="No templates yet." seeAllHref={{ href: '/library?type=template', label: 'All →' }} />
+          <ContentListSection title="E-books" items={trendingEbooks.map(e => ({ id: e.id, title: e.title, type: 'ebook', slug: e.slug, tags: e.tags ?? [] }))} emptyText="No e-books yet." seeAllHref={{ href: '/library?type=ebook', label: 'All →' }} />
+          <ContentListSection title="Templates" items={trendingTemplates.map(t => ({ id: t.id, title: t.title, type: 'template', slug: t.slug, tags: t.tags ?? [] }))} emptyText="No templates yet." seeAllHref={{ href: '/library?type=template', label: 'All →' }} />
         </div>
       )}
 
       <div style={{ marginBottom: '1.75rem' }}>
         <ContentListSection
-          title="🔥 Trending Now"
+          title="Trending Now"
           items={trending.map(t => ({ id: t.id, title: t.title, type: t.type, slug: t.slug }))}
           emptyText="Nothing trending yet."
           seeAllHref={{ href: '/articles', label: 'All articles →' }}

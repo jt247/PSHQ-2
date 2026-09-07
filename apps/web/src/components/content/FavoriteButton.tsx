@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { StarIcon } from '@/components/icons'
 import { toggleFavoriteAction } from '@/app/(public)/content/[slug]/actions'
 
 interface Props {
@@ -16,7 +17,7 @@ export function FavoriteButton({ contentId, initialFavorited, isLoggedIn }: Prop
   if (!isLoggedIn) {
     return (
       <a href="/sign-in" style={btnStyle(false)} title="Sign in to save favorites">
-        ☆ Favorite
+        <StarIcon size={14} /> Favorite
       </a>
     )
   }
@@ -32,7 +33,7 @@ export function FavoriteButton({ contentId, initialFavorited, isLoggedIn }: Prop
 
   return (
     <button onClick={handleClick} disabled={isPending} style={btnStyle(favorited)}>
-      {favorited ? '★ Favorited' : '☆ Favorite'}
+      <StarIcon size={14} filled={favorited} /> {favorited ? 'Favorited' : 'Favorite'}
     </button>
   )
 }

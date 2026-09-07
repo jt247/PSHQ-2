@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Modal, View, Pressable, ScrollView, ActivityIndicator, StyleSheet } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { ThemedText } from '@/components/themed-text'
 import { callApi } from '@/lib/api'
 
@@ -78,7 +79,8 @@ export function AiAssistantButton({ contentId }: { contentId: string }) {
   return (
     <>
       <Pressable style={styles.trigger} onPress={handleOpen}>
-        <ThemedText style={styles.triggerText}>✨ AI Assistant</ThemedText>
+        <Ionicons name="sparkles-outline" size={16} color="#111827" />
+        <ThemedText style={styles.triggerText}>AI Assistant</ThemedText>
       </Pressable>
 
       <Modal visible={open} animationType="slide" transparent onRequestClose={() => setOpen(false)}>
@@ -135,7 +137,7 @@ function BulletList({ label, items }: { label: string; items: string[] }) {
 }
 
 const styles = StyleSheet.create({
-  trigger: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, paddingVertical: 10, alignItems: 'center', marginBottom: 12 },
+  trigger: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, paddingVertical: 10, marginBottom: 12 },
   triggerText: { fontWeight: '600' },
   backdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.5)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 20, maxHeight: '80%' },

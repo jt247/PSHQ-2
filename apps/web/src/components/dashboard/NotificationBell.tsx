@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { BellIcon } from '@/components/icons'
 
 interface Notification {
   id: string
@@ -72,7 +73,7 @@ export function NotificationBell({ userId }: Props) {
         style={bellBtn}
         aria-label="Notifications"
       >
-        🔔
+        <BellIcon size={18} />
         {unread > 0 && (
           <span style={badge}>{unread > 9 ? '9+' : unread}</span>
         )}

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useActionState } from 'react'
 import { createServiceContactAction, type ContactState } from './actions'
+import { CheckIcon } from '@/components/icons'
 
 const initState: ContactState = {}
 
@@ -23,8 +24,8 @@ export default function ContactPage() {
                 background: 'color-mix(in srgb, var(--color-accent-warm) 25%, transparent)',
                 borderRadius: '50%', margin: '0 auto 1.5rem',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1.25rem',
-              }}>✓</div>
+                color: 'var(--color-accent-warm)',
+              }}><CheckIcon size={22} /></div>
               <h1 className="text-headline-lg" style={{ color: 'var(--color-ink-deep)', marginBottom: '0.75rem' }}>Message received</h1>
               <p className="text-body-md" style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
                 Your ticket #{state.ticketNumber} has been created. We&apos;ll respond within 24–48 hours.

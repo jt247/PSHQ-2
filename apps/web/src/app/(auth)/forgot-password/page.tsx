@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useActionState } from 'react'
 import { forgotPasswordAction, type ForgotPasswordState } from '../actions/auth'
+import { MailIcon, KeyIcon } from '@/components/icons'
 
 const initial: ForgotPasswordState = { error: null, success: false }
 
@@ -18,8 +19,8 @@ export default function ForgotPasswordPage() {
         <main className="auth-main">
           <div className="auth-card">
             <div className="auth-card-inner" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-              <div style={{ width: '48px', height: '48px', background: '#dbeafe', borderRadius: '50%', margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
-                ✉️
+              <div style={{ width: '48px', height: '48px', background: '#dbeafe', borderRadius: '50%', margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1d4ed8' }}>
+                <MailIcon size={22} />
               </div>
               <h1 className="auth-title" style={{ fontSize: '1.75rem' }}>Check your email</h1>
               <p className="auth-subtitle" style={{ marginTop: '0.5rem' }}>
@@ -45,8 +46,8 @@ export default function ForgotPasswordPage() {
         <div className="auth-card">
           <div className="auth-card-inner" style={{ position: 'relative', overflow: 'hidden' }}>
             {/* Atmospheric icon */}
-            <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', opacity: 0.06, fontSize: '6rem', lineHeight: 1, pointerEvents: 'none', userSelect: 'none' }}>
-              🔑
+            <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', opacity: 0.06, pointerEvents: 'none', userSelect: 'none' }}>
+              <KeyIcon size={96} />
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>

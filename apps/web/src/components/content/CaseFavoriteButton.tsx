@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { StarIcon } from '@/components/icons'
 import { toggleCaseFavoriteAction } from '@/app/(public)/cases/[slug]/actions'
 
 interface Props {
@@ -18,7 +19,7 @@ export function CaseFavoriteButton({ caseId, initialFavorited, isLoggedIn }: Pro
   if (!isLoggedIn) {
     return (
       <a href="/sign-in" style={btnStyle(false)} title="Sign in to save favorites">
-        ☆ Favorite
+        <StarIcon size={14} /> Favorite
       </a>
     )
   }
@@ -34,7 +35,7 @@ export function CaseFavoriteButton({ caseId, initialFavorited, isLoggedIn }: Pro
 
   return (
     <button onClick={handleClick} disabled={isPending} style={btnStyle(favorited)}>
-      {favorited ? '★ Favorited' : '☆ Favorite'}
+      <StarIcon size={14} filled={favorited} /> {favorited ? 'Favorited' : 'Favorite'}
     </button>
   )
 }

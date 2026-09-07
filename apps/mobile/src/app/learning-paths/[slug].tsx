@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ScrollView, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { useLocalSearchParams, Stack } from 'expo-router'
 import { trackLearningPathStarted, trackLearningModuleCompleted, trackLearningPathCompleted, trackContentMarkedComplete } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
@@ -99,7 +100,7 @@ export default function LearningPathDetailScreen() {
           return (
             <Pressable key={m.id} onPress={() => started && toggleModule(m.id)} style={styles.moduleRow}>
               <ThemedView style={[styles.dot, isDone && styles.dotDone]}>
-                <ThemedText style={[styles.dotText, isDone && styles.dotTextDone]}>{isDone ? '✓' : m.sequence}</ThemedText>
+                {isDone ? <Ionicons name="checkmark" size={14} color="#fff" /> : <ThemedText style={styles.dotText}>{m.sequence}</ThemedText>}
               </ThemedView>
               <ThemedView style={styles.moduleTextWrap}>
                 <ThemedText type="default" style={styles.moduleTitle}>{m.title}</ThemedText>
@@ -125,7 +126,6 @@ const styles = StyleSheet.create({
   dot: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
   dotDone: { backgroundColor: '#15803d' },
   dotText: { fontSize: 12, fontWeight: '700', color: '#111827' },
-  dotTextDone: { color: '#fff' },
   moduleTextWrap: { flex: 1 },
   moduleTitle: { fontWeight: '600', marginBottom: 2 },
   moduleDescription: { opacity: 0.7 },

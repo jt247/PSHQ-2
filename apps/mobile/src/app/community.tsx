@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { ScrollView, View, Pressable, StyleSheet, ActivityIndicator, Image } from 'react-native'
-import { useFocusEffect } from 'expo-router'
+import { useFocusEffect, Stack } from 'expo-router'
 import { trackLeaderboardViewed } from '@pshq/analytics'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
@@ -19,10 +19,12 @@ interface LeaderboardRow {
   is_self: boolean
 }
 
-// Epic F §F.1/mobile — replaces the Build Prompt 1 Community tab
-// placeholder with the real leaderboard, same three views and the same
+// Epic F §F.1/mobile — the real leaderboard, same three views and the same
 // get_leaderboard() RPC web uses (one source of truth for ranking/privacy
-// masking, not reimplemented per-platform).
+// masking, not reimplemented per-platform). Moved off the bottom tab bar
+// (live feedback, 2026-09-07: "just an aesthetic view", doesn't earn its
+// own tab) — reached from Profile now, hence the native header for a real
+// back affordance since this is a pushed stack screen, not a tab.
 export default function CommunityScreen() {
   const [period, setPeriod] = useState<Period>('all_time')
   const [loading, setLoading] = useState(true)
@@ -45,6 +47,7 @@ export default function CommunityScreen() {
 
   return (
     <ThemedView style={styles.flex}>
+      <Stack.Screen options={{ title: 'Community', headerShown: true }} />
       <View style={styles.header}>
         <ThemedText type="title" style={styles.title}>Leaderboard</ThemedText>
         <ThemedText type="small" style={styles.subtitle}>
