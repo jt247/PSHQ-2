@@ -14,6 +14,7 @@ import { ReaderControls } from '@/components/reader-controls'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { callApi } from '@/lib/api'
+import { publicContentUrl } from '@/lib/site-url'
 
 interface ContentItem {
   id: string; title: string; summary: string | null; type: string
@@ -152,6 +153,7 @@ export default function ContentDetailScreen() {
         <ReaderControls
           contentId={item.id}
           shareTitle={item.title}
+          shareUrl={publicContentUrl(`/content/${slug}`)}
           initialFavorited={initialFavorited}
           showFontSize={false}
         />

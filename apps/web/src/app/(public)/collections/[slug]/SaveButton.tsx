@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { CheckIcon } from '@/components/icons'
 import { toggleCollectionSaveAction } from './actions'
 
 export function SaveButton({ collectionId, slug, isSaved, isSignedIn }: { collectionId: string; slug: string; isSaved: boolean; isSignedIn: boolean }) {
@@ -15,8 +16,10 @@ export function SaveButton({ collectionId, slug, isSaved, isSignedIn }: { collec
       onClick={() => startTransition(() => toggleCollectionSaveAction(collectionId, slug, isSaved))}
       disabled={pending}
       className={isSaved ? 'btn-primary' : 'btn-secondary'}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}
     >
-      {isSaved ? '✓ Saved' : 'Save Collection'}
+      {isSaved && <CheckIcon size={14} />}
+      {isSaved ? 'Saved' : 'Save Collection'}
     </button>
   )
 }

@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   await sendPushToUsers(service, {
     userIds: [user.id],
     category: 'new_achievement',
-    title: 'Achievement unlocked 🎉',
+    title: 'Achievement unlocked',
     body: row ? `${row.icon ?? ''} ${row.title}`.trim() : 'You earned a new achievement.',
     data: { achievementKey },
   })

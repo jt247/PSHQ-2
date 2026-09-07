@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { DocumentIcon, BookIcon, ClipboardIcon, GraduationCapIcon, CompassIcon, WrenchIcon } from '@/components/icons'
 
 interface ContentCardProps {
   id: string
@@ -23,13 +24,13 @@ const TYPE_LABELS: Record<string, string> = {
   build_note: 'Build Note',
 }
 
-const TYPE_PLACEHOLDER: Record<string, string> = {
-  article: '📄',
-  ebook: '📚',
-  template: '📋',
-  course: '🎓',
-  guide: '🧭',
-  build_note: '🔧',
+const TYPE_PLACEHOLDER: Record<string, React.ComponentType<{ size?: number }>> = {
+  article: DocumentIcon,
+  ebook: BookIcon,
+  template: ClipboardIcon,
+  course: GraduationCapIcon,
+  guide: CompassIcon,
+  build_note: WrenchIcon,
 }
 
 export function ContentCard(props: ContentCardProps) {
@@ -40,6 +41,7 @@ export function ContentCard(props: ContentCardProps) {
   const href = type === 'article' ? `/articles/${slug}` : type === 'build_note' ? `/build-notes/${slug}` : `/content/${slug}`
   const label = TYPE_LABELS[type] ?? type
 
+  const TypeIcon = TYPE_PLACEHOLDER[type] ?? DocumentIcon
   const coverEl = cover_image_url ? (
     <img
       src={cover_image_url}
@@ -54,10 +56,10 @@ export function ContentCard(props: ContentCardProps) {
       width: '100%', height: '100px',
       background: 'var(--color-paper-darker)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: '2rem',
+      color: 'var(--color-text-muted)',
       borderBottom: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)',
     }}>
-      {TYPE_PLACEHOLDER[type] ?? '📄'}
+      <TypeIcon size={32} />
     </div>
   )
 

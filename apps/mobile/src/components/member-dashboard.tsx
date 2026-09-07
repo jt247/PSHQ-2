@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { ScrollView, View, Pressable, StyleSheet, ActivityIndicator, Image } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect } from 'expo-router'
 import { getCommunityPosition, getStreak, getProfileCompletionPercent, getRecommendedForYou, getNewForYou, type CommunityPosition, type DashboardContentItem } from '@pshq/api-client/dashboard'
 import { getMyAchievements, checkAndAwardAchievements, checkAndAwardStreakBonus, type EarnedAchievement } from '@pshq/api-client/community'
@@ -38,14 +39,26 @@ interface LearningPathRow {
   source: 'curated' | 'ai_generated'
 }
 
-// Design Brief §5 — the real "My ProductSlice" dashboard, now living on the
-// Home tab for signed-in members (it used to be on Profile — Profile is
-// now a lean profile summary + Settings entry point instead). Same data
-// layer as before (Epic D), rebuilt as scannable visual components:
-// progress bars instead of "X done, Y remaining" text, a horizontal
-// Continue Learning row, stat tiles for activity. Achievements/Community
-// Position stay visually quiet per the brief, this isn't a leaderboard app.
+type Section = 'overview' | 'learning' | 'saved' | 'activity'
+const SEGMENTS: { key: Section; label: string }[] = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'learning', label: 'Learning' },
+  { key: 'saved', label: 'Saved' },
+  { key: 'activity', label: 'Activity' },
+]
+
+// Design Brief §5, then live feedback (2026-09-07) — the real "My
+// ProductSlice" dashboard, now its own Dashboard tab with an internal
+// segmented nav (mirrors web's dashboard sidebar sections: Overview,
+// Learning Paths, Saved, Activity) instead of one long scroll, so a member
+// can jump straight to a section the way they would on web. Home stays the
+// public landing page for everyone, signed in or not — this screen is
+// reached from Home's "Go to Dashboard" button or the Dashboard tab.
+// Header card is profile info only (no Edit button — that's Profile's
+// job), Achievements/Community Position stay visually quiet per the
+// brief, this isn't a leaderboard app.
 export function MemberDashboard() {
+  const [section, setSection] = useState<Section>('overview')
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [streak, setStreak] = useState(0)
@@ -210,17 +223,26 @@ export function MemberDashboard() {
             <ThemedText type="subtitle" style={styles.headerName}>{name}</ThemedText>
             {profile?.headline ? <ThemedText type="small" style={styles.mutedOnNavy}>{String(profile.headline)}</ThemedText> : null}
           </View>
-          <ThemedText style={styles.streakBadge}>🔥 {streak}</ThemedText>
+          <View style={styles.streakBadge}>
+            <Ionicons name="flame" size={16} color={Brand.gold} />
+            <ThemedText style={styles.streakBadgeText}>{streak}</ThemedText>
+          </View>
         </View>
         <View style={styles.completionRow}>
           <ProgressBar percent={completionPercent} />
           <ThemedText type="small" style={styles.mutedOnNavy}>{completionPercent}% profile complete</ThemedText>
         </View>
-        <Pressable style={styles.primaryButton} onPress={() => router.push('/profile-edit')}>
-          <ThemedText style={styles.primaryButtonText}>Edit Profile</ThemedText>
-        </Pressable>
       </View>
 
+      <View style={styles.segmentRow}>
+        {SEGMENTS.map(s => (
+          <Pressable key={s.key} onPress={() => setSection(s.key)} style={[styles.segment, section === s.key && styles.segmentActive]}>
+            <ThemedText style={section === s.key ? styles.segmentTextActive : styles.segmentText}>{s.label}</ThemedText>
+          </Pressable>
+        ))}
+      </View>
+
+      {section === 'overview' && <>
       <SectionTitle title="Continue Learning" />
       {continueLearning.length === 0 ? (
         <ThemedText type="small" style={styles.muted}>Start an article, ebook, or case and it&apos;ll show up here.</ThemedText>
@@ -235,6 +257,18 @@ export function MemberDashboard() {
         </ScrollView>
       )}
 
+      <SectionTitle title="Recommended For You" />
+      {recommended.length === 0 ? (
+        <ThemedText type="small" style={styles.muted}>Set your topics and goals in Edit Profile for personalized picks.</ThemedText>
+      ) : recommended.map(item => <ContentRow key={item.id} id={item.id} type={item.type} slug={item.slug} title={item.title} />)}
+
+      <SectionTitle title="New For You" />
+      {newForYou.length === 0 ? (
+        <ThemedText type="small" style={styles.muted}>Nothing new matching your topics yet.</ThemedText>
+      ) : newForYou.map(item => <ContentRow key={item.id} id={item.id} type={item.type} slug={item.slug} title={item.title} />)}
+      </>}
+
+      {section === 'learning' && <>
       <SectionTitle title="My Learning Paths" />
       <Pressable onPress={() => router.push('/learning-paths/create' as never)}>
         <ThemedText type="small" style={styles.createPathLink}>+ Create My Learning Path</ThemedText>
@@ -254,17 +288,9 @@ export function MemberDashboard() {
           </Pressable>
         )
       })}
+      </>}
 
-      <SectionTitle title="Recommended For You" />
-      {recommended.length === 0 ? (
-        <ThemedText type="small" style={styles.muted}>Set your topics and goals in Edit Profile for personalized picks.</ThemedText>
-      ) : recommended.map(item => <ContentRow key={item.id} id={item.id} type={item.type} slug={item.slug} title={item.title} />)}
-
-      <SectionTitle title="New For You" />
-      {newForYou.length === 0 ? (
-        <ThemedText type="small" style={styles.muted}>Nothing new matching your topics yet.</ThemedText>
-      ) : newForYou.map(item => <ContentRow key={item.id} id={item.id} type={item.type} slug={item.slug} title={item.title} />)}
-
+      {section === 'saved' && <>
       <SectionTitle title="Saved" />
       {saved.length === 0 ? (
         <ThemedText type="small" style={styles.muted}>Tap the favorite button on any article, ebook, or template to save it here.</ThemedText>
@@ -274,7 +300,9 @@ export function MemberDashboard() {
       {recentlyViewed.length === 0 ? (
         <ThemedText type="small" style={styles.muted}>What you read or open will show up here.</ThemedText>
       ) : recentlyViewed.map(item => <ContentRow key={item.id} id={item.id} type={item.type} slug={item.slug} title={item.title} />)}
+      </>}
 
+      {section === 'activity' && <>
       <SectionTitle title="Learning Activity" />
       <View style={styles.statGrid}>
         <StatTile label="Articles" value={counts.articlesCompleted} />
@@ -286,7 +314,9 @@ export function MemberDashboard() {
       </View>
 
       {/* Quiet by design (Design Brief §5 / §4.7) — a small badge row and
-       * one rank line, not a leaderboard the app leads with. */}
+       * one rank line, not a leaderboard the app leads with. Achievement
+       * icons are admin-configured data (each achievement's own icon
+       * field), not a hardcoded UI emoji choice — left as real content. */}
       <SectionTitle title="Achievements & Community Position" />
       {position && (
         <ThemedText type="small" style={styles.muted}>#{position.rank} of {position.totalRanked} ranked members · {position.score} points</ThemedText>
@@ -303,6 +333,7 @@ export function MemberDashboard() {
           ))}
         </View>
       )}
+      </>}
     </ScrollView>
   )
 }
@@ -324,17 +355,21 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   container: { padding: 20, gap: 8, paddingBottom: 60 },
   headerCard: { backgroundColor: Brand.navy, borderRadius: 16, padding: 18, marginBottom: 8, gap: 14 },
+  segmentRow: { flexDirection: 'row', backgroundColor: Brand.hairline, borderRadius: 10, padding: 3, marginBottom: 8 },
+  segment: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
+  segmentActive: { backgroundColor: Brand.cream },
+  segmentText: { fontSize: 12, fontWeight: '600', opacity: 0.55 },
+  segmentTextActive: { fontSize: 12, fontWeight: '700', color: Brand.navy },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   avatar: { width: 56, height: 56, borderRadius: 28 },
   avatarFallback: { backgroundColor: Brand.mutedOnNavy, alignItems: 'center', justifyContent: 'center' },
   headerText: { flex: 1 },
   headerName: { color: Brand.cream },
-  streakBadge: { color: Brand.gold, fontWeight: '700' },
+  streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  streakBadgeText: { color: Brand.gold, fontWeight: '700' },
   completionRow: { gap: 6 },
   mutedOnNavy: { color: Brand.mutedOnNavy },
   muted: { opacity: 0.6, marginTop: 2, marginBottom: 8 },
-  primaryButton: { backgroundColor: Brand.gold, borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
-  primaryButtonText: { color: Brand.navy, fontWeight: '700' },
   horizontalRow: { gap: 10, paddingBottom: 4 },
   resumeCard: { width: 160, borderWidth: 1, borderColor: Brand.hairline, borderRadius: 10, padding: 12, gap: 6 },
   resumeType: { textTransform: 'uppercase', opacity: 0.5, fontSize: 10, letterSpacing: 0.5 },

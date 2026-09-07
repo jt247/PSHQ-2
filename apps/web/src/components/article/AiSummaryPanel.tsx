@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { SparklesIcon } from '@/components/icons'
 
 interface Props {
   contentId: string
@@ -77,7 +78,7 @@ export function AiSummaryPanel({ contentId, isLoggedIn, cachedSummary }: Props) 
   if (!isLoggedIn) {
     return (
       <div style={{ ...summaryBlockStyle, cursor: 'default', color: '#6b7280' }}>
-        <span>✨</span>
+        <SparklesIcon size={16} />
         <a href="/sign-in" style={{ color: '#6366f1', fontWeight: 600 }}>Sign in for AI Assistant</a>
       </div>
     )
@@ -148,7 +149,7 @@ export function AiSummaryPanel({ contentId, isLoggedIn, cachedSummary }: Props) 
   return (
     <>
       <button onClick={handleOpen} style={summaryBlockStyle}>
-        <span>✨</span>
+        <SparklesIcon size={16} />
         <span>AI Assistant</span>
       </button>
 
@@ -175,7 +176,7 @@ export function AiSummaryPanel({ contentId, isLoggedIn, cachedSummary }: Props) 
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1rem' }}>✨</span>
+                <SparklesIcon size={18} />
                 <span style={{ fontWeight: 700, fontSize: '1rem', color: '#111827' }}>AI Assistant</span>
               </div>
               <button

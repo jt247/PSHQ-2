@@ -13,6 +13,7 @@ import { ReaderControls } from '@/components/reader-controls'
 import { useReaderFontScale } from '@/hooks/use-reader-font-scale'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
+import { publicContentUrl } from '@/lib/site-url'
 
 interface Article { id: string; title: string; summary: string | null; body: string | null; domain: string | null; tags: string[] | null; series_id: string | null }
 
@@ -80,6 +81,7 @@ export default function ArticleReaderScreen() {
         <ReaderControls
           contentId={item.id}
           shareTitle={item.title}
+          shareUrl={publicContentUrl(`/articles/${slug}`)}
           listenText={item.body ?? undefined}
           initialFavorited={initialFavorited}
         />

@@ -8,7 +8,7 @@ import { SectionCard, EmptyState } from './DashboardPrimitives'
 // rule that this must not regress for a brand-new member.
 function AchievementsCard({ achievements }: { achievements: EarnedAchievement[] }) {
   return (
-    <SectionCard title="🏅 Achievements">
+    <SectionCard title="Achievements">
       {achievements.length === 0 ? (
         <EmptyState>Complete your first learning activity to earn an achievement.</EmptyState>
       ) : (
@@ -36,7 +36,7 @@ function AchievementsCard({ achievements }: { achievements: EarnedAchievement[] 
 // the PRD, not a public ranking of other people.
 function CommunityPositionCard({ position }: { position: CommunityPosition | null }) {
   return (
-    <SectionCard title="📊 Community Position">
+    <SectionCard title="Community Position">
       {!position ? (
         <EmptyState>Not yet ranked — comment, upvote, or share content to start earning contribution points.</EmptyState>
       ) : (

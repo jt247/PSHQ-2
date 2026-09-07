@@ -3,6 +3,7 @@
 import { useTransition } from 'react'
 import Link from 'next/link'
 import { toggleModuleCompleteAction } from '@/app/(public)/learning-paths/[slug]/actions'
+import { CheckIcon } from '@/components/icons'
 
 interface Props {
   moduleId: string
@@ -41,7 +42,7 @@ export function ModuleRow({ moduleId, pathId, pathSlug, title, description, href
             color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
-          {isCompleted ? '✓' : ''}
+          {isCompleted && <CheckIcon size={14} />}
         </button>
       ) : (
         <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, marginTop: '0.125rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-paper-darker)', color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 700 }}>

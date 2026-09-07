@@ -3,7 +3,6 @@ import { ScrollView, Pressable, StyleSheet, ActivityIndicator, Image } from 'rea
 import { router } from 'expo-router'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
-import { MemberDashboard } from '@/components/member-dashboard'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { Brand } from '@/constants/brand'
@@ -19,17 +18,15 @@ const DOMAINS = [
   { slug: 'leadership', label: 'Leadership', image: require('../../../assets/illustrations/direction-leadership.jpg') },
 ]
 
-// Design Brief §5 — Home is the member dashboard for a signed-in user
-// (moved here from Profile, see member-dashboard.tsx). A signed-out
-// visitor still gets the marketing browse experience below — that's the
-// actual first-run content for someone who hasn't joined yet, per §4.
+// Live feedback (2026-09-07): Home should always be the same landing-page
+// experience the website has, mobile-optimized — not a different screen
+// for signed-in vs signed-out. There's a real Dashboard tab for the member
+// view now (see (tabs)/dashboard.tsx); Home just points there once signed
+// in, exactly like the web homepage's hero button becomes "Go to
+// Dashboard" for a logged-in visitor instead of disappearing or changing
+// screens entirely.
 export default function HomeScreen() {
   const { session } = useAuth()
-  if (session) return <MemberDashboard />
-  return <MarketingHome />
-}
-
-function MarketingHome() {
   const [loading, setLoading] = useState(true)
   const [paths, setPaths] = useState<Card[]>([])
   const [notes, setNotes] = useState<Card[]>([])
@@ -61,8 +58,8 @@ function MarketingHome() {
           <ThemedText type="default" style={styles.heroSubtitle}>
             Learn product, growth, AI, technology, startup execution, and leadership from real-world practice.
           </ThemedText>
-          <Pressable onPress={() => router.push('/sign-up')} style={styles.heroButton}>
-            <ThemedText style={styles.heroButtonText}>Start Learning Free →</ThemedText>
+          <Pressable onPress={() => router.push(session ? '/dashboard' : '/sign-up')} style={styles.heroButton}>
+            <ThemedText style={styles.heroButtonText}>{session ? 'Go to Dashboard →' : 'Start Learning Free →'}</ThemedText>
           </Pressable>
         </ThemedView>
 
@@ -101,13 +98,15 @@ function MarketingHome() {
           </>
         )}
 
-        {/* Final CTA */}
-        <ThemedView style={styles.finalCta}>
-          <ThemedText type="smallBold" style={styles.finalCtaTitle}>Build better products. Learn from practice.</ThemedText>
-          <Pressable onPress={() => router.push('/sign-up')} style={styles.heroButton}>
-            <ThemedText style={styles.heroButtonText}>Join ProductSlice Free →</ThemedText>
-          </Pressable>
-        </ThemedView>
+        {/* Final CTA — signed-out only, matches web's `{!user && ...}` */}
+        {!session && (
+          <ThemedView style={styles.finalCta}>
+            <ThemedText type="smallBold" style={styles.finalCtaTitle}>Build better products. Learn from practice.</ThemedText>
+            <Pressable onPress={() => router.push('/sign-up')} style={styles.heroButton}>
+              <ThemedText style={styles.heroButtonText}>Join ProductSlice Free →</ThemedText>
+            </Pressable>
+          </ThemedView>
+        )}
       </ScrollView>
     </ThemedView>
   )

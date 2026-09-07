@@ -67,11 +67,18 @@ export default function ProfileScreen() {
           </Pressable>
         ) : null}
 
-        <Pressable style={styles.settingsRow} onPress={() => router.push('/settings' as never)}>
-          <Ionicons name="settings-outline" size={20} color={Brand.navy} />
-          <ThemedText type="default" style={styles.settingsRowText}>Settings</ThemedText>
-          <Ionicons name="chevron-forward" size={18} color={Brand.mutedOnCream} />
-        </Pressable>
+        <View style={styles.linksGroup}>
+          <Pressable style={styles.linkRow} onPress={() => router.push('/community' as never)}>
+            <Ionicons name="people-outline" size={20} color={Brand.navy} />
+            <ThemedText type="default" style={styles.linkRowText}>Community</ThemedText>
+            <Ionicons name="chevron-forward" size={18} color={Brand.mutedOnCream} />
+          </Pressable>
+          <Pressable style={styles.linkRow} onPress={() => router.push('/settings' as never)}>
+            <Ionicons name="settings-outline" size={20} color={Brand.navy} />
+            <ThemedText type="default" style={styles.linkRowText}>Settings</ThemedText>
+            <Ionicons name="chevron-forward" size={18} color={Brand.mutedOnCream} />
+          </Pressable>
+        </View>
       </View>
     </ThemedView>
   )
@@ -89,6 +96,7 @@ const styles = StyleSheet.create({
   primaryButton: { backgroundColor: '#111827', borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
   primaryButtonText: { color: '#fff', fontWeight: '700' },
   viewPublicLink: { textAlign: 'center', marginTop: 10, fontWeight: '600' },
-  settingsRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: Brand.hairline, borderRadius: 12, padding: 16, marginTop: 28 },
-  settingsRowText: { flex: 1, fontWeight: '600' },
+  linksGroup: { borderWidth: 1, borderColor: Brand.hairline, borderRadius: 12, marginTop: 28, overflow: 'hidden' },
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Brand.hairline },
+  linkRowText: { flex: 1, fontWeight: '600' },
 })

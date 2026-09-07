@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { View, Pressable, StyleSheet, Share, Alert } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import * as Speech from 'expo-speech'
 import { ThemedText } from '@/components/themed-text'
 import { toggleFavorite, logShare } from '@pshq/api-client/content-actions'
@@ -79,9 +80,9 @@ export function ReaderControls({ contentId, shareTitle, shareUrl, listenText, in
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <ActionButton label={favorited ? '★ Saved' : '☆ Save'} active={favorited} onPress={handleFavorite} disabled={!userId} />
-        <ActionButton label="Share" onPress={handleShare} />
-        {listenText && <ActionButton label={speaking ? '⏸ Stop' : '🔊 Listen'} active={speaking} onPress={handleListen} />}
+        <ActionButton icon={favorited ? 'star' : 'star-outline'} label={favorited ? 'Saved' : 'Save'} active={favorited} onPress={handleFavorite} disabled={!userId} />
+        <ActionButton icon="share-social-outline" label="Share" onPress={handleShare} />
+        {listenText && <ActionButton icon={speaking ? 'pause' : 'volume-high-outline'} label={speaking ? 'Stop' : 'Listen'} active={speaking} onPress={handleListen} />}
       </View>
 
       {showFontSize && (
@@ -99,9 +100,10 @@ export function ReaderControls({ contentId, shareTitle, shareUrl, listenText, in
   )
 }
 
-function ActionButton({ label, active, disabled, onPress }: { label: string; active?: boolean; disabled?: boolean; onPress: () => void }) {
+function ActionButton({ icon, label, active, disabled, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; active?: boolean; disabled?: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} disabled={disabled} style={[styles.actionButton, active && styles.actionButtonActive, disabled && styles.actionButtonDisabled]}>
+      <Ionicons name={icon} size={15} color={active ? '#fff' : '#111827'} />
       <ThemedText style={active ? styles.actionTextActive : styles.actionText}>{label}</ThemedText>
     </Pressable>
   )
@@ -110,7 +112,7 @@ function ActionButton({ label, active, disabled, onPress }: { label: string; act
 const styles = StyleSheet.create({
   container: { gap: 10, marginVertical: 16 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  actionButton: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 16, paddingVertical: 8, paddingHorizontal: 14 },
+  actionButton: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: '#d1d5db', borderRadius: 16, paddingVertical: 8, paddingHorizontal: 14 },
   actionButtonActive: { backgroundColor: '#111827', borderColor: '#111827' },
   actionButtonDisabled: { opacity: 0.4 },
   actionText: { fontSize: 13, fontWeight: '600' },
