@@ -19,9 +19,12 @@ async function generateWithGemini(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('GEMINI_API_KEY is not configured')
 
-  const res = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+  // Security review flagged the key riding in the query string — it can
+  // land in access logs, proxy logs, and browser/Node history. Sent as a
+  // header instead, which Gemini's REST API supports natively.
+  const res = await fetch(GEMINI_API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.4, maxOutputTokens: 1536 },
