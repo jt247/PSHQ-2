@@ -5,6 +5,7 @@ import { useActionState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { signUpAction, type SignUpState } from '../actions/auth'
 import { GoogleOAuthButton } from '@/components/auth/GoogleOAuthButton'
+import { CheckIcon } from '@/components/icons'
 import { Suspense } from 'react'
 
 const initial: SignUpState = { error: null, success: false }
@@ -24,8 +25,8 @@ function SignUpForm() {
         <main className="auth-main">
           <div className="auth-card">
             <div className="auth-card-inner" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-              <div style={{ width: '48px', height: '48px', background: '#dcfce7', borderRadius: '50%', margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '1.25rem' }}>✓</span>
+              <div style={{ width: '48px', height: '48px', background: '#dcfce7', borderRadius: '50%', margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#15803d' }}>
+                <CheckIcon size={22} />
               </div>
               <h1 className="auth-title" style={{ fontSize: '1.75rem', marginBottom: '0.75rem' }}>Check your email</h1>
               <p className="auth-subtitle">We sent a confirmation link to your inbox. Click it to activate your account.</p>

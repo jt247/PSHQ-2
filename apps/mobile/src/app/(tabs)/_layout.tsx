@@ -6,11 +6,15 @@ import { useAuth } from '@/lib/auth-context'
 import { AppSplash } from '@/components/app-splash'
 import { hasSeenWelcome } from '@/lib/has-seen-welcome'
 
+// Live feedback (2026-09-07): Community was "just an aesthetic view" (a
+// leaderboard, no real functionality) and didn't earn its own tab slot —
+// moved to a Profile entry point instead (see (tabs)/profile.tsx), this
+// slot now goes to the real Dashboard.
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   index: 'home-outline',
   learn: 'school-outline',
   library: 'library-outline',
-  community: 'people-outline',
+  dashboard: 'grid-outline',
   profile: 'person-outline',
 }
 
@@ -58,7 +62,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
       <Tabs.Screen name="learn" options={{ title: 'Learn' }} />
       <Tabs.Screen name="library" options={{ title: 'Library' }} />
-      <Tabs.Screen name="community" options={{ title: 'Community' }} />
+      <Tabs.Screen name="dashboard" options={{ title: 'Dashboard' }} />
       <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
     </Tabs>
   )

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { FlameIcon } from '@/components/icons'
 
 interface Props {
   avatarUrl: string | null
@@ -69,8 +70,8 @@ export function MyProductSliceHeader({ avatarUrl, name, headline, streak, profil
 
       <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexShrink: 0, position: 'relative' }}>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.375rem', fontWeight: 800, color: '#ffffff', margin: 0, lineHeight: 1 }}>
-            🔥 {streak}
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.375rem', fontWeight: 800, color: '#ffffff', margin: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+            <FlameIcon size={18} /> {streak}
           </p>
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.625rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0.25rem 0 0' }}>
             Day streak

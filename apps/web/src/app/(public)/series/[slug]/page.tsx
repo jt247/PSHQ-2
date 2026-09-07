@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@pshq/api-client/server'
 import { PublicNav } from '@/components/layout/PublicNav'
+import { CheckIcon } from '@/components/icons'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 
 interface SeriesItem {
@@ -80,7 +81,7 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
                 color: completedIds.has(item.content.id) ? '#fff' : 'var(--color-text-muted)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700,
               }}>
-                {completedIds.has(item.content.id) ? '✓' : item.sequence}
+                {completedIds.has(item.content.id) ? <CheckIcon size={14} /> : item.sequence}
               </div>
               <div>
                 <p className="text-body-md" style={{ fontWeight: 600, color: 'var(--color-ink-deep)', margin: 0 }}>{item.content.title}</p>

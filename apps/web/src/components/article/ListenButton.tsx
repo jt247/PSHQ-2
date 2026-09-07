@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { logListenAction, logListenCompleteAction } from '@/app/(public)/content/[slug]/actions'
+import { PlayIcon, PauseIcon, VolumeIcon } from '@/components/icons'
 
 interface Props {
   text: string
@@ -75,7 +76,8 @@ export function ListenButton({ text, contentId }: Props) {
     setStatus('playing')
   }
 
-  const label = status === 'playing' ? '⏸ Pause' : status === 'paused' ? '▶ Resume' : '🔊 Listen'
+  const Icon = status === 'playing' ? PauseIcon : status === 'paused' ? PlayIcon : VolumeIcon
+  const label = status === 'playing' ? 'Pause' : status === 'paused' ? 'Resume' : 'Listen'
 
   return (
     <button
@@ -97,6 +99,7 @@ export function ListenButton({ text, contentId }: Props) {
         transition: 'all 150ms',
       }}
     >
+      <Icon size={16} />
       {label}
     </button>
   )

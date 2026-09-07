@@ -2,6 +2,7 @@
 
 import { useState, useActionState } from 'react'
 import { submitRatingAction, type RatingState } from '@/app/(public)/articles/[slug]/actions'
+import { StarIcon } from '@/components/icons'
 
 interface Props {
   contentId: string
@@ -52,13 +53,13 @@ export function RatingWidget({ contentId, isLoggedIn, existingRating, existingRe
               onClick={() => setSelected(n)}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: '1.5rem', padding: '0 0.1rem',
+                padding: '0 0.1rem',
                 color: n <= display ? '#f59e0b' : '#d1d5db',
-                transition: 'color 100ms',
+                transition: 'color 100ms', display: 'flex',
               }}
               aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
             >
-              ★
+              <StarIcon size={24} filled={n <= display} />
             </button>
           ))}
           {selected > 0 && (
