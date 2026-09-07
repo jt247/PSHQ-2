@@ -1,20 +1,35 @@
 import { useEffect, useState } from 'react'
-import { ScrollView, Pressable, StyleSheet, ActivityIndicator } from 'react-native'
+import { ScrollView, Pressable, StyleSheet, ActivityIndicator, Image } from 'react-native'
 import { router } from 'expo-router'
 import { ThemedView } from '@/components/themed-view'
 import { ThemedText } from '@/components/themed-text'
+import { MemberDashboard } from '@/components/member-dashboard'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
+import { Brand } from '@/constants/brand'
 
 interface Card { id: string; title: string; slug: string; summary: string | null; type?: string }
 
 const DOMAINS = [
-  { slug: 'product', label: 'Product' }, { slug: 'growth', label: 'Growth' }, { slug: 'ai', label: 'AI' },
-  { slug: 'building', label: 'Building' }, { slug: 'careers', label: 'Careers' }, { slug: 'leadership', label: 'Leadership' },
+  { slug: 'product', label: 'Product', image: require('../../../assets/illustrations/direction-product.jpg') },
+  { slug: 'growth', label: 'Growth', image: require('../../../assets/illustrations/direction-growth.jpg') },
+  { slug: 'ai', label: 'AI', image: require('../../../assets/illustrations/direction-ai.jpg') },
+  { slug: 'building', label: 'Building', image: require('../../../assets/illustrations/direction-building.jpg') },
+  { slug: 'careers', label: 'Careers', image: require('../../../assets/illustrations/direction-careers.jpg') },
+  { slug: 'leadership', label: 'Leadership', image: require('../../../assets/illustrations/direction-leadership.jpg') },
 ]
 
+// Design Brief §5 — Home is the member dashboard for a signed-in user
+// (moved here from Profile, see member-dashboard.tsx). A signed-out
+// visitor still gets the marketing browse experience below — that's the
+// actual first-run content for someone who hasn't joined yet, per §4.
 export default function HomeScreen() {
   const { session } = useAuth()
+  if (session) return <MemberDashboard />
+  return <MarketingHome />
+}
+
+function MarketingHome() {
   const [loading, setLoading] = useState(true)
   const [paths, setPaths] = useState<Card[]>([])
   const [notes, setNotes] = useState<Card[]>([])
@@ -46,19 +61,19 @@ export default function HomeScreen() {
           <ThemedText type="default" style={styles.heroSubtitle}>
             Learn product, growth, AI, technology, startup execution, and leadership from real-world practice.
           </ThemedText>
-          {!session && (
-            <Pressable onPress={() => router.push('/sign-up')} style={styles.heroButton}>
-              <ThemedText style={styles.heroButtonText}>Start Learning Free →</ThemedText>
-            </Pressable>
-          )}
+          <Pressable onPress={() => router.push('/sign-up')} style={styles.heroButton}>
+            <ThemedText style={styles.heroButtonText}>Start Learning Free →</ThemedText>
+          </Pressable>
         </ThemedView>
 
-        {/* Choose Your Direction */}
+        {/* Choose Your Direction — Design Brief §4.2: a small illustration
+         * per direction instead of plain text, one accent color each. */}
         <Section title="Choose Your Direction">
           <ThemedView style={styles.domainGrid}>
             {DOMAINS.map(d => (
-              <Pressable key={d.slug} onPress={() => router.push(`/explore/${d.slug}` as never)} style={styles.domainChip}>
-                <ThemedText type="smallBold">{d.label}</ThemedText>
+              <Pressable key={d.slug} onPress={() => router.push(`/explore/${d.slug}` as never)} style={styles.domainCard}>
+                <Image source={d.image} style={styles.domainImage} resizeMode="cover" />
+                <ThemedText type="smallBold" style={styles.domainLabel}>{d.label}</ThemedText>
               </Pressable>
             ))}
           </ThemedView>
@@ -87,14 +102,12 @@ export default function HomeScreen() {
         )}
 
         {/* Final CTA */}
-        {!session && (
-          <ThemedView style={styles.finalCta}>
-            <ThemedText type="smallBold" style={styles.finalCtaTitle}>Build better products. Learn from practice.</ThemedText>
-            <Pressable onPress={() => router.push('/sign-up')} style={styles.heroButton}>
-              <ThemedText style={styles.heroButtonText}>Join ProductSlice Free →</ThemedText>
-            </Pressable>
-          </ThemedView>
-        )}
+        <ThemedView style={styles.finalCta}>
+          <ThemedText type="smallBold" style={styles.finalCtaTitle}>Build better products. Learn from practice.</ThemedText>
+          <Pressable onPress={() => router.push('/sign-up')} style={styles.heroButton}>
+            <ThemedText style={styles.heroButtonText}>Join ProductSlice Free →</ThemedText>
+          </Pressable>
+        </ThemedView>
       </ScrollView>
     </ThemedView>
   )
@@ -126,21 +139,23 @@ function CardRow({ card, onPress }: { card: Card; onPress: () => void }) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: { paddingBottom: 48 },
-  hero: { padding: 24, paddingTop: 32, gap: 12 },
-  heroTitle: { fontSize: 26, lineHeight: 32 },
-  heroSubtitle: { opacity: 0.7, lineHeight: 22 },
-  heroButton: { backgroundColor: '#111827', borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 8, marginHorizontal: 24 },
-  heroButtonText: { color: '#fff', fontWeight: '600' },
+  hero: { padding: 24, paddingTop: 32, gap: 12, backgroundColor: Brand.navy },
+  heroTitle: { fontSize: 26, lineHeight: 32, color: Brand.cream },
+  heroSubtitle: { color: Brand.mutedOnNavy, lineHeight: 22 },
+  heroButton: { backgroundColor: Brand.gold, borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  heroButtonText: { color: Brand.navy, fontWeight: '700' },
   loader: { marginTop: 24 },
   section: { paddingHorizontal: 24, marginTop: 28 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   sectionTitle: { fontSize: 16 },
   seeAll: { opacity: 0.6 },
-  domainGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  domainChip: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 20, paddingVertical: 8, paddingHorizontal: 16 },
+  domainGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  domainCard: { width: '31%', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: Brand.hairline },
+  domainImage: { width: '100%', height: 70 },
+  domainLabel: { textAlign: 'center', paddingVertical: 8 },
   card: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10, padding: 14, marginBottom: 10 },
   cardTitle: { fontWeight: '600', marginBottom: 4 },
   cardSummary: { opacity: 0.7 },
-  finalCta: { margin: 24, marginTop: 32, padding: 24, backgroundColor: '#111827', borderRadius: 12, alignItems: 'center', gap: 8 },
-  finalCtaTitle: { color: '#fff', textAlign: 'center', marginBottom: 8 },
+  finalCta: { margin: 24, marginTop: 32, padding: 24, backgroundColor: Brand.navy, borderRadius: 12, alignItems: 'center', gap: 8 },
+  finalCtaTitle: { color: Brand.cream, textAlign: 'center', marginBottom: 8 },
 })
