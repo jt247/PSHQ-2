@@ -275,7 +275,7 @@ export default async function DashboardPage() {
           tracking={{ slot: 'recommended_for_you', userId: user.id }}
         />
         <ContentListSection
-          title="🆕 New for You"
+          title="New for You"
           items={newForYou}
           emptyText="Nothing new matching your topics yet."
           seeAllHref={{ href: '/library', label: 'Browse library →' }}
@@ -289,7 +289,7 @@ export default async function DashboardPage() {
 
       <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
         <ContentListSection
-          title="⭐ Saved"
+          title="Saved"
           items={savedItems}
           emptyText="Tap the favorite button on any article, ebook, or template to save it here."
           seeAllHref={{ href: '/dashboard/library', label: 'View all →' }}
