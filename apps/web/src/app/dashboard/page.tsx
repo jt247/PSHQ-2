@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Layers, BookOpen, GraduationCap, Newspaper, Package } from 'lucide-react'
+import { Layers, BookOpen, Package, Wrench, Newspaper } from 'lucide-react'
 import { createClient } from '@pshq/api-client/server'
 import { getCommunityPosition, getStreak, getRecommendedForYou, getNewForYou, getProfileCompletionPercent } from '@pshq/api-client/dashboard'
 import { getMyAchievements, checkAndAwardAchievements, checkAndAwardStreakBonus } from '@pshq/api-client/community'
@@ -13,6 +13,10 @@ import { MyLearningPathsSection, type MyLearningPathItem } from '@/components/da
 import { ContentListSection } from '@/components/dashboard/ContentListSection'
 import { LearningActivitySection } from '@/components/dashboard/LearningActivitySection'
 import { AchievementsAndPositionRow } from '@/components/dashboard/AchievementsAndPositionRow'
+
+// Live feedback (2026-09-08) — recommendations trimmed from 6 to 3 per
+// slot: "prioritize highly" rather than list everything.
+const RECOMMENDATION_LIMIT = 3
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -33,9 +37,9 @@ export default async function DashboardPage() {
   const achievements = await getMyAchievements(supabase, user.id)
 
   const [
-    profileRes, interactionsRes, trendingRes, coursesRes, trendingEbooksRes, trendingTemplatesRes,
+    profileRes, interactionsRes, trendingRes, trendingEbooksRes, trendingTemplatesRes,
     onboardingProgressRes, userLearningPathsRes, moduleProgressRes, contentProgressRes, caseProgressRes,
-    favoritesRes, streak, communityPosition, recommendedLayer1, newForYouLayer1,
+    streak, communityPosition, recommendedLayer1, newForYouLayer1,
     userTopicsRes, userGoalsRes,
   ] = await Promise.all([
     supabase.from('users').select('*').eq('id', user.id).single(),
@@ -44,20 +48,18 @@ export default async function DashboardPage() {
       .eq('user_id', user.id)
       .in('type', ['view', 'download', 'read'])
       .order('created_at', { ascending: false }),
-    supabase.from('content').select('id, title, slug, type, view_count, published_at').eq('status', 'published').eq('type', 'article').order('view_count', { ascending: false }).limit(6),
-    supabase.from('content').select('id, title, slug, summary, cover_image_url, tags').eq('status', 'published').eq('type', 'course').order('published_at', { ascending: false }).limit(3),
-    supabase.from('content').select('id, title, slug, cover_image_url, tags').eq('status', 'published').eq('type', 'ebook').order('published_at', { ascending: false }).limit(4),
-    supabase.from('content').select('id, title, slug, cover_image_url, tags').eq('status', 'published').eq('type', 'template').order('published_at', { ascending: false }).limit(4),
+    supabase.from('content').select('id, title, slug, type, view_count, published_at').eq('status', 'published').eq('type', 'article').order('view_count', { ascending: false }).limit(3),
+    supabase.from('content').select('id, title, slug, cover_image_url, tags').eq('status', 'published').eq('type', 'ebook').order('published_at', { ascending: false }).limit(3),
+    supabase.from('content').select('id, title, slug, cover_image_url, tags').eq('status', 'published').eq('type', 'template').order('published_at', { ascending: false }).limit(3),
     supabase.from('onboarding_progress').select('*').eq('user_id', user.id).maybeSingle(),
     supabase.from('user_learning_paths').select('started_at, completed_at, path:learning_paths(id, title, slug, source)').eq('user_id', user.id).order('started_at', { ascending: false }),
     supabase.from('module_progress').select('status, module:learning_path_modules(learning_path_id)').eq('user_id', user.id),
     supabase.from('content_progress').select('status, content:content_id(type)').eq('user_id', user.id),
     supabase.from('case_progress').select('status, last_viewed_at, completed_at, case:case_library_entries(id, title, slug)').eq('user_id', user.id),
-    supabase.from('content_favorites').select('created_at, content:content(id, title, slug, type, tags)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(5),
     getStreak(supabase),
     getCommunityPosition(supabase),
-    getRecommendedForYou(supabase, user.id),
-    getNewForYou(supabase, user.id),
+    getRecommendedForYou(supabase, user.id, RECOMMENDATION_LIMIT),
+    getNewForYou(supabase, user.id, RECOMMENDATION_LIMIT),
     supabase.from('user_topics').select('topic:topics(name)').eq('user_id', user.id),
     supabase.from('user_goals').select('goal:goals(name)').eq('user_id', user.id),
   ])
@@ -92,7 +94,6 @@ export default async function DashboardPage() {
   }
   const owned = Array.from(engagedById.values())
 
-  const courses = (coursesRes.data ?? []) as Array<{ id: string; title: string; slug: string; summary: string | null; cover_image_url: string | null; tags: string[] | null }>
   const trendingEbooks = (trendingEbooksRes.data ?? []) as Array<{ id: string; title: string; slug: string; cover_image_url: string | null; tags: string[] | null }>
   const trendingTemplates = (trendingTemplatesRes.data ?? []) as Array<{ id: string; title: string; slug: string; cover_image_url: string | null; tags: string[] | null }>
 
@@ -100,6 +101,7 @@ export default async function DashboardPage() {
   const ebooks = owned.filter(c => c.type === 'ebook')
   const articles = owned.filter(c => c.type === 'article')
   const resources = owned.filter(c => c.type === 'template')
+  const buildNotes = owned.filter(c => c.type === 'build_note')
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
@@ -172,21 +174,6 @@ export default async function DashboardPage() {
   const modulesCompleted = Array.from(completedModulesByPath.values()).reduce((a, b) => a + b, 0)
   const casesCompleted = ((caseProgressRes.data ?? []) as unknown as CaseProgressRow[]).filter(r => r.status === 'completed').length
 
-  // ── Saved preview ──
-  type FavRow = { content: { id: string; title: string; slug: string; type: string; tags: string[] | null } | null }
-  const savedItems = ((favoritesRes.data ?? []) as unknown as FavRow[])
-    .map(r => r.content).filter((c): c is NonNullable<typeof c> => c != null)
-    .map(c => ({ id: c.id, title: c.title, type: c.type, slug: c.slug, tags: c.tags ?? [] }))
-
-  // ── Recently Viewed ──
-  const seenRecent = new Set<string>()
-  const recentlyViewed = interactions
-    .map(i => i.content)
-    .filter((c): c is Partial<ContentRow> & { id: string; slug: string; type: string } => !!c?.id && !!c.slug && !!c.type)
-    .filter(c => (seenRecent.has(c.id) ? false : (seenRecent.add(c.id), true)))
-    .slice(0, 5)
-    .map(c => ({ id: c.id, title: c.title ?? '', type: c.type, slug: c.slug, tags: [] }))
-
   const profileCompletionPercent = profile ? getProfileCompletionPercent(profile as unknown as Record<string, unknown>) : 0
 
   return (
@@ -250,21 +237,42 @@ export default async function DashboardPage() {
         <ContinueLearningSection path={continueLearningPath} items={continueLearningItems} />
       </div>
 
-      <section className="grid-collapse-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.75rem', marginBottom: '1.75rem' }}>
+      {/* Live feedback (2026-09-08): Build Notes added as its own tile —
+          six content types, one line. */}
+      <section className="grid-collapse-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.625rem', marginBottom: '1.75rem' }}>
         {[
-          { label: 'Content Interacted With', value: owned.length, Icon: Layers, accent: '#FACC15' },
+          { label: 'Interacted With', value: owned.length, Icon: Layers, accent: '#FACC15' },
           { label: 'Articles', value: articles.length, Icon: Newspaper, accent: '#10b981' },
           { label: 'E-books', value: ebooks.length, Icon: BookOpen, accent: '#7c3aed' },
           { label: 'Templates', value: resources.length, Icon: Package, accent: '#f97316' },
-          { label: 'Courses', value: courses.length, Icon: GraduationCap, accent: '#0ea5e9' },
+          { label: 'Build Notes', value: buildNotes.length, Icon: Wrench, accent: '#0ea5e9' },
         ].map(s => (
-          <div key={s.label} style={{ background: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', borderRadius: '0.625rem', padding: '1rem 1rem 0.875rem', borderTop: `3px solid ${s.accent}` }}>
-            <s.Icon size={18} strokeWidth={2} color={s.accent} />
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.625rem', fontWeight: 800, color: 'var(--color-ink-deep)', margin: '0.375rem 0 0.125rem', lineHeight: 1 }}>{s.value}</p>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.625rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-muted)', margin: 0 }}>{s.label}</p>
+          <div key={s.label} style={{ background: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', borderRadius: '0.625rem', padding: '0.875rem 0.75rem 0.75rem', borderTop: `3px solid ${s.accent}` }}>
+            <s.Icon size={16} strokeWidth={2} color={s.accent} />
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.375rem', fontWeight: 800, color: 'var(--color-ink-deep)', margin: '0.3rem 0 0.125rem', lineHeight: 1 }}>{s.value}</p>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.5625rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-muted)', margin: 0 }}>{s.label}</p>
           </div>
         ))}
       </section>
+
+      <div style={{ marginBottom: '1.75rem' }}>
+        <LearningActivitySection counts={{
+          articlesCompleted: completedByType.article ?? 0,
+          resourcesCompleted: completedByType.template ?? 0,
+          ebooksRead: completedByType.ebook ?? 0,
+          modulesCompleted,
+          casesCompleted,
+          streak,
+        }} />
+      </div>
+
+      <div style={{ marginBottom: '1.75rem' }}>
+        <AchievementsAndPositionRow position={communityPosition} achievements={achievements} />
+      </div>
+
+      <div style={{ marginBottom: '1.75rem' }}>
+        <MyLearningPathsSection paths={myLearningPaths} />
+      </div>
 
       <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
         <ContentListSection
@@ -283,88 +291,28 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div style={{ marginBottom: '1.75rem' }}>
-        <MyLearningPathsSection paths={myLearningPaths} />
-      </div>
-
-      <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
-        <ContentListSection
-          title="Saved"
-          items={savedItems}
-          emptyText="Tap the favorite button on any article, ebook, or template to save it here."
-          seeAllHref={{ href: '/dashboard/library', label: 'View all →' }}
-        />
-        <ContentListSection
-          title="Recently Viewed"
-          items={recentlyViewed}
-          emptyText="What you read or open will show up here."
-        />
-      </div>
-
-      <div style={{ marginBottom: '1.75rem' }}>
-        <LearningActivitySection counts={{
-          articlesCompleted: completedByType.article ?? 0,
-          resourcesCompleted: completedByType.template ?? 0,
-          ebooksRead: completedByType.ebook ?? 0,
-          modulesCompleted,
-          casesCompleted,
-          streak,
-        }} />
-      </div>
-
-      <div style={{ marginBottom: '1.75rem' }}>
-        <AchievementsAndPositionRow position={communityPosition} achievements={achievements} />
-      </div>
-
-      {(trendingEbooks.length > 0 || trendingTemplates.length > 0) && (
-        <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
-          <ContentListSection title="E-books" items={trendingEbooks.map(e => ({ id: e.id, title: e.title, type: 'ebook', slug: e.slug, tags: e.tags ?? [] }))} emptyText="No e-books yet." seeAllHref={{ href: '/library?type=ebook', label: 'All →' }} />
-          <ContentListSection title="Templates" items={trendingTemplates.map(t => ({ id: t.id, title: t.title, type: 'template', slug: t.slug, tags: t.tags ?? [] }))} emptyText="No templates yet." seeAllHref={{ href: '/library?type=template', label: 'All →' }} />
-        </div>
-      )}
-
-      <div style={{ marginBottom: '1.75rem' }}>
+      {/* Trending Now, E-books, and Templates share one row now — three
+          short previews rather than a full page of scroll (live
+          feedback, 2026-09-08). Everything else that used to live below
+          (Saved, Recently Viewed, Courses) has a real home already:
+          Saved/Recently Viewed at /dashboard/library, Courses on its own
+          page once that's real content instead of a coming-soon stub. */}
+      <div className="grid-collapse-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
         <ContentListSection
           title="Trending Now"
           items={trending.map(t => ({ id: t.id, title: t.title, type: t.type, slug: t.slug }))}
           emptyText="Nothing trending yet."
           seeAllHref={{ href: '/articles', label: 'All articles →' }}
         />
+        <ContentListSection title="E-books" items={trendingEbooks.map(e => ({ id: e.id, title: e.title, type: 'ebook', slug: e.slug, tags: e.tags ?? [] }))} emptyText="No e-books yet." seeAllHref={{ href: '/library?type=ebook', label: 'All →' }} />
+        <ContentListSection title="Templates" items={trendingTemplates.map(t => ({ id: t.id, title: t.title, type: 'template', slug: t.slug, tags: t.tags ?? [] }))} emptyText="No templates yet." seeAllHref={{ href: '/library?type=template', label: 'All →' }} />
       </div>
-
-      <section style={{ marginBottom: '1.75rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-ink-deep)', margin: 0 }}>Courses</h2>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1rem' }}>
-          {(courses.length > 0 ? courses.map(c => ({ id: c.id, title: c.title, tag: c.tags?.[0] ?? null })) : COMING_SOON_COURSES).map(course => (
-            <div key={course.id} style={{ background: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-tertiary) 8%, transparent)', borderRadius: '0.75rem', overflow: 'hidden', opacity: 0.85 }}>
-              <div style={{ width: '100%', height: '90px', background: 'linear-gradient(135deg, var(--color-ink-deep) 0%, color-mix(in srgb, var(--color-ink-deep) 70%, #4f46e5) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" />
-                </svg>
-                <span style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(250,204,21,0.9)', color: 'var(--color-ink-deep)', fontSize: '0.5625rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0.2rem 0.5rem', borderRadius: '0.2rem' }}>Coming Soon</span>
-              </div>
-              <div style={{ padding: '0.875rem' }}>
-                <p style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, color: 'var(--color-ink-deep)', margin: '0 0 0.375rem', lineHeight: 1.35, fontSize: '0.875rem' }}>{course.title}</p>
-                {'tag' in course && course.tag && <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.6875rem', color: 'var(--color-text-muted)' }}>{course.tag}</span>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <section style={{ paddingTop: '0.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
         <Link href="/library" className="btn-primary">Browse Library</Link>
         <Link href="/articles" className="btn-outline">Read Articles</Link>
-        <Link href="/dashboard/requests" className="btn-outline">Request Content</Link>
+        <Link href="/feedback" className="btn-outline">Give Feedback</Link>
       </section>
     </div>
   )
 }
-
-const COMING_SOON_COURSES = [
-  { id: 'cs-1', title: 'Product Strategy & Roadmapping', tag: 'Strategy' },
-  { id: 'cs-2', title: 'User Research & Discovery Methods', tag: 'Research' },
-  { id: 'cs-3', title: 'Data-Driven Product Decisions', tag: 'Analytics' },
-]

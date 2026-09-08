@@ -2,7 +2,6 @@
 
 import { useState, useActionState } from 'react'
 import { updateProfileAction, sendPasswordResetAction, type ProfileState } from '@/app/dashboard/actions'
-import { AreaPicker } from '@/components/dashboard/AreaPicker'
 import { ChipMultiSelect } from '@/components/onboarding/ChipSelect'
 import type { UserRow } from '@pshq/database'
 
@@ -157,11 +156,6 @@ export function ProfileSettings({ user, topicOptions, goalOptions, initialTopics
         <div className="settings-field">
           <label>Goals (up to 5)</label>
           <ChipMultiSelect name="goals" options={goalOptions} initial={initialGoals} max={5} />
-        </div>
-
-        <div className="settings-field">
-          <label>Areas of interest (legacy)</label>
-          <AreaPicker initial={user.areas_of_interest ?? []} />
         </div>
 
         <div className="settings-field">

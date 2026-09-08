@@ -33,13 +33,6 @@ function IconBrowse() {
     </svg>
   )
 }
-function IconRequests() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  )
-}
 function IconLeaderboard() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -218,5 +211,4 @@ const NAV = [
   { href: '/dashboard/learning-paths', label: 'My Learning Paths', Icon: IconPath },
   { href: '/leaderboard',       label: 'Leaderboard',    Icon: IconLeaderboard },
   { href: '/library',           label: 'Browse Library', Icon: IconBrowse    },
-  { href: '/dashboard/requests',label: 'Requests',       Icon: IconRequests  },
 ]
