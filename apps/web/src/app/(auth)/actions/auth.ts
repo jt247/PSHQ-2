@@ -98,6 +98,19 @@ export async function signUpAction(
 
 export type SignInState = {
   error: string | null
+  /** Set on success instead of calling redirect() directly — redirecting
+   * from inside a Server Action forces Next.js to render the target page
+   * (the whole dashboard, a genuinely heavy RSC tree) as part of the
+   * action's own response. That's a real, confirmed-live crash for an
+   * account with enough real data (works fine for a fresh account,
+   * throws "Error occurred in Server Components render" for one with
+   * real learning paths / recommendations / community rank) — a known
+   * sharp edge of redirect-inside-action with a data-heavy target, not a
+   * bug in the dashboard's own data logic (verified separately: the exact
+   * same queries run clean outside the action-response render path).
+   * The client does a normal top-level navigation instead, which doesn't
+   * have this restriction. */
+  redirectTo?: string
 }
 
 export async function signInAction(
@@ -161,12 +174,12 @@ export async function signInAction(
   }
 
   if (profile?.role === 'admin' || profile?.role === 'super_admin') {
-    redirect(adminUrl())
+    return { error: null, redirectTo: adminUrl() }
   }
 
   // Onboarding is no longer a forced redirect (Epic A.4) — the dashboard
   // itself shows the progress card for anyone who hasn't finished it.
-  redirect('/dashboard')
+  return { error: null, redirectTo: '/dashboard' }
 }
 
 // ─── Sign Out ───────────────────────────────────────────────────────────────
@@ -219,6 +232,9 @@ export async function forgotPasswordAction(
 export type ResetPasswordState = {
   error: string | null
   success: boolean
+  /** Same reasoning as SignInState.redirectTo — don't redirect('/dashboard')
+   * from inside a Server Action. */
+  redirectTo?: string
 }
 
 export async function resetPasswordAction(
@@ -248,7 +264,7 @@ export async function resetPasswordAction(
     return { error: error.message, success: false }
   }
 
-  redirect('/dashboard')
+  return { error: null, success: true, redirectTo: '/dashboard' }
 }
 
 // Onboarding is now a multi-step wizard — see src/app/onboarding/actions.ts.

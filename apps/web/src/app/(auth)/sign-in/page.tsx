@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useActionState } from 'react'
 import { signInAction, type SignInState } from '../actions/auth'
@@ -13,6 +13,14 @@ function SignInForm() {
   const [state, action, pending] = useActionState(signInAction, initial)
   const searchParams = useSearchParams()
   const urlError = searchParams.get('error')
+
+  // A normal top-level navigation instead of redirect() inside the action
+  // — see the redirectTo doc comment on SignInState for why. window.location
+  // (not router.push) so the destination gets a full fresh request, cookies
+  // included, exactly like landing there any other way.
+  useEffect(() => {
+    if (state.redirectTo) window.location.href = state.redirectTo
+  }, [state.redirectTo])
 
   return (
     <>
@@ -51,8 +59,8 @@ function SignInForm() {
           </p>
         )}
 
-        <button type="submit" disabled={pending} className="auth-submit">
-          {pending ? 'Signing in…' : 'Sign In'}
+        <button type="submit" disabled={pending || !!state.redirectTo} className="auth-submit">
+          {pending || state.redirectTo ? 'Signing in…' : 'Sign In'}
         </button>
       </form>
     </>
