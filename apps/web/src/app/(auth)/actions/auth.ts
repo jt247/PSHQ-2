@@ -173,8 +173,14 @@ export async function signInAction(
     return { error: 'This account has been suspended. Contact support if you believe this is a mistake.' }
   }
 
+  // Real, confirmed-live bug: adminUrl() used to throw when
+  // NEXT_PUBLIC_ADMIN_URL isn't configured (it isn't, in production —
+  // apps/admin has no deployment yet) — crashing sign-in outright for
+  // every admin/super_admin account. Falls through to the normal member
+  // dashboard instead when there's nowhere real to send them.
   if (profile?.role === 'admin' || profile?.role === 'super_admin') {
-    return { error: null, redirectTo: adminUrl() }
+    const target = adminUrl()
+    if (target) return { error: null, redirectTo: target }
   }
 
   // Onboarding is no longer a forced redirect (Epic A.4) — the dashboard
