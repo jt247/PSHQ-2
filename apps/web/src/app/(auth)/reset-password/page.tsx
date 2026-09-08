@@ -1,12 +1,18 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import { resetPasswordAction, type ResetPasswordState } from '../actions/auth'
 
 const initial: ResetPasswordState = { error: null, success: false }
 
 export default function ResetPasswordPage() {
   const [state, action, pending] = useActionState(resetPasswordAction, initial)
+
+  // See SignInState.redirectTo's doc comment — redirect() inside this
+  // action would hit the same Server-Components-render crash.
+  useEffect(() => {
+    if (state.redirectTo) window.location.href = state.redirectTo
+  }, [state.redirectTo])
 
   return (
     <div className="auth-container">
@@ -25,8 +31,8 @@ export default function ResetPasswordPage() {
 
         {state.error && <p className="auth-error" role="alert">{state.error}</p>}
 
-        <button type="submit" disabled={pending} className="auth-submit">
-          {pending ? 'Updating…' : 'Update password'}
+        <button type="submit" disabled={pending || !!state.redirectTo} className="auth-submit">
+          {pending || state.redirectTo ? 'Updating…' : 'Update password'}
         </button>
       </form>
     </div>
