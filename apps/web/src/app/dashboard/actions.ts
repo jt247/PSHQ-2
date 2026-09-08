@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@pshq/api-client/server'
 import { trackProfileUpdated, trackNotificationPreferenceUpdated } from '@pshq/analytics'
-import { sanitizeAreas } from '@/app/dashboard/constants'
 import type { PrivacyTier, ExperienceLevel } from '@pshq/database'
 
 export interface ProfileState {
@@ -33,8 +32,6 @@ export async function updateProfileAction(
   const job_role   = str(formData, 'job_role', 150)
   const country    = str(formData, 'country', 100)
   const bio        = str(formData, 'bio', 2000) || null
-  const areasRaw   = formData.getAll('areas_of_interest') as string[]
-  const areas_of_interest = sanitizeAreas(areasRaw)
   const full_name  = [first_name, last_name].filter(Boolean).join(' ') || null
 
   // Epic D fields — username editable any time (JT decision, not a
@@ -69,7 +66,7 @@ export async function updateProfileAction(
   const { error } = await service
     .from('users')
     .update({
-      first_name, last_name, full_name, job_role, country, bio, areas_of_interest,
+      first_name, last_name, full_name, job_role, country, bio,
       username, headline, company, region, years_experience, experience_level,
       skills, linkedin_url, website_url, portfolio_url, github_url, x_url, privacy_tier,
     })
@@ -104,7 +101,7 @@ export async function updateProfileAction(
   }
 
   await trackProfileUpdated({ supabase, source: 'web', userId: user.id }, Object.keys({
-    first_name, last_name, job_role, country, bio, areas_of_interest, username, headline,
+    first_name, last_name, job_role, country, bio, username, headline,
     company, region, years_experience, experience_level, skills, linkedin_url, website_url,
     portfolio_url, github_url, x_url, privacy_tier, topics: topicIds, goals: goalIds,
   }))
