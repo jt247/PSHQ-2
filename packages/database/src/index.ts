@@ -16,7 +16,7 @@ export type Json =
 
 export type UserRole = 'user' | 'admin' | 'super_admin'
 export type TeamRole = 'product' | 'support' | 'growth'
-export type ContentType = 'article' | 'ebook' | 'template' | 'course'
+export type ContentType = 'article' | 'ebook' | 'template' | 'course' | 'build_note'
 export type ContentStatus = 'draft' | 'published' | 'archived'
 export type InteractionType = 'view' | 'click' | 'share' | 'download' | 'unlock' | 'ai_summary_requested' | 'selar_click' | 'read' | 'listen'
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
