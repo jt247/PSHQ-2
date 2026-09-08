@@ -110,7 +110,12 @@ export async function GET(request: NextRequest) {
       const profile = profileRaw as UserRow | null
 
       if (profile?.role === 'admin' || profile?.role === 'super_admin') {
-        return NextResponse.redirect(adminUrl())
+        // Same real bug as the password sign-in path — adminUrl() can be
+        // null (no production deployment configured yet); never crash
+        // the OAuth callback over it, just fall through to the normal
+        // member dashboard.
+        const target = adminUrl()
+        if (target) return NextResponse.redirect(target)
       }
 
       // Onboarding is no longer a forced redirect (Epic A.4) — land on the

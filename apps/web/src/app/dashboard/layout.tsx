@@ -89,6 +89,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
 
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
+  const adminHref = adminUrl()
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-paper-base)' }}>
@@ -136,8 +137,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           borderTop: '1px solid rgba(255,255,255,0.07)',
           flexShrink: 0,
         }}>
-          {isAdmin && (
-            <a href={adminUrl()} style={{
+          {isAdmin && adminHref && (
+            <a href={adminHref} style={{
               display: 'flex', alignItems: 'center', gap: '0.375rem',
               fontSize: '0.6875rem', color: 'var(--color-accent-warm)',
               textDecoration: 'none', fontFamily: 'var(--font-sans)',
